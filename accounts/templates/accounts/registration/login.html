@@ -1,0 +1,47 @@
+{% extends "sportdiag/common/base.html" %}
+
+{% block content %}
+    <div class="container-xl bg-light pt-3 pb-5 px-5">
+        <div class="row pb-3 pt-2">
+            <div class="col">
+                <h1>Přihlášení</h1>
+            </div>
+        </div>
+        <div class="row">
+            {% if form.errors %}
+                <p>Zadali jste nesprávný email nebo heslo.</p>
+            {% endif %}
+
+            {% if next %}
+                {% if user.is_authenticated %}
+                    <p>Your account doesn't have access to this page. To proceed,
+                        please login with an account that has access.</p>
+                {% else %}
+                    <p>Please login to see this page.</p>
+                {% endif %}
+            {% endif %}
+
+            <form method="post" action="{% url 'login' %}">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <div class="form-label">
+                        {{ form.username.label_tag }}
+                    </div>
+                    {{ form.username }}
+                </div>
+                <div class="mb-3">
+                    <div class="form-label">
+                        {{ form.password.label_tag }}
+                    </div>
+                    {{ form.password }}
+                </div>
+
+                <div class="mb-3">
+                    <input type="submit" value="Přihlásit se" class="btn btn-primary">
+                </div>
+                <input type="hidden" name="next" value="{{ next }}">
+            </form>
+        </div>
+        <a href="{% url 'password_reset' %}">Zapomněli jste heslo?</a>
+    </div>
+{% endblock %}

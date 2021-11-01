@@ -1,0 +1,39 @@
+<nav class="navbar navbar-expand-lg bg-dark navbar-dark">
+    <div class="container">
+        <a class="navbar-brand" href="{% url 'index' %}">Sportdiag</a>
+
+        <button class="navbar-toggler"
+                type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#navmenu">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navmenu">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'index' %}">Úvodní stránka</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'beneficiaries' %}">Beneficienti</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'contact' %}">Kontakt</a>
+                </li>
+            </ul>
+
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item my-2 mx-lg-2">
+                    <a class="btn btn-outline-primary" href="{% url 'signup' %}"><i
+                            class="bi bi-person-plus-fill"></i>
+                        Registrovat se</a>
+                </li>
+                <li class="nav-item my-2 mx-lg-2">
+                    <a class="btn btn-outline-secondary" href="{% url 'login' %}"><i
+                            class="bi bi-box-arrow-in-right"></i> Přihlásit
+                        se</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
