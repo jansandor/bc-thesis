@@ -12,3 +12,7 @@ class ContactView(TemplateView):
 
 class BeneficiariesView(TemplateView):
     template_name = 'sportdiag/beneficiaries.html'
+
+
+class HomePageView(TemplateView):
+    template_name = 'sportdiag/home.html'

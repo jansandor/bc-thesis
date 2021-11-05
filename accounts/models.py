@@ -4,6 +4,7 @@ from django.utils.translation import gettext_lazy as _
 from django.contrib.auth import get_user_model
 from .user_types import CLIENT, PSYCHOLOGIST, RESEARCHER
 from datetime import datetime
+from .utils import user_specific_upload_dir
 
 
 class UserManager(BaseUserManager):
@@ -68,7 +69,7 @@ class BaseUserProfile(models.Model):
     )
 
     user = models.OneToOneField(get_user_model(), on_delete=models.CASCADE, primary_key=True,
-                                verbose_name=_('uživatel'))  # related_name='profile'
+                                verbose_name=_('uživatel'))
     user_type = models.CharField(_('typ uživatele'), max_length=12, choices=USER_TYPES, default=CLIENT)
 
     def __str__(self):
@@ -80,7 +81,7 @@ class BaseUserProfile(models.Model):
 
 
 class ClientProfile(BaseUserProfile):
-    NOTSET = '-'
+    NOTSET = ''
     MAN = 'M'
     WOMAN = 'W'
 
@@ -105,17 +106,17 @@ class ClientProfile(BaseUserProfile):
 
 class PsychologistProfile(BaseUserProfile):
     NO_DEGREE = ''
-    BC_DEGREE = 'bc'
-    MGR_DEGREE = 'mgr'
-    ING_DEGREE = 'ing'
-    MUDR_DEGREE = 'mudr'
-    RNDR_DEGREE = 'rndr'
-    DOC_DEGREE = 'doc'
-    PROF_DEGREE = 'prof'
-    DR_DEGREE = 'dr'
+    BC_DEGREE = 'Bc.'
+    MGR_DEGREE = 'Mgr.'
+    ING_DEGREE = 'Ing.'
+    MUDR_DEGREE = 'MUDr.'
+    RNDR_DEGREE = 'RNDr.'
+    DOC_DEGREE = 'doc.'
+    PROF_DEGREE = 'prof.'
+    DR_DEGREE = 'Dr.'
 
     ACADEMIC_DEGREES_BEFORE_NAME = (
-        (NO_DEGREE, ''),
+        (NO_DEGREE, '-'),
         (BC_DEGREE, 'Bc.'),
         (MGR_DEGREE, 'Mgr.'),
         (ING_DEGREE, 'Ing.'),
@@ -126,13 +127,13 @@ class PsychologistProfile(BaseUserProfile):
         (DR_DEGREE, 'Dr.')
     )
 
-    PHD_DEGREE = 'phd'
-    CSC_DEGREE = 'csc'
-    DRSC_DEGREE = 'drsc'
-    DIS_DEGREE = 'dis'
+    PHD_DEGREE = 'Ph.D.'
+    CSC_DEGREE = 'CSc.'
+    DRSC_DEGREE = 'DrSc.'
+    DIS_DEGREE = 'DiS.'
 
     ACADEMIC_DEGREES_AFTER_NAME = (
-        (NO_DEGREE, ''),
+        (NO_DEGREE, '-'),
         (PHD_DEGREE, 'Ph.D.'),
         (CSC_DEGREE, 'CSc.'),
         (DRSC_DEGREE, 'DrSc.'),
@@ -143,7 +144,7 @@ class PsychologistProfile(BaseUserProfile):
                                                    choices=ACADEMIC_DEGREES_BEFORE_NAME, default=NO_DEGREE)
     academic_degree_after_name = models.CharField(_('titul za jménem'), max_length=10,
                                                   choices=ACADEMIC_DEGREES_AFTER_NAME, default=NO_DEGREE)
-    certificate = models.FileField(upload_to='certificates/', verbose_name=_('certifikát'))
+    certificate = models.FileField(upload_to=user_specific_upload_dir, verbose_name=_('certifikát'))
 
     class Meta:
         verbose_name = _('psycholog')
@@ -153,12 +154,8 @@ class PsychologistProfile(BaseUserProfile):
         return f'{self.academic_degree_before_name} {self.user.__str__()} {self.academic_degree_after_name}'
 
 
+# TODO vyzkumnici asi nebudou potrebovat profil, spis permissions atd.
 class ResearcherProfile(BaseUserProfile):
     class Meta:
         verbose_name = _('výzkumník')
         verbose_name_plural = _('výzkumníci')
-
-# class Profile(ClientProfile, PsychologistProfile, ResearcherProfile, BaseUserProfile):
-#    class Meta:
-#        verbose_name = _('profil')
-#        verbose_name_plural = _('profily')  # TODO tady to bude chtit gettext pro plural 2 profily, 5 profilu, ...

@@ -14,10 +14,10 @@
 
             {% if next %}
                 {% if user.is_authenticated %}
-                    <p>Your account doesn't have access to this page. To proceed,
-                        please login with an account that has access.</p>
+                    <p>Uživatelská práva vašeho účtu vám nedovolují vstoupit na tuto stránku. Pokud chcete na stránku
+                        vstoupit, přihlašte se k účtu s potřebnými právy.</p>
                 {% else %}
-                    <p>Please login to see this page.</p>
+                    <p>Pro vstup do aplikace se prosím přihlašte.</p>
                 {% endif %}
             {% endif %}
 

@@ -7,6 +7,7 @@ urlpatterns = [
     path('signup/client/', ClientSignUpView.as_view(), name='signup_client'),
     path('signup/psychologist/', PsychologistSignUpView.as_view(), name='signup_psychologist'),
     path('login/', auth_views.LoginView.as_view(template_name='accounts/registration/login.html'), name='login'),
+    path('logout/', auth_views.LogoutView.as_view(), name='logout'),
     path('password_reset/',
          auth_views.PasswordResetView.as_view(template_name='accounts/registration/password_reset.html'),
          name='password_reset'),
@@ -20,13 +21,7 @@ urlpatterns = [
         template_name='accounts/registration/password_reset_complete.html'), name='password_reset_complete'),
 ]
 
-# from django.contrib.auth import views
-# from django.urls import path
-# path('', include('django.contrib.auth.urls')),
 # urlpatterns = [
-#    path('login/', views.LoginView.as_view(), name='login'),
-#    path('logout/', views.LogoutView.as_view(), name='logout'),
-#
 #    path('password_change/', views.PasswordChangeView.as_view(), name='password_change'),
 #    path('password_change/done/', views.PasswordChangeDoneView.as_view(), name='password_change_done'),
-## ]
+# ]

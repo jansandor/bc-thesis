@@ -19,29 +19,32 @@ from .user_types import CLIENT, PSYCHOLOGIST
 # https://docs.djangoproject.com/en/3.2/ref/settings/#date-input-formats
 
 class UserCreationForm(DjangoUserCreationForm):
-    password1 = forms.CharField(
-        label=_("Password"),
-        strip=False,
-        widget=forms.PasswordInput(attrs={'autocomplete': 'new-password',
-                                          'class': 'form-control'}),
-    )
-    password2 = forms.CharField(
-        label=_("Password confirmation"),
-        strip=False,
-        widget=forms.PasswordInput(attrs={'autocomplete': 'new-password',
-                                          'class': 'form-control'}),
-    )
+    # password1 = forms.CharField(
+    #    label=_("Password"),
+    #    strip=False,
+    #    widget=forms.PasswordInput(attrs={'autocomplete': 'new-password',
+    #                                      'class': 'form-control'}),
+    # )
+    # password2 = forms.CharField(
+    #    label=_("Password confirmation"),
+    #    strip=False,
+    #    widget=forms.PasswordInput(attrs={'autocomplete': 'new-password',
+    #                                      'class': 'form-control'}),
+    # )
 
     class Meta:
         model = get_user_model()
         fields = ['first_name', 'last_name', 'email', 'password1', 'password2']
         widgets = {
-            'first_name': forms.TextInput(attrs={'class': 'form-control',
-                                                 'autofocus': 'true'}),
-            'last_name': forms.TextInput(attrs={'class': 'form-control'}),
-            'email': forms.EmailInput(attrs={'class': 'form-control',
-                                             'autofocus': 'false'}),  # autofocus toto neprepise v html
+            'first_name': forms.TextInput(attrs={'autofocus': 'true'}),
         }
+        # widgets = {
+        #    'first_name': forms.TextInput(attrs={'class': 'form-control',
+        #                                         'autofocus': 'true'}),
+        #    'last_name': forms.TextInput(attrs={'class': 'form-control'}),
+        #    'email': forms.EmailInput(attrs={'class': 'form-control',
+        #                                     'autofocus': 'false'}),  # toto atribut neprepise ve vygenerovanem html
+        # }
 
 
 class ClientUserCreationForm(UserCreationForm):
@@ -49,6 +52,24 @@ class ClientUserCreationForm(UserCreationForm):
     def save(self, commit=True):
         user = super().save(commit=False)
         user.is_client = True
+        user.save()
+        return user
+
+
+class PsychologistUserCreationForm(UserCreationForm):
+    @transaction.atomic
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        user.is_psychologist = True
+        user.save()
+        return user
+
+
+class ResearcherUserCreationForm(UserCreationForm):
+    @transaction.atomic
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        user.is_researcher = True
         user.save()
         return user
 
@@ -67,8 +88,7 @@ class ClientProfileCreationForm(ModelForm):
         }
 
         def save(self, commit=True, user=None):
-            # if user is None:
-            #    raise some error
+            # TODO if user is None: raise some error or throw except
             data = self.cleaned_data
             profile = ClientProfile.objects.create(user=user, user_type=CLIENT, birthdate=data['birthdate'],
                                                    sex=data['sex'],
@@ -76,26 +96,18 @@ class ClientProfileCreationForm(ModelForm):
             return profile
 
 
-class PsychologistSignUpForm(ModelForm):
-    # pridat tituly a certifikat
-    # nebo udelat custom form kde zpracuju custom usera i profil
-    # certificate = forms.FileField(label='Certifikát', allow_empty_file=True) # empty file ppotom na false
-
-    # Psycholog musi uvest jmeno povinne (zobrazuje se totiz klientovi, kdyz ma vybraneho psychologa)
-    # first_name = forms.CharField(label=_('Jméno'), max_length=60, required=True) # musi zustat 60 kvuli DB modelu
-    # last_name = forms.CharField(label=_('Příjmení'), max_length=60, required=True)
-    # zjistil jsem, ze i uzivatel by mel jmeno vyplnit.. zobrazuje se psychologum...
-
-    # class Meta:
-    #     model = CustomUser
-    #     fields = ('first_name', 'last_name', 'email')
-
+class PsychologistProfileCreationForm(ModelForm):
     """ Zajisti vytvoreni profilu psychologa pri registraci uzivatele"""
 
-    @transaction.atomic
-    def save(self, commit=True):
-        user = super().save(commit=False)
-        user.is_psychologist = True
-        user.save()
-        # Profile.objects.create(user=user, user_type=PSYCHOLOGIST)
-        return user
+    class Meta:
+        model = PsychologistProfile
+        fields = ['academic_degree_before_name', 'academic_degree_after_name', 'certificate']
+
+    def save(self, commit=True, user=None):
+        # TODO if user is None: raise some error or throw except
+        data = self.cleaned_data
+        profile = PsychologistProfile.objects.create(user=user, user_type=PSYCHOLOGIST,
+                                                     academic_degree_before_name=data['academic_degree_before_name'],
+                                                     academic_degree_after_name=data['academic_degree_after_name'],
+                                                     certificate=data['certificate'])
+        return profile

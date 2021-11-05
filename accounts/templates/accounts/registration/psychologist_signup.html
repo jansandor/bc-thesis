@@ -3,5 +3,80 @@
 {% block title %}Sportdiag | Registrace{% endblock %}
 
 {% block content %}
-    psychologist
+    <div class="container-xl bg-light pt-3 pb-5 px-5">
+        <div class="row pb-3 pt-2">
+            <div class="col">
+                <h1>Registrace psychologa</h1>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col col-lg-4">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    {{ user_form.non_field_errors }}
+                    <div class="mb-3">
+                        {{ user_form.first_name.errors }}
+                        <div class="form-label">
+                            {{ user_form.first_name.label_tag }}
+                        </div>
+                        {{ user_form.first_name }}
+                    </div>
+                    <div class="mb-3">
+                        {{ user_form.last_name.errors }}
+                        <div class="form-label">
+                            {{ user_form.last_name.label_tag }}
+                        </div>
+                        {{ user_form.last_name }}
+                    </div>
+                    <div class="mb-3">
+                        {{ user_form.email.errors }}
+                        <div class="form-label">
+                            {{ user_form.email.label_tag }}
+                        </div>
+                        {{ user_form.email }}
+                    </div>
+                    <div class="mb-3">
+                        {{ user_form.password1.errors }}
+                        <div class="form-label">
+                            {{ user_form.password1.label_tag }}
+                        </div>
+                        {{ user_form.password1 }}
+                    </div>
+                    <div class="mb-3">
+                        {{ user_form.password2.errors }}
+                        <div class="form-label">
+                            {{ user_form.password2.label_tag }}
+                        </div>
+                        {{ user_form.password2 }}
+                    </div>
+
+                    {{ profile_form.non_field_errors }}
+
+                    <div class="mb-3">
+                        {{ profile_form.academic_degree_before_name.errors }}
+                        <div class="form-label">
+                            {{ profile_form.academic_degree_before_name.label_tag }}
+                        </div>
+                        {{ profile_form.academic_degree_before_name }}
+                    </div>
+                    <div class="mb-3">
+                        {{ profile_form.academic_degree_after_name.errors }}
+                        <div class="form-label">
+                            {{ profile_form.academic_degree_after_name.label_tag }}
+                        </div>
+                        {{ profile_form.academic_degree_after_name }}
+                    </div>
+                    <div class="mb-3">
+                        {{ profile_form.certificate.errors }}
+                        <div class="form-label">
+                            {{ profile_form.certificate.label_tag }}
+                        </div>
+                        {{ profile_form.certificate }}
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">Registrovat se</button>
+                </form>
+            </div>
+        </div>
+    </div>
 {% endblock %}
