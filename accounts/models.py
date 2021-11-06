@@ -2,9 +2,9 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth import get_user_model
-from .user_types import CLIENT, PSYCHOLOGIST, RESEARCHER
 from datetime import datetime
-from .utils import user_specific_upload_dir
+from .utils.user import user_types, sex_choices
+from .utils.user.functions import user_specific_upload_dir
 
 
 class UserManager(BaseUserManager):
@@ -63,14 +63,14 @@ class User(AbstractUser):
 # asi by to chtelo podobne jak u uctu, at s profilem zmizi i ucet?
 class BaseUserProfile(models.Model):
     USER_TYPES = (
-        (CLIENT, _('Klient')),
-        (PSYCHOLOGIST, _('Psycholog')),
-        (RESEARCHER, _('Výzkumník')),
+        (user_types.CLIENT, _('Klient')),
+        (user_types.PSYCHOLOGIST, _('Psycholog')),
+        (user_types.RESEARCHER, _('Výzkumník')),
     )
 
     user = models.OneToOneField(get_user_model(), on_delete=models.CASCADE, primary_key=True,
                                 verbose_name=_('uživatel'))
-    user_type = models.CharField(_('typ uživatele'), max_length=12, choices=USER_TYPES, default=CLIENT)
+    user_type = models.CharField(_('typ uživatele'), max_length=12, choices=USER_TYPES, default=user_types.CLIENT)
 
     def __str__(self):
         """zajisti vypsani jmena uzivatele v tabulce profily, pri vyberu psychologa"""
@@ -81,20 +81,10 @@ class BaseUserProfile(models.Model):
 
 
 class ClientProfile(BaseUserProfile):
-    NOTSET = ''
-    MAN = 'M'
-    WOMAN = 'W'
-
-    SEX_CHOICES = (
-        (NOTSET, '-'),
-        (MAN, 'muž'),
-        (WOMAN, 'žena')
-    )
-
-    psychologist = models.ForeignKey(get_user_model(), on_delete=models.SET_NULL, blank=True, null=True,
+    psychologist = models.ForeignKey(get_user_model(), on_delete=models.SET_NULL, blank=False, null=True,
                                      verbose_name=_('psycholog'), related_name='psychologist')
     birthdate = models.DateField(_('datum narození'))
-    sex = models.CharField(_('pohlaví'), max_length=1, choices=SEX_CHOICES, default=NOTSET)
+    sex = models.CharField(_('pohlaví'), max_length=1, choices=sex_choices.SEX_CHOICES, default=sex_choices.NOTSET)
 
     class Meta:
         verbose_name = _('klient')
@@ -140,10 +130,12 @@ class PsychologistProfile(BaseUserProfile):
         (DIS_DEGREE, 'DiS.')
     )
 
-    academic_degree_before_name = models.CharField(_('titul před jménem'), max_length=10,
+    academic_degree_before_name = models.CharField(_('titul před jménem'), max_length=10, blank=True,
                                                    choices=ACADEMIC_DEGREES_BEFORE_NAME, default=NO_DEGREE)
-    academic_degree_after_name = models.CharField(_('titul za jménem'), max_length=10,
+    academic_degree_after_name = models.CharField(_('titul za jménem'), max_length=10, blank=True,
                                                   choices=ACADEMIC_DEGREES_AFTER_NAME, default=NO_DEGREE)
+    # TODO multiplefiles input
+    # https://stackoverflow.com/questions/38257231/how-can-i-upload-multiple-files-to-a-model-field
     certificate = models.FileField(upload_to=user_specific_upload_dir, verbose_name=_('certifikát'))
 
     class Meta:
@@ -152,6 +144,18 @@ class PsychologistProfile(BaseUserProfile):
 
     def __str__(self):
         return f'{self.academic_degree_before_name} {self.user.__str__()} {self.academic_degree_after_name}'
+
+
+class PsychologistProxy(PsychologistProfile):
+    """
+    Using this proxy class just to be able to list psychologists with academic degrees before and after the name
+    in the UI Select element (what an instance of User model is not capable of) but to keep in touch with User model
+    held by base class.
+    """
+    objects = UserManager()
+
+    class Meta:
+        proxy = True
 
 
 # TODO vyzkumnici asi nebudou potrebovat profil, spis permissions atd.

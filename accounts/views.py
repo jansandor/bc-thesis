@@ -30,6 +30,8 @@ class ClientSignUpView(TemplateView):
     def post(self, request, *args, **kwargs):
         user_form = self.user_form_class(request.POST)
         profile_form = self.profile_form_class(request.POST)
+        # todo na ifu to spadne, protoze profile form nei valid
+        # todo asi vadi, ze query set na psychologa je pres proxy
         if user_form.is_valid() and profile_form.is_valid():
             user = user_form.save()
             profile_form.save(user=user)
@@ -38,7 +40,7 @@ class ClientSignUpView(TemplateView):
             context = self.get_context_data(**kwargs)
             context['user_form'] = user_form
             context['profile_form'] = profile_form
-            return render(request, self.template_name, context)
+            return self.render_to_response(context)
 
 
 class PsychologistSignUpView(TemplateView):
@@ -66,4 +68,4 @@ class PsychologistSignUpView(TemplateView):
             context = self.get_context_data(**kwargs)
             context['user_form'] = user_form
             context['profile_form'] = profile_form
-            return render(request, self.template_name, context)
+            return self.render_to_response(context)
