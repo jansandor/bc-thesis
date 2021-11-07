@@ -149,18 +149,6 @@ class PsychologistProfile(BaseUserProfile):
         return f'{self.academic_degree_before_name} {self.user.__str__()} {self.academic_degree_after_name}'
 
 
-class PsychologistProxy(PsychologistProfile):
-    """
-    Using this proxy class just to be able to list psychologists with academic degrees before and after the name
-    in the UI Select element (what an instance of User model is not capable of) but to keep in touch with User model
-    held by base class.
-    """
-    objects = UserManager()
-
-    class Meta:
-        proxy = True
-
-
 # TODO vyzkumnici asi nebudou potrebovat profil, spis permissions atd.
 class ResearcherProfile(BaseUserProfile):
     class Meta:

@@ -3,7 +3,7 @@ from django.contrib.auth.forms import UserCreationForm as DjangoUserCreationForm
 from django.db import transaction
 from django.forms import ModelForm
 from django import forms
-from .models import ClientProfile, PsychologistProfile, User, PsychologistProxy
+from .models import ClientProfile, PsychologistProfile, User
 from django.utils.translation import gettext_lazy as _
 import datetime
 from datetime import datetime as dt
@@ -37,6 +37,7 @@ class ClientUserCreationForm(UserCreationForm):
     def save(self, commit=True):
         user = super().save(commit=False)
         user.is_client = True
+        user.is_active = False
         user.save()
         return user
 

@@ -1,0 +1,13 @@
+{% autoescape off %}
+    Dobrý den,
+
+    děkujeme za registraci do aplikace Sportdiag.
+    <!-- todo dodelat sablonu konfirmace mailu -->
+    Some optional text.
+    Some optional text.
+    Some optional text.
+
+    Pro dokončení registrace prosím potvrďte svůj email kliknutím na odkaz:
+
+    http://{{ domain }}{% url 'activate' uidb64=uid token=token %}
+{% endautoescape %}

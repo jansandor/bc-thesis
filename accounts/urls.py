@@ -1,5 +1,6 @@
 from django.urls import path, include
-from .views import SignUpView, ClientSignUpView, PsychologistSignUpView
+from django.conf.urls import url
+from .views import SignUpView, ClientSignUpView, PsychologistSignUpView, activate
 from django.contrib.auth import views as auth_views
 
 urlpatterns = [
@@ -19,6 +20,9 @@ urlpatterns = [
          name='password_reset_confirm'),
     path('reset/done/', auth_views.PasswordResetCompleteView.as_view(
         template_name='accounts/registration/password_reset_complete.html'), name='password_reset_complete'),
+    path('activate/<uidb64>/<token>/', activate, name='activate'),
+    # url(r'^activate/(?P<uidb64>[0-9A-Za-z_\-]+)/(?P<token>[0-9A-Za-z]{1,13}-[0-9A-Za-z]{1,32})/$', activate,
+    #    name='activate'),
 ]
 
 # urlpatterns = [

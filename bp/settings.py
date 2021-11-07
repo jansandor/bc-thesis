@@ -122,7 +122,7 @@ LOGIN_REDIRECT_URL = 'home'
 LOGOUT_REDIRECT_URL = 'login'
 
 # TODO posilani emailu v develop verzi do konzole, zmenit
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'  # 'django.core.mail.backends.console.EmailBackend'
 
 MEDIA_ROOT = BASE_DIR / 'media'
 MEDIA_URL = '/media/'
@@ -134,3 +134,11 @@ CRISPY_TEMPLATE_PACK = "bootstrap5"
 CRISPY_FAIL_SILENTLY = not DEBUG
 
 AUTH_USER_MODEL = 'accounts.User'
+
+EMAIL_USE_TLS = True
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_HOST_USER = 'sandor.jan9@gmail.com'
+EMAIL_HOST_PASSWORD = 'eylebmxwwjoagncq'
+EMAIL_PORT = 587
+
+DEFAULT_FROM_EMAIL = 'info@sportdiag.cz'
