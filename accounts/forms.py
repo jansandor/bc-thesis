@@ -11,10 +11,10 @@ from .utils.user import user_types, sex_choices
 from crispy_forms.helper import FormHelper
 from crispy_forms.bootstrap import InlineRadios, Field, Div, InlineField
 from crispy_forms.layout import Layout, Fieldset, Row, Column
+from django.core.exceptions import ObjectDoesNotExist
 
 
 # TODO odstranit zbytecne naroky na tvorbu hesla
-# TODO implementovano neco jako ze klientova registrace bude dokoncena, az ji psycholog schvali
 
 class UserCreationForm(DjangoUserCreationForm):
     class Meta:
@@ -68,42 +68,57 @@ class DateInput(forms.DateInput):
     input_type = 'date'
 
 
+class UserNotSpecifiedException(Exception):
+    def __str__(self):
+        return 'user keyword argument must be assigned to an instance of User'
+
+
 class ClientProfileCreationForm(ModelForm):
     """ Zajisti vytvoreni klientskeho profilu pri registraci uzivatele"""
 
     class Meta:
         model = ClientProfile
-        fields = ['birthdate', 'sex', 'psychologist']
+        fields = ['birthdate', 'sex', 'psychologist_key']
         widgets = {
             'birthdate': DateInput(attrs={'min': datetime.date(dt.today().year - 100, 1, 1).__str__(),
                                           'max': dt.today().date().__str__()}),
-            'sex': forms.RadioSelect
+            'sex': forms.RadioSelect()
         }
 
-    # TODO nejak poresit, at muzu queryset nastavit na PsychProxy a pritom pracovat s user attributem
-    psychologist = forms.ModelChoiceField(queryset=User.objects.filter(is_psychologist=True),
-                                          label=_('Váš psycholog'))
+    psychologist_key = forms.UUIDField(label=_('Klíč vašeho psychologa'))
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.helper = FormHelper(self)
         self.helper.form_tag = False
         self.helper.disable_csrf = True
-        self.helper.label_class = 'fw-light'  # 'fw-bolder'
+        self.helper.label_class = 'fw-light'
         self.helper.layout = Layout(
             'birthdate',
             InlineRadios('sex'),
-            'psychologist'
+            'psychologist_key'
         )
 
+    def clean_psychologist_key(self):
+        psychologist_key = self.cleaned_data['psychologist_key']
+        try:
+            PsychologistProfile.objects.get(personal_key__exact=psychologist_key)
+        except ObjectDoesNotExist:
+            raise forms.ValidationError(
+                _('Zadaný klíč nepatří žádnému psychologovi. Pokud jste klíč od vašeho psychologa neobdrželi, prosím, kontaktujte jej.'),
+                code='invalid psychologist key',
+                params={'value': psychologist_key})
+        return psychologist_key
+
     def save(self, commit=True, user=None):
-        # TODO if user is None: raise some error or throw except
-        data = self.cleaned_data
-        # psychologist_proxy = data['psychologist']
-        profile = ClientProfile.objects.create(user=user, user_type=user_types.CLIENT, birthdate=data['birthdate'],
-                                               sex=data['sex'],
-                                               psychologist=data['psychologist'])
-        return profile
+        if user is None:
+            raise UserNotSpecifiedException
+        else:
+            data = self.cleaned_data
+            psychologist_profile = PsychologistProfile.objects.get(personal_key__exact=data['psychologist_key'])
+            profile = ClientProfile.objects.create(user=user, user_type=user_types.CLIENT, birthdate=data['birthdate'],
+                                                   sex=data['sex'], psychologist=psychologist_profile.user)
+            return profile
 
 
 class PsychologistProfileCreationForm(ModelForm):

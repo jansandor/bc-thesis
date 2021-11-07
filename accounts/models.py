@@ -1,3 +1,5 @@
+import uuid
+
 from django.db import models
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.utils.translation import gettext_lazy as _
@@ -137,6 +139,7 @@ class PsychologistProfile(BaseUserProfile):
     # TODO multiplefiles input
     # https://stackoverflow.com/questions/38257231/how-can-i-upload-multiple-files-to-a-model-field
     certificate = models.FileField(upload_to=user_specific_upload_dir, verbose_name=_('certifikát'))
+    personal_key = models.UUIDField(_('osobní klíč'), default=uuid.uuid4, editable=False)
 
     class Meta:
         verbose_name = _('psycholog')

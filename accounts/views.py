@@ -23,15 +23,19 @@ class ClientSignUpView(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        # if self.user_form_class.is_bound():
+        #    context['user_form'] = self.user_form_class
+        # else:
         context['user_form'] = self.user_form_class()
+        # if self.profile_form_class.is_bound():
+        #    context['profile_form'] = self.profile_form_class
+        # else:
         context['profile_form'] = self.profile_form_class()
         return context
 
     def post(self, request, *args, **kwargs):
         user_form = self.user_form_class(request.POST)
         profile_form = self.profile_form_class(request.POST)
-        # todo na ifu to spadne, protoze profile form nei valid
-        # todo asi vadi, ze query set na psychologa je pres proxy
         if user_form.is_valid() and profile_form.is_valid():
             user = user_form.save()
             profile_form.save(user=user)
