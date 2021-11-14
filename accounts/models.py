@@ -1,5 +1,4 @@
 import uuid
-
 from django.db import models
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.utils.translation import gettext_lazy as _
@@ -7,6 +6,7 @@ from django.contrib.auth import get_user_model
 from datetime import datetime
 from .utils.user import user_types, sex_choices
 from .utils.user.functions import user_specific_upload_dir
+from accounts.utils.user import academic_degrees
 
 
 class UserManager(BaseUserManager):
@@ -51,6 +51,9 @@ class User(AbstractUser):
     is_researcher = models.BooleanField(_('výzkumník'), default=False)
     first_name = models.CharField(_('jméno'), max_length=150, blank=False)
     last_name = models.CharField(_('příjmení'), max_length=150, blank=False)
+    email_verified = models.BooleanField(_('ověřený e-mail'), default=False)
+    # next attribute is only for psychologists todo maybe researchers too?
+    confirmed_by_staff = models.BooleanField(_('schválený obsluhou'), default=True)
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
@@ -97,45 +100,12 @@ class ClientProfile(BaseUserProfile):
 
 
 class PsychologistProfile(BaseUserProfile):
-    NO_DEGREE = ''
-    BC_DEGREE = 'Bc.'
-    MGR_DEGREE = 'Mgr.'
-    ING_DEGREE = 'Ing.'
-    MUDR_DEGREE = 'MUDr.'
-    RNDR_DEGREE = 'RNDr.'
-    DOC_DEGREE = 'doc.'
-    PROF_DEGREE = 'prof.'
-    DR_DEGREE = 'Dr.'
-
-    ACADEMIC_DEGREES_BEFORE_NAME = (
-        (NO_DEGREE, '-'),
-        (BC_DEGREE, 'Bc.'),
-        (MGR_DEGREE, 'Mgr.'),
-        (ING_DEGREE, 'Ing.'),
-        (MUDR_DEGREE, 'MUDr.'),
-        (RNDR_DEGREE, 'RNDr.'),
-        (DOC_DEGREE, 'doc.'),
-        (PROF_DEGREE, 'prof.'),
-        (DR_DEGREE, 'Dr.')
-    )
-
-    PHD_DEGREE = 'Ph.D.'
-    CSC_DEGREE = 'CSc.'
-    DRSC_DEGREE = 'DrSc.'
-    DIS_DEGREE = 'DiS.'
-
-    ACADEMIC_DEGREES_AFTER_NAME = (
-        (NO_DEGREE, '-'),
-        (PHD_DEGREE, 'Ph.D.'),
-        (CSC_DEGREE, 'CSc.'),
-        (DRSC_DEGREE, 'DrSc.'),
-        (DIS_DEGREE, 'DiS.')
-    )
-
     academic_degree_before_name = models.CharField(_('titul před jménem'), max_length=10, blank=True,
-                                                   choices=ACADEMIC_DEGREES_BEFORE_NAME, default=NO_DEGREE)
+                                                   choices=academic_degrees.ACADEMIC_DEGREES_BEFORE_NAME,
+                                                   default=academic_degrees.NO_DEGREE)
     academic_degree_after_name = models.CharField(_('titul za jménem'), max_length=10, blank=True,
-                                                  choices=ACADEMIC_DEGREES_AFTER_NAME, default=NO_DEGREE)
+                                                  choices=academic_degrees.ACADEMIC_DEGREES_AFTER_NAME,
+                                                  default=academic_degrees.NO_DEGREE)
     # TODO multiplefiles input
     # https://stackoverflow.com/questions/38257231/how-can-i-upload-multiple-files-to-a-model-field
     certificate = models.FileField(upload_to=user_specific_upload_dir, verbose_name=_('certifikát'))
@@ -146,6 +116,7 @@ class PsychologistProfile(BaseUserProfile):
         verbose_name_plural = _('psychologové')  # TODO tady to bude chtit gettext pro plural
 
     def __str__(self):
+        # todo v mailu adminovi kdyz nejsou tituly nebo jeden z nich udela navic mezeru/y kolem jmena
         return f'{self.academic_degree_before_name} {self.user.__str__()} {self.academic_degree_after_name}'
 
 

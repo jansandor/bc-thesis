@@ -3,11 +3,21 @@
 {% block title %}Sportdiag{% endblock %}
 
 {% block content %}
-    <div class="container-xl bg-light pt-3 pb-5 px-5">
-        <div class="row pb-3 pt-2">
-            <div class="col">
-                <h1>Home</h1>
-            </div>
+    <div class="row">
+        <div class="col">
+            <h1>Home</h1>
         </div>
+        <hr>
     </div>
+    <!-- todo pro klienta zobrazit "nemate zadne dotazniky" nebo button vyplnit dotaznik -->
+    {% if user.is_psychologist %}
+        <!-- todo psycholog vidi seznam klientu? -->
+        <ul>
+            {% for client in object_list %}
+                <li>{{ client }}</li>
+            {% empty %}
+                <li>No clients yet.</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
 {% endblock %}

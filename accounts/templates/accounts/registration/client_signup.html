@@ -5,25 +5,15 @@
 {% block title %}Sportdiag | Registrace{% endblock %}
 
 {% block content %}
-    <div class="container-xl bg-light pt-3 pb-5 px-5">
-        <div class="row pb-3 pt-2">
-            <div class="col">
-                <h1>Registrace klienta</h1>
-            </div>
-            <hr>
+    <div class="row">
+        <div class="col">
+            <h1>Registrace klienta</h1>
         </div>
-        <div class="row">
-            <div class="col col-lg-4">
-                <form method="post">
-                    {% csrf_token %}
-                    {% crispy user_form %}
-                    {% crispy profile_form %}
-                    <!-- na malych zarizenich 100% width button -->
-                    <div class="d-flex flex-column justify-content-center">
-                        <input type="submit" value="Registrovat se" class="btn btn-primary my-3">
-                    </div>
-                </form>
-            </div>
+        <hr>
+    </div>
+    <div class="row">
+        <div class="col col-lg-4">
+            {% crispy form %}
         </div>
     </div>
 {% endblock %}

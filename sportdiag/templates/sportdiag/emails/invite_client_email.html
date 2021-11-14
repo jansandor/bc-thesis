@@ -1,0 +1,6 @@
+{% autoescape off %}
+    <p>Dobrý den,</p>
+    <p>psycholog <strong>{{ psychologist_fullname }}</strong> Vás zve k registraci do aplikace Sportdiag.</p>
+    <p>Při registraci do pole "Klíč psychologa" vložte tento klíč: <strong>{{ psychologist_key }}</strong></p>
+    <a href="http://{{ domain }}{% url 'signup_client' %}">Registrovat se</a>
+{% endautoescape %}

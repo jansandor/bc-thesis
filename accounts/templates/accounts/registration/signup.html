@@ -3,21 +3,19 @@
 {% block title %}Sportdiag | Registrace{% endblock %}
 
 {% block content %}
-    <div class="container-xl bg-light pt-3 pb-5 px-5">
-        <div class="row pb-3 pt-2">
-            <div class="col">
-                <h1>Registrace</h1>
-            </div>
-            <hr>
+    <div class="row">
+        <div class="col">
+            <h1>Registrace</h1>
         </div>
-        <div class="row">
-            <div class="d-flex flex-wrap justify-content-center">
-                <a href="{% url 'signup_client' %}" class="btn btn-primary btn-lg m-2" role="button">Registrovat se jako
-                    <br>KLIENT</a>
-                <div class="vr d-none d-md-block mx-3"></div>
-                <a href="{% url 'signup_psychologist' %}" class="btn btn-secondary btn-lg m-2" role="button">Registrovat
-                    se jako<br>PSYCHOLOG</a>
-            </div>
+        <hr>
+    </div>
+    <div class="row">
+        <div class="d-flex flex-wrap justify-content-center">
+            <a href="{% url 'signup_client' %}" class="btn btn-primary btn-lg m-2" role="button">Registrovat se jako
+                <br>KLIENT</a>
+            <div class="vr d-none d-md-block mx-3"></div>
+            <a href="{% url 'signup_psychologist' %}" class="btn btn-secondary btn-lg m-2" role="button">Registrovat
+                se jako<br>PSYCHOLOG</a>
         </div>
     </div>
 {% endblock %}

@@ -3,23 +3,22 @@
 {% load crispy_forms_filters %}
 
 {% block content %}
-    <div class="container-xl bg-light pt-3 pb-5 px-5">
-        <div class="row pb-3 pt-2">
-            <div class="col">
-                <h1>Přihlášení</h1>
-            </div>
-            <hr>
+    <div class="row">
+        <div class="col">
+            <h1>Přihlášení</h1>
         </div>
-        <div class="row">
-            <div class="col col-lg-4">
-                <!-- todo crispy labels ... totez obnoveni hesla-->
-                <form method="post">
-                    {% csrf_token %}
-                    {{ form|crispy }}
-                    <input type="submit" value="Přihlásit se" class="btn btn-primary mb-3">
-                </form>
-            </div>
-        </div>
-        <a href="{% url 'password_reset' %}">Zapomněli jste heslo?</a>
+        <hr>
     </div>
+    <div class="row">
+        <div class="col col-lg-4">
+            <!-- todo crispy labels ... totez obnoveni hesla -->
+            <!-- todo stay signed in checkbox (sessions?) -->
+            <form method="post">
+                {% csrf_token %}
+                {{ form|crispy }}
+                <input type="submit" value="Přihlásit se" class="btn btn-primary mb-3">
+            </form>
+        </div>
+    </div>
+    <a href="{% url 'password_reset' %}">Zapomněli jste heslo?</a>
 {% endblock %}

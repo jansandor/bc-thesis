@@ -3,12 +3,28 @@
 {% block title %}Sportdiag | Registrace{% endblock %}
 
 {% block content %}
-    <div class="container-xl bg-light pt-3 pb-5 px-5">
-        <div class="row pb-3 pt-2">
-            <div class="col">
-                <h1>Váš účet byl aktivován.</h1>
-            </div>
-            <hr>
+    <div class="row">
+        <div class="col">
+            <h1>Vaše e-mailová adresa je nyní ověřená.</h1>
+        </div>
+        <hr>
+    </div>
+    <div class="row">
+        <div class="col">
+            {% if user.is_psychologist %}
+                <p>
+                    Vaši registraci musí ještě potvrdit administrátor aplikace, to může chvíli trvat.
+                </p>
+                <p>
+                    Jakmile vaši registraci administrátor potvrdí, systém vás bude informovat e-mailem.
+                </p>
+                <p>
+                    Poté se budete moci <a href="{% url 'login' %}">přihlásit</a>.
+                </p>
+            {% else %}
+                <p>Váš účet byl aktivován.</p>
+                <a href="{% url 'login' %}">Přihlásit</a>
+            {% endif %}
         </div>
     </div>
 {% endblock %}
