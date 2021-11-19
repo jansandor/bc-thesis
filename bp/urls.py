@@ -22,7 +22,7 @@ from django.views.static import serve
 urlpatterns = [
     path('admin/', admin.site.urls),
     url(r'^accounts/', include('accounts.urls')),
-    path('', include('sportdiag.urls'))
+    path('', include('sportdiag.urls', namespace='sportdiag'))
 ]
 
 if settings.DEBUG:

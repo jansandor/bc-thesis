@@ -1,12 +1,16 @@
 from django.shortcuts import render, redirect
 from django.views.generic.base import TemplateView, RedirectView
-from django.views.generic import ListView, FormView
+from django.views.generic import ListView, FormView, DeleteView
 from accounts.models import ClientProfile, PsychologistProfile, User
 from .forms import InviteClientForm
 from django.core.exceptions import ObjectDoesNotExist
 from django.template.loader import render_to_string
 from django.core.mail import EmailMessage
 from django.contrib.sites.shortcuts import get_current_site
+from django.urls import reverse_lazy
+import mimetypes
+from django.http import HttpResponse
+import os
 
 
 class IndexView(TemplateView):
@@ -23,13 +27,30 @@ class BeneficiariesView(TemplateView):
 
 # psychologist home view
 class HomePageView(ListView):
-    model = ClientProfile
-    paginate_by = 10
+    model = ClientProfile  # spis user?
+    # paginate_by = 10
     template_name = 'sportdiag/home.html'
-    # todo je jen rozcestnik/redirect na psychologist/client/researcher home
+    ordering = ['-last_name']
+
+    # todo home view je jen rozcestnik/redirect na psychologist/client/researcher home
+    def get_queryset(self):
+        return ClientProfile.objects.filter(psychologist=self.request.user)
+
+
+# todo proxy na psychologa?
+# todo staff researcher required decorator/mixin
+class ApprovePsychologistsView(ListView):
+    model = User
+    # paginate_by = 10
+    template_name = 'sportdiag/approve_psychologists.html'
+    # query jen is_active false a is_psychologist true?
+    queryset = User.objects.filter(is_psychologist=True, email_verified=True, confirmed_by_staff=False, is_active=False)
+    ordering = ['-date_joined']
 
 
 # todo client home view
+
+
 # todo psychologist home view
 # todo researcher home view
 
@@ -65,6 +86,39 @@ class InviteClient(FormView):
             email.content_subtype = 'html'
             email.send()
             # todo message, ze email byl odeslan
-            return redirect('home')
+            return redirect('sportdiag:home')
         else:
             return render(request, self.template_name, {'form': form})
+
+
+class RejectPsychologist(DeleteView):
+    model = User
+    # todo message uspesne smazano/zamitnuto
+    # todo send mail
+    template_name = 'sportdiag/reject_psychologist_confirm.html'
+    success_url = reverse_lazy('sportdiag:approve_psychologists')
+
+
+def approve_psychologist(request, pk):
+    # uzivatel urcite existuje, proklik je z listu useru, co existuji..
+    # a neni verejna url, ktera by sla zmenit
+    # i presto, pokud o url patternu vim, muzu pk zmenit
+    # ochrana checkem, jestli user existuje?
+    user = User.objects.get(id=pk)
+    user.confirmed_by_staff = True
+    user.is_active = True
+    user.save()
+    # todo message uspesne schvaleno
+    # todo send mail
+    return redirect('sportdiag:approve_psychologists')
+
+
+def download_certificate(request, pk):
+    user = PsychologistProfile.objects.get(user_id=pk)
+    filepath = user.certificate.path
+    filename = os.path.basename(user.certificate.name)
+    file = open(filepath, 'rb')
+    mime_type, _ = mimetypes.guess_type(filepath)
+    response = HttpResponse(file, content_type=mime_type)
+    response['Content-Disposition'] = "attachment; filename=%s" % filename
+    return response

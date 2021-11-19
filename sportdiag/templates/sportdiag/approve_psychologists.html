@@ -1,0 +1,80 @@
+{% extends 'sportdiag/common/base.html' %}
+
+{% block title %}Sportdiag | Schvalování psychologů{% endblock %}
+
+{% block content %}
+    <div class="row">
+        <div class="col">
+            <h1>Schvalování psychologů</h1>
+        </div>
+        <hr>
+    </div>
+    <div class="row">
+        <div class="col">
+            <p>V seznamu vidíte nově registrované psychology, kteří v rámci procesu registrace již potvrdili svou
+                e-mailovou adresu a nyní čekají
+                na potvrzení registrace vámi.</p>
+            <p>Pokud registraci libovolného psychologa schválíte, bude proces jeho registrace dokončen a jeho účet bude
+                od té chvíle aktivní (bude se moci přihlásit do aplikace a používat ji).</p>
+            <p>Pokud registraci psychologa zamítnete, bude jeho založený účet ze systému vymazán, může se však
+                registrovat znovu a poté vás systém opět upozorní e-mailem na novou registraci psychologa a psycholog se
+                znovu objeví v seznamu níže.</p>
+            <p>Ať už se rozhodnete registraci schválit nebo zamítnout, systém o vašem rozhodnutí psychologa informuje
+                e-mailem s potřebnými informacemi.</p>
+        </div>
+    </div>
+    <div class="row bg-white">
+        <div class="col-12 mt-1">
+            <p class="fs-4">Psychologové čekající na schválení</p>
+        </div>
+        <div class="col">
+            <table class="table table-hover">
+                <thead>
+                <tr>
+                    <th scope="col">Psycholog</th>
+                    <th scope="col">Datum registrace</th>
+                    <th scope="col">Akce</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for psychologist in object_list %}
+                    <tr class="align-middle">
+                        <td>{{ psychologist }}</td>
+                        <td>{{ psychologist.date_joined }}</td>
+                        <td>
+                            <form class="row row-cols-auto g-1">
+                                {% csrf_token %}
+                                <div class="col">
+                                    <input type="submit"
+                                           formaction="{% url 'sportdiag:download_certificate' psychologist.id %}"
+                                           formmethod="get" class="btn btn-info btn-sm form-control"
+                                           value="Zobrazit certifikát">
+                                </div>
+                                <div class="col">
+                                    <input type="submit"
+                                           formaction="{% url 'sportdiag:reject_psychologist' psychologist.id %}"
+                                           formmethod="get" class="btn btn-danger btn-sm form-control"
+                                           value="Zamítnout">
+                                </div>
+                                <div class="col">
+                                    <input
+                                            type="submit"
+                                            formaction="{% url 'sportdiag:approve_psychologist' psychologist.id %}"
+                                            formmethod="post" class="btn btn-success btn-sm form-control"
+                                            value="Schválit">
+                                </div>
+                            </form>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td>No psychologists yet.</td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% endblock %}

@@ -2,7 +2,7 @@
     <p>Dobrý den,</p>
     <p>do aplikace Sportdiag se zaregistroval nový psycholog <strong>{{ psychologist_fullname }}</strong></p>
     <p>Potvrďte nebo zamítněte jeho registraci po kliknutí na odkaz: <a
-            href="http://{{ domain }}">Schválit nebo zamítnout registraci
+            href="http://{{ domain }}{% url 'sportdiag:approve_psychologists' %}">Schválit nebo zamítnout registraci
         psychologa</a>
     <p>O vašem rozhodnutí bude následně informován e-mailem.</p>
     <p>Pokud registraci zamítnete, bude jeho účet vymazán, může se však registrovat znovu.</p>

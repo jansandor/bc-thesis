@@ -54,7 +54,7 @@ class User(AbstractUser):
     email_verified = models.BooleanField(_('ověřený e-mail'), default=False)
     # next attribute is only for psychologists todo maybe researchers too?
     confirmed_by_staff = models.BooleanField(_('schválený obsluhou'), default=True)
-
+    # todo is active default false
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
 
@@ -109,7 +109,7 @@ class PsychologistProfile(BaseUserProfile):
     # TODO multiplefiles input
     # https://stackoverflow.com/questions/38257231/how-can-i-upload-multiple-files-to-a-model-field
     certificate = models.FileField(upload_to=user_specific_upload_dir, verbose_name=_('certifikát'))
-    personal_key = models.UUIDField(_('osobní klíč'), default=uuid.uuid4, editable=False)
+    personal_key = models.UUIDField(_('osobní klíč'), default=uuid.uuid4, editable=False, unique=True)
 
     class Meta:
         verbose_name = _('psycholog')
@@ -118,6 +118,18 @@ class PsychologistProfile(BaseUserProfile):
     def __str__(self):
         # todo v mailu adminovi kdyz nejsou tituly nebo jeden z nich udela navic mezeru/y kolem jmena
         return f'{self.academic_degree_before_name} {self.user.__str__()} {self.academic_degree_after_name}'
+
+
+# class PsychologistManager(models.Manager):
+#    def get_queryset(self):
+#        queryset = super().get_queryset().intersection(PsychologistProfile.objects.get_queryset())
+#        return queryset.
+
+
+# class PsychologistProxy(User):
+#    objects = PsychologistManager
+#    class Meta:
+#        proxy = True
 
 
 # TODO vyzkumnici asi nebudou potrebovat profil, spis permissions atd.

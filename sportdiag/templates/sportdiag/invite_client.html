@@ -2,7 +2,7 @@
 
 {% load crispy_forms_tags %}
 
-{% block title %}Sportdiag{% endblock %}
+{% block title %}Sportdiag | Pozvat klienta{% endblock %}
 
 {% block content %}
     <div class="row">
@@ -29,8 +29,8 @@
                 {% csrf_token %}
                 {{ form|crispy }}
                 <input type="submit" value="Pozvat" class="btn btn-primary">
-                <!-- todo button zpet musi pracovat s historii, ne davat napevno home -->
-                <a href="" class="btn btn-secondary">Zpět</a>
+                <!-- zatim nalezene jednoduche reseni "back" buttonu -->
+                <a href="{{ request.META.HTTP_REFERER|escape }}" class="btn btn-secondary">Zpět</a>
             </form>
         </div>
     </div>

@@ -56,8 +56,7 @@ ROOT_URLCONF = 'bp.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'templates']
-        ,
+        # 'DIRS': [BASE_DIR / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -121,7 +120,7 @@ STATICFILES_DIRS = [
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # todo login url, logout url, redirect url
-LOGIN_REDIRECT_URL = 'home'
+LOGIN_REDIRECT_URL = 'sportdiag:home'
 LOGOUT_REDIRECT_URL = 'login'
 
 # TODO posilani emailu v develop verzi do konzole, zmenit
@@ -145,3 +144,5 @@ EMAIL_HOST_PASSWORD = 'eylebmxwwjoagncq'
 EMAIL_PORT = 587
 
 DEFAULT_FROM_EMAIL = 'info@sportdiag.cz'
+
+# TEMPLATE_CONTEXT_PROCESSORS = 'django.core.context_processors.request'
