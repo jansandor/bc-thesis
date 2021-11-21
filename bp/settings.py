@@ -122,6 +122,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # todo login url, logout url, redirect url
 LOGIN_REDIRECT_URL = 'sportdiag:home'
 LOGOUT_REDIRECT_URL = 'login'
+LOGIN_URL = 'login'
 
 # TODO posilani emailu v develop verzi do konzole, zmenit
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'  # 'django.core.mail.backends.console.EmailBackend'

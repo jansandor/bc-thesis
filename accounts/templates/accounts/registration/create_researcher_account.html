@@ -1,0 +1,24 @@
+{% extends 'sportdiag/common/base.html' %}
+
+{% load crispy_forms_tags %}
+
+{% block title %}Sportdiag | Vytvořit účet výzkumníka{% endblock %}
+
+{% block content %}
+    <div class="row">
+        <div class="col">
+            <h1>Vytvořit účet výzkumníka</h1>
+        </div>
+        <hr>
+    </div>
+    <div class="row">
+        <div class="col col-lg-4">
+            <form method="post">
+                {% csrf_token %}
+                {% crispy form %}
+                <input type="submit" value="Vytvořit účet" class="btn btn-primary">
+                <a href="{{ request.META.HTTP_REFERER|escape }}" class="btn btn-secondary">Zrušit</a>
+            </form>
+        </div>
+    </div>
+{% endblock %}

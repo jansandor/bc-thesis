@@ -1,0 +1,22 @@
+{% extends 'sportdiag/common/base.html' %}
+
+{% block title %}Sportdiag | Home{% endblock %}
+
+{% block content %}
+    <div class="row">
+        <div class="col">
+            <h1>Přehled klientů</h1>
+        </div>
+        <hr>
+    </div>
+    <div class="list-group">
+        {% for client in object_list %}
+            <a href="a" class="list-group-item list-group-item-action">
+                {{ client }}
+                <a href="b">Detail</a>
+            </a>
+        {% empty %}
+            <li>No clients yet.</li>
+        {% endfor %}
+    </div>
+{% endblock %}

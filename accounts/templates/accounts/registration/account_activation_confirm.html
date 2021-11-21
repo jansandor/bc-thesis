@@ -12,18 +12,15 @@
     <div class="row">
         <div class="col">
             {% if user.is_psychologist %}
-                <p>
-                    Vaši registraci musí ještě potvrdit administrátor aplikace, to může chvíli trvat.
-                </p>
-                <p>
-                    Jakmile vaši registraci administrátor potvrdí, systém vás bude informovat e-mailem.
-                </p>
-                <p>
-                    Poté se budete moci <a href="{% url 'login' %}">přihlásit</a>.
-                </p>
+                <div class="fw-light">
+                    <p><strong>Vaši registraci musí ještě potvrdit správce aplikace</strong>, to může chvíli trvat.</p>
+                    <p>Jakmile vaši registraci správce potvrdí, systém vás bude informovat e-mailem.</p>
+                    <p>Poté se budete moci přihlásit.</p>
+                </div>
+                <a href="{% url 'sportdiag:index' %}" class="btn btn-primary">Rozumím</a>
             {% else %}
                 <p>Váš účet byl aktivován.</p>
-                <a href="{% url 'login' %}">Přihlásit</a>
+                <p>Nyní se můžete <a href="{% url 'login' %}">přihlásit</a>.</p>
             {% endif %}
         </div>
     </div>

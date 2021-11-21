@@ -11,15 +11,10 @@ import pytz
 Faker.seed(0)
 fake = Faker()  # (['cs'])
 app_name = 'accounts'
-psychologists_count = 10
+psychologists_count = 20
 clients_count = 30
 researchers_count = 10
 fake_certificate_file = 'accounts/user_fake/Training_plan.xlsx'
-
-
-@transaction.atomic
-def add_staff_researcher(apps, schema_editor):
-    pass
 
 
 @transaction.atomic
@@ -113,8 +108,38 @@ def add_clients(apps, schema_editor):
 def add_researchers(apps, schema_editor):
     User = apps.get_model(app_name, 'User')
     # ResearcherProfile = apps.get_model(app_name, 'ResearcherProfile')
+    file = open("/home/jan/PycharmProjects/bp/fake_researchers_raw_passwords.txt", "w")
     for i in range(0, researchers_count):
-        pass
+        last_name = fake.unique.last_name()
+        email = str.lower(last_name) + "@example.com"
+        password = fake.password(length=12)
+        user = User.objects.create(
+            email=email,
+            is_researcher=True,
+            first_name=fake.first_name(),
+            last_name=last_name,
+            email_verified=True,
+            password=make_password(password),
+        )
+        file.write(f'ID: {user.id}\t{email}\t{password}\n')
+    file.close()
+
+
+@transaction.atomic
+def add_staff_researcher(apps, schema_editor):
+    User = apps.get_model(app_name, 'User')
+    User.objects.create(
+        email='littlemaugli001@gmail.com',
+        first_name='Staff',
+        last_name='Researcher',
+        # email_verified=True,
+        # confirmed_by_staff=True,
+        is_active=True,
+        is_staff=True,
+        is_researcher=True,
+        date_joined=fake.date_time(tzinfo=pytz.UTC),
+        password=make_password('little'),
+    )
 
 
 class Migration(migrations.Migration):
@@ -123,9 +148,9 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RunPython(add_staff_researcher),
         migrations.RunPython(add_approved_psychologists),
         migrations.RunPython(add_not_approved_psychologists),
         migrations.RunPython(add_clients),
-        # migrations.RunPython(add_researchers),
+        migrations.RunPython(add_researchers),
+        migrations.RunPython(add_staff_researcher),
     ]

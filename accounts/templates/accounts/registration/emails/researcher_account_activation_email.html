@@ -1,0 +1,7 @@
+{% autoescape off %}
+    <p>Dobrý den,</p>
+    <p>správce aplikace Sportdiag {{ staff_researcher_fullname }} Vám vytvořil účet výzkumníka.</p>
+    <p>Pro dokončení registrace prosím potvrďte svůj e-mail kliknutím na odkaz a nastavte si heslo:
+        <a href="http://{{ domain }}{% url 'researcher_set_password' uidb64=uid token=token %}">Dokončit registraci</a>
+    </p>
+{% endautoescape %}

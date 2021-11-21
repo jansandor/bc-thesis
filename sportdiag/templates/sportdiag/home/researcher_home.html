@@ -1,0 +1,21 @@
+{% extends 'sportdiag/common/base.html' %}
+
+{% block title %}Sportdiag | Home{% endblock %}
+
+{% block content %}
+    <div class="row">
+        <div class="col">
+            <h1>Home</h1>
+        </div>
+        <hr>
+    </div>
+    <div class="row">
+        <div class="col">
+            {% if request.user.is_researcher and request.user.is_staff %}
+                <p>staff researcher</p>
+            {% else %}
+                <p>researcher</p>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}

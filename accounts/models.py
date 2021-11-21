@@ -109,6 +109,8 @@ class PsychologistProfile(BaseUserProfile):
     # TODO multiplefiles input
     # https://stackoverflow.com/questions/38257231/how-can-i-upload-multiple-files-to-a-model-field
     certificate = models.FileField(upload_to=user_specific_upload_dir, verbose_name=_('certifikát'))
+    # todo uuid by mel byt sam o sobe s vysokou pravdepodobnosti unikatni, je dobry napad setovat ho defaultne unique?
+    # aby se pak nekdy nestalo, ciste velkou nahodou, ze spadne tvorba profilu v DB, protoze se nevygeneroval nahodny...
     personal_key = models.UUIDField(_('osobní klíč'), default=uuid.uuid4, editable=False, unique=True)
 
     class Meta:
@@ -120,6 +122,7 @@ class PsychologistProfile(BaseUserProfile):
         return f'{self.academic_degree_before_name} {self.user.__str__()} {self.academic_degree_after_name}'
 
 
+# todo tyka se "user+profile single modelu".. model/dto? co by mel data usera i profilu.. hodilo by se na vice mistech
 # class PsychologistManager(models.Manager):
 #    def get_queryset(self):
 #        queryset = super().get_queryset().intersection(PsychologistProfile.objects.get_queryset())

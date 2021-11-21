@@ -20,24 +20,30 @@
                 <li class="nav-item">
                     <a class="nav-link" href="{% url 'sportdiag:contact' %}">Kontakt</a>
                 </li>
-                {% if user.is_researcher and user.is_staff %}
+                {% if request.user.is_authenticated and request.user.is_researcher %}
                     <div class="vr text-white d-none d-lg-block"></div>
                     <li class="nav-item">
-                        <!-- text-primary -->
-                        <a class="nav-link" href="{% url 'sportdiag:approve_psychologists' %}">
-                            <i class="bi bi-check2-circle"></i> Schvalování psychologů</a>
-                    </li>
-                    <li class="nav-item">
-                        <!-- text-primary??? -->
                         <a class="nav-link" href="">
-                            <i class="bi bi-people-fill"></i> Přehled výzkumníků</a>
+                            <i class="bi bi-check2-circle"></i> Test</a>
                     </li>
+                    {% if request.user.is_staff %}
+                        <li class="nav-item">
+                            <!-- text-primary -->
+                            <a class="nav-link" href="{% url 'sportdiag:approve_psychologists' %}">
+                                <i class="bi bi-check2-circle"></i> Schvalování psychologů</a>
+                        </li>
+                        <li class="nav-item">
+                            <!-- text-primary??? -->
+                            <a class="nav-link" href="{% url 'sportdiag:researchers_overview' %}">
+                                <i class="bi bi-people-fill"></i> Přehled výzkumníků</a>
+                        </li>
+                    {% endif %}
                 {% endif %}
             </ul>
 
             <ul class="navbar-nav ms-auto">
-                {% if user.is_authenticated %}
-                    {% if user.is_psychologist %}
+                {% if request.user.is_authenticated %}
+                    {% if request.user.is_psychologist %}
                         <li class="nav-item my-2 mx-lg-2">
                             <a class="btn btn-primary" href="{% url 'sportdiag:invite_client' %}">
                                 <i class="bi bi-plus-circle"></i> Pozvat klienta</a>

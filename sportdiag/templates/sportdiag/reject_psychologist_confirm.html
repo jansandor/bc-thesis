@@ -1,6 +1,23 @@
-<form method="post">
-    {% csrf_token %}
-    <p>Are you sure you want to delete "{{ object }}"?</p>
-    <input type="submit" value="Confirm"/>
-    <a href="{% url 'sportdiag:approve_psychologists' %}">Cancel</a>
-</form>
+{% extends 'sportdiag/common/base.html' %}
+
+{% block title %}Sportdiag | Zamítnutí psychologa{% endblock %}
+
+{% block content %}
+    <div class="row">
+        <div class="col">
+            <h1>Potvrzení zamítnutí registrace psychologa</h1>
+        </div>
+        <hr>
+    </div>
+    <div class="row">
+        <div class="col">
+            <form method="post">
+                {% csrf_token %}
+                <p class="fw-light">Opravdu chcete registraci psychologa "{{ object }}" zamítnout?</p>
+                <p class="fw-light">Akce vymaže ze systémů jeho účet.</p>
+                <input type="submit" value="Ano" class="btn btn-primary"/>
+                <a href="{{ request.META.HTTP_REFERER|escape }}" class="btn btn-secondary">Zrušit</a>
+            </form>
+        </div>
+    </div>
+{% endblock %}

@@ -21,7 +21,7 @@ from django.views.static import serve
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    url(r'^accounts/', include('accounts.urls')),
+    url(r'^ucty/', include('accounts.urls')),
     path('', include('sportdiag.urls', namespace='sportdiag'))
 ]
 

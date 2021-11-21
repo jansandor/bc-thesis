@@ -1,4 +1,4 @@
-from django.contrib.auth import get_user_model
+from django.contrib.auth import get_user_model, password_validation
 from django.contrib.auth.forms import UserCreationForm as DjangoUserCreationForm
 from django.db import transaction
 from django.forms import ModelForm
@@ -132,11 +132,37 @@ class PsychologistUserCreationForm(UserCreationForm):
 
 
 class ResearcherUserCreationForm(UserCreationForm):
+    password1 = forms.CharField(
+        label=_("Password"),
+        strip=False,
+        widget=forms.PasswordInput(attrs={'autocomplete': 'new-password'}),
+        help_text=password_validation.password_validators_help_text_html(),
+        required=False,
+    )
+    password2 = forms.CharField(
+        label=_("Password confirmation"),
+        widget=forms.PasswordInput(attrs={'autocomplete': 'new-password'}),
+        strip=False,
+        help_text=_("Enter the same password as before, for verification."),
+        required=False,
+    )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # self.initial = {'password1': '', 'password2': ''}
+        self.helper = FormHelper()
+        self.helper.disable_csrf = True
+        self.helper.form_tag = False
+        self.helper.label_class = 'fw-light'
+        self.helper.layout = Layout('first_name', 'last_name', 'email')
+
     @transaction.atomic
     def save(self, commit=True):
         user = super().save(commit=False)
         user.is_researcher = True
         user.is_active = False
+        raw_password = self.Meta.model.objects.make_random_password()
+        user.set_password(raw_password)
         user.save()
         # profile tabulka je v DB, ale zatim neni duvod ji vyuzit
         return user
