@@ -165,4 +165,4 @@ class ResearcherUserCreationForm(UserCreationForm):
         user.set_password(raw_password)
         user.save()
         # profile tabulka je v DB, ale zatim neni duvod ji vyuzit
-        return user
+        return user, raw_password

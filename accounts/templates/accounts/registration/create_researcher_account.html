@@ -13,6 +13,15 @@
     </div>
     <div class="row">
         <div class="col col-lg-4">
+            <div class="fw-light">
+                <p>Pokud vytvoříte účet výzkumníka, bude mu na zadaný e-mail zaslána zpráva s automaticky vygenerovaným
+                    heslem a odkazem pro dokončení registrace - potvrzením e-mailové adresy.</p>
+                <p>Po potvrzení e-mailové adresy bude jeho účet aktivní.</p>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col col-lg-4">
             <form method="post">
                 {% csrf_token %}
                 {% crispy form %}

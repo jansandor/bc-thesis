@@ -1,7 +1,13 @@
 {% autoescape off %}
     <p>Dobrý den,</p>
     <p>správce aplikace Sportdiag {{ staff_researcher_fullname }} Vám vytvořil účet výzkumníka.</p>
-    <p>Pro dokončení registrace prosím potvrďte svůj e-mail kliknutím na odkaz a nastavte si heslo:
-        <a href="http://{{ domain }}{% url 'researcher_set_password' uidb64=uid token=token %}">Dokončit registraci</a>
+    <p>Vaše přihlašovací údaje k účtu jsou:</p>
+    <ul>
+        <li>E-mail: {{ user_email }}</li>
+        <li>Heslo: {{ password }}</li>
+    </ul>
+    <p>Než se však budete moci k účtu přihlásit, je třeba aktivovat Váš účet potvrzením e-mailové adresy kliknutím na
+        odkaz: <a href="http://{{ domain }}{% url 'activate' uidb64=uid token=token %}">Dokončit registraci</a>
     </p>
+    <strong>Po prvním přihlášení důrazně doporučujeme změnit si heslo v nastavení!</strong>
 {% endautoescape %}

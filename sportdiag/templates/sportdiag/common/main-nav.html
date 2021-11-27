@@ -39,6 +39,17 @@
                         </li>
                     {% endif %}
                 {% endif %}
+                {% if user.is_authenticated and user.is_psychologist %}
+                    <div class="vr text-white d-none d-lg-block"></div>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'sportdiag:home_psychologist' %}">
+                            <i class="bi bi-people-fill"></i> Přehled klientů</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="">
+                            <i class="bi bi-book"></i> Dotazníky a manuály</a>
+                    </li>
+                {% endif %}
             </ul>
 
             <ul class="navbar-nav ms-auto">

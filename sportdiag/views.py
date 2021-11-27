@@ -120,7 +120,7 @@ class InviteClient(FormView):
 class RejectPsychologist(DeleteView):
     model = User
     # todo message uspesne smazano/zamitnuto
-    # todo send mail
+    # todo send mail psychologovi - registrace zamitnuta -- prepsat kvuli tomu delete view/napsat vlastni?
     template_name = 'sportdiag/reject_psychologist_confirm.html'
     success_url = reverse_lazy('sportdiag:approve_psychologists')
     # todo bylo by pekne, kdyby success vracel na stranku+page, z ktere byla akce provedena
@@ -172,15 +172,17 @@ class ResearchersOverviewView(ListView):
     model = User
     paginate_by = 10
     template_name = 'sportdiag/researchers_overview.html'
-    ordering = ['last_name']
 
     def get_queryset(self):
         # returns all researchers excluding logged in (staff) researcher
         current_user = self.request.user
-        return User.objects.filter(is_researcher=True).difference(User.objects.filter(id=current_user.id))
+        return User.objects.filter(is_researcher=True).difference(User.objects.filter(id=current_user.id)).order_by(
+            '-date_joined')
 
 
 def deactivate_researcher_account(request, pk):
+    # todo mail vyzkumnikovi, ze ucet byl deaktivovan
+    # todo na FE confirm popup
     researcher = User.objects.get(id=pk)
     researcher.is_active = False
     researcher.save()
@@ -188,6 +190,8 @@ def deactivate_researcher_account(request, pk):
 
 
 def reactivate_researcher_account(request, pk):
+    # todo mail vyzkumnikovi, ze ucet byl reaktivovan
+    # todo na FE confirm popup
     researcher = User.objects.get(id=pk)
     researcher.is_active = True
     researcher.save()

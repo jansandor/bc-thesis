@@ -1,7 +1,7 @@
 from django.urls import path, include
 from django.conf.urls import url
 from .views import SignUpView, ClientSignUpView, PsychologistSignUpView, activate, PasswordResetView, \
-    PasswordResetDoneView, ResearcherCreateView, ResearcherSetPasswordView
+    PasswordResetDoneView, ResearcherCreateView
 from django.contrib.auth import views as auth_views
 
 urlpatterns = [
@@ -20,7 +20,6 @@ urlpatterns = [
         template_name='accounts/registration/password_reset_complete.html'), name='password_reset_complete'),
     path('aktivovat_ucet/<uidb64>/<token>/', activate, name='activate'),
     path('registrace/vyzkumnik/', ResearcherCreateView.as_view(), name='create_researcher_account'),
-    path('nastaveni_hesla/<uidb64>/<token>/', ResearcherSetPasswordView.as_view(), name='researcher_set_password')
     # url(r'^activate/(?P<uidb64>[0-9A-Za-z_\-]+)/(?P<token>[0-9A-Za-z]{1,13}-[0-9A-Za-z]{1,32})/$', activate,
     #    name='activate'),
 ]

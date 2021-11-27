@@ -39,6 +39,7 @@
                     <thead>
                     <tr>
                         <th scope="col" class="col">Výzkumník</th>
+                        <th scope="col" class="col">Datum registrace</th>
                         <th scope="col" class="col">E-mail</th>
                         <th scope="col" class="col">Ověřený e-mail</th>
                         <th scope="col" class="col">Správce</th>
@@ -50,6 +51,7 @@
                     {% for researcher in object_list %}
                         <tr>
                             <td>{{ researcher }}</td>
+                            <td>{{ researcher.date_joined }}</td>
                             <td>{{ researcher.email }}</td>
                             <td>{{ researcher.email_verified|bool_cz }}</td>
                             <td>{{ researcher.is_staff|bool_cz }}</td>
@@ -75,7 +77,7 @@
                                     {% else %}
                                         <div class="col">
                                             <input type="button" class="btn btn-info btn-sm form-control"
-                                                   value="Čekání na potvrzení e-mailu" disabled>
+                                                   value="Čekání na dokončení registrace" disabled>
                                         </div>
                                     {% endif %}
                                 </form>

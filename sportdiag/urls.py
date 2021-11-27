@@ -5,6 +5,8 @@ from .views import IndexView, BeneficiariesView, ContactView, PsychologistHomeVi
     deactivate_researcher_account, reactivate_researcher_account
 from django.contrib.auth.decorators import login_required
 
+# todo views, co jsou nyni ve sportdiagu, ale tykaji se accounts models importovat z accounts.views a nemit je ve sportdiagu
+
 app_name = 'sportdiag'
 
 urlpatterns = [

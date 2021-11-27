@@ -34,6 +34,7 @@ def add_approved_psychologists(apps, schema_editor):
             email_verified=True,
             confirmed_by_staff=True,
             password=make_password(password),
+            date_joined=fake.date_time(tzinfo=pytz.UTC),
         )
         file.write(f'ID: {user.id}\t{email}\t{password}\n')
         user.save()
@@ -93,6 +94,7 @@ def add_clients(apps, schema_editor):
             last_name=last_name,
             email_verified=True,
             password=make_password(fake.password(length=12)),
+            date_joined=fake.date_time(tzinfo=pytz.UTC),
         )
         user.save()
         random_index = random.randrange(len(psychologists))
@@ -120,6 +122,7 @@ def add_researchers(apps, schema_editor):
             last_name=last_name,
             email_verified=True,
             password=make_password(password),
+            date_joined=fake.date_time(tzinfo=pytz.UTC),
         )
         file.write(f'ID: {user.id}\t{email}\t{password}\n')
     file.close()

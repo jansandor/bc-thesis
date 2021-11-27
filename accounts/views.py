@@ -2,7 +2,7 @@ from django.shortcuts import render
 from django.views.generic.base import TemplateView
 from django.views.generic.edit import FormView, CreateView
 from django.views.generic.edit import CreateView
-from django.contrib.auth.views import SetPasswordForm
+from django.contrib.auth.views import SetPasswordForm, PasswordChangeView
 from django.contrib.auth import get_user_model
 from django.urls import reverse_lazy
 from .forms import ClientUserCreationForm, PsychologistUserCreationForm, ResearcherUserCreationForm
@@ -95,7 +95,7 @@ class PsychologistSignUpView(CreateView):
 
 
 def activate(request, uidb64, token):
-    # todo mozna casem rozdelit na activate-client a activate-psych
+    # todo mozna casem rozdelit na activate-client a activate-psych atd
     activation_confirm_template_name = 'accounts/registration/account_activation_confirm.html'
     activation_link_used_template_name = 'accounts/registration/account_activation_invalid_link.html'
     new_psychologist_registration_email_html_template = 'accounts/registration/emails/new_psychologist_registration_email.html'
@@ -117,7 +117,7 @@ def activate(request, uidb64, token):
                 client = ClientProfile.objects.get(user=user)
                 psychologist = User.objects.get(pk=client.psychologist_id)
             except:
-                pass
+                pass  # todo ?
             message = render_to_string(new_client_email_html_template,
                                        {
                                            'user_fullname': user.__str__(),
@@ -145,9 +145,14 @@ def activate(request, uidb64, token):
                                         })
             admins = User.objects.filter(is_staff=True, is_researcher=True)
             for admin in admins:
+                # mail to staff researchers - new psychologist to approval
                 email = EmailMessage(mail_subject, message, to=[admin.email])
                 email.content_subtype = 'html'
                 email.send()
+        elif user.is_researcher:
+            user.email_verified = True
+            user.is_active = True
+            user.save()
         return render(request, activation_confirm_template_name, {'user': user})
     else:
         return render(request, activation_link_used_template_name)
@@ -177,7 +182,7 @@ class ResearcherCreateView(CreateView):
     def post(self, request, *args, **kwargs):
         form = self.form_class(request.POST)
         if form.is_valid():
-            user = form.save()
+            (user, password) = form.save()
             # researcher account creation confirm mail
             # todo dat nejak rozumne do funkce? treba send_account_confirm_email
             staff_researcher_user = request.user
@@ -185,6 +190,8 @@ class ResearcherCreateView(CreateView):
             message = render_to_string(self.account_activation_email_html,
                                        {
                                            'staff_researcher_fullname': staff_researcher_user.__str__(),
+                                           'user_email': user.email,
+                                           'password': password,
                                            'domain': get_current_site(request).domain,
                                            'uid': urlsafe_base64_encode(force_bytes(user.pk)),
                                            'token': self.account_activation_token_generator.make_token(user)
@@ -196,56 +203,6 @@ class ResearcherCreateView(CreateView):
             return redirect(self.success_url)
         else:
             return render(request, self.template_name, {'form': form})
-
-
-# todo jakmile semka landne user z mailu, tak ho prihlasit (heslo je v db) a pouzit passwordchangeform...
-# protoze ten funguje jen na auth-ed usery a asi to bude snazi
-# todo https://simpleisbetterthancomplex.com/tips/2016/08/04/django-tip-9-password-change-form.html
-class ResearcherSetPasswordView(FormView):
-    # neni mozne pouzit passwordchangeview, ktere toto vesmes resi, protoze je jen pro auth-ed usera
-    # todo mozna password reset confirm view pouzit?
-    user = None
-    form_class = SetPasswordForm
-    template_name = 'accounts/registration/researcher_set_password.html'
-    success_url = reverse_lazy('login')
-
-    def get(self, request, *args, **kwargs):
-        context = self.get_context_data(**kwargs)
-        try:
-            uid = force_text(urlsafe_base64_decode(context.get('uidb64')))
-            user = User.objects.get(pk=uid)
-        except(TypeError, ValueError, OverflowError, User.DoesNotExist):
-            user = None
-        if account_activation_token_generator.check_token(user, context.get('token')):
-            # todo v activate fci i tady zaridit, aby token po pouziti nebyl validni
-            self.user = user
-            context.update(
-                {'validlink': True})  # todo toto v sobe uz password reset confirm ma v kontextu...
-            return render(request, self.template_name, context)
-        context.update({'validlink': False})
-        return render(request, self.template_name, context)  # todo error
-
-    def get_form_kwargs(self):
-        """SetPasswordForm requires user instance in its constructor. This is the way to provide it from view class."""
-        kwargs = super().get_form_kwargs()
-        kwargs['user'] = self.user
-        return kwargs
-
-    def post(self, request, *args, **kwargs):
-        """
-        Handle POST requests: instantiate a form instance with the passed
-        POST variables and then check if it's valid.
-        """
-        form = self.get_form()
-        # zase mi chybi user instance... ta v atributu se neurzi.. pri requestu vznikne view class instance znovu...
-        # jedine ze bych zase cekoval uid, token.. ale to bych delat nemel..??? jednak duplicita kodu a druhak
-        # by melo stacit precist token jednou... pravda ale je,ze ten token a uid se drzi i getu i postu.. ne jen jednorazove...
-        if form.is_valid():
-            context = self.get_context_data(**kwargs)
-            form.save()
-            return self.form_valid(form)
-        else:
-            return self.form_invalid(form)
 
 # todo prepsat login view.. pridat checkbox remember me
 # pro psychologa hazet warning/info/alert message
