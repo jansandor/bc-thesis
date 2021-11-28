@@ -174,10 +174,12 @@ class ResearchersOverviewView(ListView):
     template_name = 'sportdiag/researchers_overview.html'
 
     def get_queryset(self):
-        # returns all researchers excluding logged in (staff) researcher
+        """ returns all researchers excluding logged in (staff) researcher """
+        queryset = super().get_queryset()
         current_user = self.request.user
-        return User.objects.filter(is_researcher=True).difference(User.objects.filter(id=current_user.id)).order_by(
+        queryset = queryset.filter(is_researcher=True).difference(User.objects.filter(id=current_user.id)).order_by(
             '-date_joined')
+        return queryset
 
 
 def deactivate_researcher_account(request, pk):

@@ -1,4 +1,4 @@
-from django.urls import path, include
+from django.urls import path, include, re_path
 from .views import IndexView, BeneficiariesView, ContactView, PsychologistHomeView, InviteClient, \
     ApprovePsychologistsView, RejectPsychologist, approve_psychologist, download_certificate, \
     redirect_to_user_type_home, ResearcherHomeView, ClientHomeView, ResearchersOverviewView, \
@@ -18,14 +18,15 @@ urlpatterns = [
     path('sportdiag/p/', login_required(PsychologistHomeView.as_view()), name='home_psychologist'),
     path('sportdiag/r/', login_required(ResearcherHomeView.as_view()), name='home_researcher'),
     path('sportdiag/pozvat_klienta/', InviteClient.as_view(), name='invite_client'),
-    path('sportdiag/schvalovani_psychologu/', ApprovePsychologistsView.as_view(),
-         name='approve_psychologists'),
+    re_path(r'sportdiag/schvalovani_psychologu/(?:\?page=(?P<page>\d+))?$', ApprovePsychologistsView.as_view(),
+            name='approve_psychologists'),
     path('sportdiag/schvalovani_psychologu/zamitnout/<int:pk>/', RejectPsychologist.as_view(),
          name='reject_psychologist'),
     path('sportdiag/schvalovani_psychologu/schvalit/<int:pk>/', approve_psychologist, name='approve_psychologist'),
     path('sportdiag/schvalovani_psychologu/stahnout_certifikat/<int:pk>/', download_certificate,
          name='download_certificate'),
-    path('sportdiag/prehled-vyzkumniku/', ResearchersOverviewView.as_view(), name='researchers_overview'),
+    re_path(r'sportdiag/prehled-vyzkumniku/(?:\?page=(?P<page>\d+))?$', ResearchersOverviewView.as_view(),
+            name='researchers_overview'),
     path('sportdiag/prehled-vyzkumniku/deaktivovat_vyzkumnika/<int:pk>/', deactivate_researcher_account,
          name='deactivate_researcher_account'),
     path('sportdiag/prehled-vyzkumniku/reaktivovat_vyzkumnika/<int:pk>/', reactivate_researcher_account,

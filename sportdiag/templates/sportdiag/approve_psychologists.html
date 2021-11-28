@@ -43,6 +43,75 @@
                             <td>{{ psychologist }}</td>
                             <td>{{ psychologist.date_joined }}</td>
                             <td>
+                                <!-- REJECT MODAL FORM -->
+                                <div class="modal fade" tabindex="-1" id="rejectModal-{{ psychologist.id }}">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title">Upozornění</h5>
+                                                <button type="button" class="btn-close"
+                                                        data-bs-dismiss="modal"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <p>Zamítnutím registrace psychologa {{ psychologist }} odstraníte jeho
+                                                    účet a bude se muset případně registrovat znovu.</p>
+                                                <p>Opravdu chcete pokračovat?</p>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <form class="row row-cols-auto g-1">
+                                                    {% csrf_token %}
+                                                    <div class="col">
+                                                        <input type="submit"
+                                                               formaction="{% url 'sportdiag:reject_psychologist' psychologist.id %}"
+                                                               formmethod="post"
+                                                               class="btn btn-danger form-control"
+                                                               value="Zamítnout">
+                                                    </div>
+                                                    <div class="col">
+                                                        <input type="button" class="btn btn-secondary"
+                                                               data-bs-dismiss="modal" value="Zrušit">
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- END REJECT MODAL FORM -->
+                                <!-- APPROVE MODAL FORM -->
+                                <div class="modal fade" tabindex="-1" id="approveModal-{{ psychologist.id }}">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title">Upozornění</h5>
+                                                <button type="button" class="btn-close"
+                                                        data-bs-dismiss="modal"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <p>Schválením registrace psychologa {{ psychologist }} mu umožníte
+                                                    přístup do aplikace.</p>
+                                                <p>Opravdu chcete pokračovat?</p>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <form class="row row-cols-auto g-1">
+                                                    {% csrf_token %}
+                                                    <div class="col">
+                                                        <input
+                                                                type="submit"
+                                                                formaction="{% url 'sportdiag:approve_psychologist' psychologist.id %}"
+                                                                formmethod="post"
+                                                                class="btn btn-success form-control"
+                                                                value="Schválit">
+                                                    </div>
+                                                    <div class="col">
+                                                        <input type="button" class="btn btn-secondary"
+                                                               data-bs-dismiss="modal" value="Zrušit">
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- END APPROVE MODAL FORM -->
                                 <form class="row row-cols-auto g-1">
                                     {% csrf_token %}
                                     <div class="col">
@@ -52,17 +121,18 @@
                                                value="Zobrazit certifikát">
                                     </div>
                                     <div class="col">
-                                        <input type="submit"
-                                               formaction="{% url 'sportdiag:reject_psychologist' psychologist.id %}"
-                                               formmethod="get" class="btn btn-danger btn-sm form-control"
-                                               value="Zamítnout">
+                                        <button type="button" class="btn btn-danger btn-sm"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#rejectModal-{{ psychologist.id }}">
+                                            Zamítnout
+                                        </button>
                                     </div>
                                     <div class="col">
-                                        <input
-                                                type="submit"
-                                                formaction="{% url 'sportdiag:approve_psychologist' psychologist.id %}"
-                                                formmethod="post" class="btn btn-success btn-sm form-control"
-                                                value="Schválit">
+                                        <button type="button" class="btn btn-success btn-sm"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#approveModal-{{ psychologist.id }}">
+                                            Schválit
+                                        </button>
                                     </div>
                                 </form>
                             </td>
@@ -81,7 +151,7 @@
                 {% if page_obj.has_previous %}
                     <li class="page-item">
                         <a class="page-link"
-                           href="/sportdiag/schvalovani_psychologu/?page={{ page_obj.previous_page_number }}">Předchozí</a>
+                           href="{% url 'sportdiag:approve_psychologists' page=page_obj.previous_page_number %}">Předchozí</a>
                     </li>
                 {% else %}
                     <li class="page-item disabled">
@@ -95,32 +165,13 @@
                         <li class="page-item">
                     {% endif %}
                 <a class="page-link"
-                   href="/sportdiag/schvalovani_psychologu/?page={{ page.number }}">{{ page.number }}</a>
+                   href="{% url 'sportdiag:approve_psychologists' page=page.number %}">{{ page.number }}</a>
                 </li>
                 {% endfor %}
-                {% comment %}
-                {% if page_obj.paginator.num_pages >= 3 %}
-                    <li class="page-item">
-                        {% if page_obj.number > 1 %}
-                            <a class="page-link"
-                               href="/sportdiag/schvalovani_psychologu/?page=1">1</a>
-                        {% endif %}
-                    </li>
-                    <li class="page-item active">
-                        <a class="page-link">{{ page_obj.number }}</a>
-                    </li>
-                    <li class="page-item">
-                        {% if page_obj.number < page_obj.paginator.num_pages %}
-                            <a class="page-link"
-                               href="/sportdiag/schvalovani_psychologu/?page={{ page_obj.paginator.num_pages }}">{{ page_obj.paginator.num_pages }}</a>
-                        {% endif %}
-                    </li>
-                {% endif %}
-                {% endcomment %}
                 {% if page_obj.has_next %}
                     <li class="page-item">
                         <a class="page-link"
-                           href="/sportdiag/schvalovani_psychologu/?page={{ page_obj.next_page_number }}">Další</a>
+                           href="{% url 'sportdiag:approve_psychologists' page=page_obj.next_page_number %}">Další</a>
                     </li>
                 {% else %}
                     <li class="page-item disabled">
