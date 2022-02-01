@@ -12,7 +12,11 @@
     </div>
     <div class="row">
         <div class="col">
-            <p>Nemáte žádné dotazníky k vyplnění.</p>
+            {% for survey in surveys %}
+                <a href="{{ survey.get_absolute_url }}">{{ survey.name }}</a>
+            {% empty %}
+                <p>Nemáte žádné dotazníky k vyplnění.</p>
+            {% endfor %}
         </div>
     </div>
 {% endblock %}

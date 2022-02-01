@@ -11,12 +11,9 @@
     </div>
     <div class="list-group">
         {% for client in object_list %}
-            <a href="a" class="list-group-item list-group-item-action">
-                {{ client }}
-                <a href="b">Detail</a>
-            </a>
+            <a href="" class="list-group-item list-group-item-action">{{ client }}</a>
         {% empty %}
-            <li>No clients yet.</li>
+            <p>Nemáte žádné klienty.</p>
         {% endfor %}
     </div>
 {% endblock %}

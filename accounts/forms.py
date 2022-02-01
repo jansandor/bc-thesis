@@ -7,14 +7,14 @@ from accounts.models import ClientProfile, PsychologistProfile
 from django.utils.translation import gettext_lazy as _
 import datetime
 from datetime import datetime as dt
-from accounts.utils.user import user_types
+from django.core.exceptions import ObjectDoesNotExist
+
 from crispy_forms.helper import FormHelper
 from crispy_forms.bootstrap import InlineRadios
 from crispy_forms.layout import Layout, Submit, Field, Div
-from django.core.exceptions import ObjectDoesNotExist
+
 from accounts.utils.forms import DateInput
-from accounts.utils.user import sex_choices
-from accounts.utils.user import academic_degrees
+from accounts.utils.user import user_types, sex_choices, academic_degrees
 
 
 class UserCreationForm(DjangoUserCreationForm):

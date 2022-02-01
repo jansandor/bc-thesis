@@ -1,0 +1,20 @@
+{% extends 'sportdiag/common/base.html' %}
+
+{% load crispy_forms_tags %}
+
+{% block title %}Nová responze{% endblock %}
+
+{% block content %}
+    <div class="row">
+        <div class="col">
+            <h1>Nová responze</h1>
+        </div>
+        <hr>
+    </div>
+    <div class="row">
+        <div class="col">
+            <h2 class="text-center pt-3 pb-5">{{ response_form.survey.name }}</h2>
+            {% crispy response_form %}
+        </div>
+    </div>
+{% endblock %}

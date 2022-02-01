@@ -1,9 +1,9 @@
-from django.shortcuts import render, redirect
-from django.views.generic.base import TemplateView, RedirectView
+from django.shortcuts import render, redirect, reverse
+from django.views.generic.base import TemplateView, RedirectView, View
 from django.views.generic import ListView, FormView, DeleteView
 from django.contrib.auth.views import PasswordChangeView
 from accounts.models import ClientProfile, PsychologistProfile, User
-from .forms import InviteClientForm
+from .forms import InviteClientForm, ResponseForm
 from django.core.exceptions import ObjectDoesNotExist
 from django.template.loader import render_to_string
 from django.core.mail import EmailMessage
@@ -15,6 +15,11 @@ import os
 from django.http import HttpResponseNotFound
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.admin.views.decorators import staff_member_required
+import logging
+
+from .models import Survey, Response
+
+LOGGER = logging.getLogger(__name__)
 
 
 class IndexView(TemplateView):
@@ -62,6 +67,46 @@ class ResearcherHomeView(TemplateView):
 class ClientHomeView(TemplateView):
     template_name = 'sportdiag/home/client_home.html'
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['surveys'] = Survey.objects.all()
+        return context
+
+
+class SurveyConfirmView(TemplateView):
+    template_name = "sportdiag/survey_confirm.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["uuid4"] = str(kwargs["uuid4"])
+        context["response"] = Response.objects.get(interview_uuid=context["uuid4"])
+        return context
+
+
+class SurveyDetail(View):
+    template_name = "sportdiag/survey_detail.html"
+
+    def get(self, request, *args, **kwargs):
+        survey_id = kwargs.pop('id')
+        survey = Survey.objects.get(id=survey_id)
+        form = ResponseForm(survey=survey, user=request.user)
+        context = {'response_form': form}
+        return render(request, self.template_name, context)
+
+    def post(self, request, *args, **kwargs):
+        survey_id = kwargs.get("id")
+        survey = Survey.objects.get(id=survey_id)
+        form = ResponseForm(request.POST, survey=survey, user=request.user)
+        context = {"response_form": form}  # , "categories": categories
+        if form.is_valid():
+            response = form.save()
+            if response is None:
+                # todo message? stane se mi to vubec nekdy?
+                return redirect(reverse("sportdiag:home"))
+            return redirect("sportdiag:survey_confirmation", uuid4=response.interview_uuid)
+        LOGGER.info("Non valid form: <%s>", form)
+        return render(request, self.template_name, context)
+
 
 # todo proxy na psychologa?
 # todo staff researcher required decorator/mixin
@@ -73,12 +118,6 @@ class ApprovePsychologistsView(LoginRequiredMixin, ListView):
     queryset = User.objects.filter(is_psychologist=True, email_verified=True, confirmed_by_staff=False, is_active=False)
     ordering = ['-date_joined']
 
-
-# todo client home view
-
-
-# todo psychologist home view
-# todo researcher home view
 
 class InviteClient(FormView):
     form_class = InviteClientForm

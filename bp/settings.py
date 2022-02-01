@@ -131,9 +131,9 @@ EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'  # 'django.core.ma
 MEDIA_ROOT = BASE_DIR / 'media'
 MEDIA_URL = '/media/'
 
-CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
+CRISPY_ALLOWED_TEMPLATE_PACKS = ("bootstrap5", "custom_crispy")
 
-CRISPY_TEMPLATE_PACK = "bootstrap5"
+CRISPY_TEMPLATE_PACK = "custom_crispy"  # "bootstrap5"
 
 CRISPY_FAIL_SILENTLY = not DEBUG
 
