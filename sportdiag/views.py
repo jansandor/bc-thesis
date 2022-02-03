@@ -10,11 +10,14 @@ from django.core.mail import EmailMessage
 from django.contrib.sites.shortcuts import get_current_site
 from django.urls import reverse_lazy
 import mimetypes
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect
+from http import HTTPStatus
 import os
 from django.http import HttpResponseNotFound
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.admin.views.decorators import staff_member_required
+from django.contrib import messages
+from sportdiag.models import SurveyResponseRequest
 import logging
 
 from .models import Survey, Response
@@ -49,18 +52,72 @@ def redirect_to_user_type_home(request):
         return HttpResponseNotFound()
 
 
-# todo template view...
-class PsychologistHomeView(ListView):
-    model = ClientProfile  # spis user?
-    # paginate_by = 10
-    template_name = 'sportdiag/home/psychologist_home.html'
-    ordering = ['last_name']
+def request_survey_response(request):
+    request_survey_response_email_html_template = "sportdiag/emails/request_survey_response_email.html"
+    client_id = request.POST.get("client_id")
+    survey_id = request.POST.get("survey_id")
+    if client_id and survey_id:
+        client = User.objects.get(id=client_id)  # todo try except
+        client_email = client.email
+        psychologist = request.user
+        mail_subject = f'Sportdiag | {psychologist.__str__()} Vás žádá o vyplnění dotazníku'
+        message = render_to_string(request_survey_response_email_html_template,
+                                   {
+                                       'psychologist_fullname': psychologist.__str__(),
+                                       'survey_id': survey_id,
+                                       'domain': get_current_site(request).domain,
+                                   })
+        email = EmailMessage(mail_subject, message, to=[client_email])
+        email.content_subtype = 'html'
+        try:
+            email.send()
+        except Exception:
+            # todo logging, DRY
+            messages.error(request, "Něco se pokazilo. E-mail nebyl odeslán.")
+            return HttpResponse(status=HTTPStatus.INTERNAL_SERVER_ERROR)
+        else:
+            SurveyResponseRequest.objects.create(client_id=client_id, survey_id=survey_id)
+            messages.success(request, "Responze vyžádána.")
+            return HttpResponse()
+        # ulozit do DB nove tabulky, ze je response requested na CID, SID
+        # todo zaznam smaze az odeslani responze nebo zruseni pozadavku psychologem
+        # todo misto response vyzadana disabled buttonu dat button zrusit pozadavek
+        # -> smaze zaznam s tabulky survey response requests (klient dotaznik nebude moci vyplnit
+        # pokud zaznam v tabulce pozadavku neexistuje
 
-    def get_queryset(self):
-        return ClientProfile.objects.filter(psychologist=self.request.user)
+    messages.error(request, "Něco se pokazilo. E-mail nebyl odeslán.")
+    return HttpResponse(status=HTTPStatus.INTERNAL_SERVER_ERROR)
+
+
+class PsychologistHomeView(TemplateView):
+    # todo paginace?
+    template_name = 'sportdiag/home/psychologist_home.html'
+
+    def get_context_data(self, **kwargs):
+        user = self.request.user
+        context = super().get_context_data(**kwargs)
+        surveys = Survey.objects.all()
+        clients = ClientProfile.objects.filter(psychologist_id=user.id)
+        client_user_ids = list(clients.values_list("user_id", flat=True))
+        # todo solve situation, when psychologist changes survey in select!!
+        # client has different pending survey response request value for different surveys...
+        # but for now we have only one survey, so...
+        client_ids_where_pending_survey_response_request = list(SurveyResponseRequest.objects
+                                                                .filter(is_pending=True, client_id__in=client_user_ids)
+                                                                .values_list("client_id", flat=True))
+        context['surveys'] = surveys
+        context['clients'] = clients
+        context['client_ids_no_pending_request'] = [item for item in client_user_ids if
+                                                    item not in client_ids_where_pending_survey_response_request]
+        context['client_ids_where_pending_survey_response_request'] = client_ids_where_pending_survey_response_request
+        return context
 
 
 class ResearcherHomeView(TemplateView):
+    # todo tabulkas daty, prokliky na answer/response detail?
+    # klientovi pridat uuid?
+    # v tabulce krome ostatniho interviewuuid a client uuid jako anonymni ident.?
+    # export
     template_name = 'sportdiag/home/researcher_home.html'
 
 
@@ -87,6 +144,9 @@ class SurveyDetail(View):
     template_name = "sportdiag/survey_detail.html"
 
     def get(self, request, *args, **kwargs):
+        # todo check jestli je zaznam v tabulce survey response requests pro client id & survey id
+        # pokud ano, klient ma na home tlacitko "vyplnit"
+        # pokud ne, klient je presmerovan na home a prida se message pozadavek je neplatny/byl zrusen?
         survey_id = kwargs.pop('id')
         survey = Survey.objects.get(id=survey_id)
         form = ResponseForm(survey=survey, user=request.user)

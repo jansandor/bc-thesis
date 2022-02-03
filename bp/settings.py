@@ -12,6 +12,8 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 
 from pathlib import Path
 
+# from django.contrib.messages import constants as messages
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -35,6 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'corsheaders',
     'crispy_forms',
     'crispy_bootstrap5',
     'accounts',
@@ -42,6 +45,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -52,6 +56,20 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'bp.urls'
+
+CORS_ORIGIN_ALLOW_ALL = False
+CORS_ORIGIN_WHITELIST = (
+    'http://localhost:8000',
+    # 'https://localhost:8000',
+)
+
+# MESSAGE_TAGS = {
+#    messages.DEBUG: 'alert-info',
+#    messages.INFO: 'alert-info',
+#    messages.SUCCESS: 'alert-success',
+#    messages.WARNING: 'alert-warning',
+#    messages.ERROR: 'alert-danger',
+# }
 
 TEMPLATES = [
     {

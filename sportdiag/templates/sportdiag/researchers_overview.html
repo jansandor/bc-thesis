@@ -26,17 +26,16 @@
     </div>
     <div class="row bg-white py-1">
         <div class="col-12 mt-1">
-            <div class="d-flex justify-content-between">
+            <div class="d-flex justify-content-between flex-wrap">
                 <p class="fs-4">Výzkumníci</p>
-                <div> <!-- to prevent link/button vertical stretch -->
+                <div> <!-- div to prevent link/button vertical stretch -->
                     <a href="{% url 'create_researcher_account' %}" class="btn btn-primary">Vytvořit účet výzkumníka</a>
                 </div>
             </div>
         </div>
         <div class="col">
             <div class="table-responsive mb-2 mb-md-0">
-                <table class="table table-hover">
-                    <!-- responzivita tabulky! -->
+                <table class="table table-hover align-middle">
                     <thead>
                     <tr>
                         <th scope="col" class="col">Výzkumník</th>
@@ -125,7 +124,7 @@
                         </tr>
                     {% empty %}
                         <tr>
-                            <td>No researchers yet.</td>
+                            <td>Žádní výzkumníci.</td>
                             <td></td>
                             <td></td>
                             <td></td>

@@ -1,0 +1,6 @@
+{% autoescape off %}
+    <p>Dobrý den,</p>
+    <p><strong>{{ psychologist_fullname }}</strong> Vás žádá o vyplnění dotazníku.</p>
+    <p>Dotazník můžete vyplnit po přihlášení do aplikace: <a
+            href="http://{{ domain }}{% url 'sportdiag:survey_detail' survey_id %}">Vyplnit dotazník</a>.</p>
+{% endautoescape %}

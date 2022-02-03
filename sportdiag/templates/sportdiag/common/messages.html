@@ -1,0 +1,26 @@
+{% if messages %}
+    <div id="toastMessagesContainer"
+         class="toast-container mt-2 position-absolute top-0 start-50 translate-middle-x">
+        {% for message in messages %}
+            {% if message.level == DEFAULT_MESSAGE_LEVELS.ERROR %}
+                <div class="toast bg-danger toast-message-selector" role="alert" aria-live="assertive"
+                     aria-atomic="true">
+                    <div class="toast-header justify-content-between align-items-center">
+                        <span {% if message.tags %} class="{{ message.tags }}"{% endif %}><i
+                                class="bi bi-exclamation-octagon-fill text-danger"></i> {{ message }}</span>
+                        <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+                    </div>
+                </div>
+            {% elif message.level == DEFAULT_MESSAGE_LEVELS.SUCCESS %}
+                <div class="toast bg-success toast-message-selector" role="alert" aria-live="assertive"
+                     aria-atomic="true">
+                    <div class="toast-header justify-content-between align-items-center">
+                        <span {% if message.tags %} class="{{ message.tags }}"{% endif %}><i
+                                class="bi bi-check-circle-fill text-success"></i> {{ message }}</span>
+                        <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+                    </div>
+                </div>
+            {% endif %}
+        {% endfor %}
+    </div>
+{% endif %}

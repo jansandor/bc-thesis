@@ -1,5 +1,7 @@
 {% extends 'sportdiag/common/base.html' %}
 
+{% load static %}
+
 {% block title %}Sportdiag | Home{% endblock %}
 
 {% block content %}
@@ -9,11 +11,64 @@
         </div>
         <hr>
     </div>
-    <div class="list-group">
-        {% for client in object_list %}
-            <a href="" class="list-group-item list-group-item-action">{{ client }}</a>
-        {% empty %}
-            <p>Nemáte žádné klienty.</p>
-        {% endfor %}
+    <div class="row">
+        <div class="col fw-light">
+            <p>Pokud klienta požádáte o responzi zvoleného dotazníku, bude mu zaslán informativní
+                e-mail s pozvánkou k vyplnění dotazníku.</p>
+            <p>Jakmile dotazník vyplní a odešle, budete informován(a) e-mailem o nové responzi a budete klienta moci
+                znovu požádat o další responzi.</p>
+        </div>
     </div>
+    <div class="table-responsive bg-white mb-2 mb-md-0 px-2">
+        <table class="table align-middle">
+            <thead>
+            <tr>
+                <th scope="col" class="col">Klient</th>
+                <th scope="col" class="col">Dotazník</th>
+                <th scope="col" class="col-2">Akce</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for client in clients %}
+                <tr>
+                    <td><a href="">{{ client }}</a></td>
+                    <td>
+                        <select id="surveySelect-{{ client.user.id }}" class="form-select form-select-sm"
+                                aria-label="surveySelect-{{ client.user.id }}">
+                            {% for survey in surveys %}
+                                <option value="{{ survey.id }}">{{ survey.name }}</option>
+                            {% empty %}
+                                <option value="None">Žádné dotazníky</option>
+                            {% endfor %}
+                        </select>
+                    </td>
+                    <td>
+                        {% if client.user.id in client_ids_where_pending_survey_response_request %}
+                            <!-- todo button zrusit zadost o responzi -->
+                            <button type="button" class="btn btn-primary btn-sm" disabled>
+                                Responze vyžádána
+                            </button>
+                        {% else %}
+                            <button id="requestSurveyResponseBtn-{{ client.user.id }}" type="button"
+                                    class="btn btn-primary btn-sm align-middle"
+                                    onclick="requestSurveyResponse('{% url "sportdiag:request_survey_response" %}',
+                                            {{ client.user.id }}, {{ client_ids_no_pending_request }})">
+                                <span>Požádat o responzi</span>
+                            </button>
+                        {% endif %}
+                    </td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td>Nemáte žádné klienty.</td>
+                    <td></td>
+                    <td></td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}
+{% block js %}
+    <script type="text/javascript" src="{% static 'sportdiag/js/request_survey_response.js' %}"></script>
 {% endblock %}

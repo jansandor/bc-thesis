@@ -1,8 +1,10 @@
 from django.urls import path, include, re_path
+from django.conf.urls import url
 from .views import IndexView, BeneficiariesView, ContactView, PsychologistHomeView, InviteClient, \
     ApprovePsychologistsView, RejectPsychologist, approve_psychologist, download_certificate, \
     redirect_to_user_type_home, ResearcherHomeView, ClientHomeView, ResearchersOverviewView, \
-    deactivate_researcher_account, reactivate_researcher_account, SurveyDetail, SurveyConfirmView
+    deactivate_researcher_account, reactivate_researcher_account, SurveyDetail, SurveyConfirmView, \
+    request_survey_response
 from django.contrib.auth.decorators import login_required
 
 # todo views, co jsou nyni ve sportdiagu, ale tykaji se accounts models importovat z accounts.views a nemit je ve sportdiagu
@@ -33,4 +35,5 @@ urlpatterns = [
          name='reactivate_researcher_account'),
     path('sportdiag/dotaznik/<int:id>/', SurveyDetail.as_view(), name='survey_detail'),
     path('sportdiag/dotaznik/potvrzeni/<uuid4>/', SurveyConfirmView.as_view(), name="survey_confirmation"),
+    path('sportdiag/zadost-o-responzi/', request_survey_response, name='request_survey_response'),
 ]
