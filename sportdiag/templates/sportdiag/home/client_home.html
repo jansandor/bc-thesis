@@ -6,17 +6,22 @@
     <!-- todo pro klienta zobrazit "nemate zadne dotazniky" nebo button vyplnit dotaznik -->
     <div class="row">
         <div class="col">
-            <h1>Home</h1>
+            <h1>Žádosti o vyplnění dotazníku</h1>
         </div>
         <hr>
     </div>
-    <div class="row">
-        <div class="col">
-            {% for survey in surveys %}
-                <a href="{{ survey.get_absolute_url }}">{{ survey.name }}</a>
-            {% empty %}
-                <p>Nemáte žádné dotazníky k vyplnění.</p>
-            {% endfor %}
+    <div class="row justify-content-center">
+        <div class="col col-md-6">
+            <ul class="list-group">
+                {% for survey in surveys %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <span>{{ survey.name }}</span>
+                        <a href="{{ survey.get_absolute_url }}" class="btn btn-primary btn-sm">Vyplnit</a>
+                    </li>
+                {% empty %}
+                    <li class="list-group-item d-flex align-items-center">Nemáte žádné dotazníky k vyplnění.</li>
+                {% endfor %}
+            </ul>
         </div>
     </div>
 {% endblock %}

@@ -62,6 +62,9 @@ class Question(models.Model):
         choices_tuple = tuple(choices_list)
         return choices_tuple
 
+    def get_short_name(self):
+        return f"Q{self.order}"
+
     def __str__(self):
         if self.category:
             return f'{self.category}: Otázka {self.order}'

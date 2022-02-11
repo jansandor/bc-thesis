@@ -17,13 +17,25 @@
 </head>
 <body>
 <header>
-    {% include 'sportdiag/common/main-nav.html' %}
+    {% if not survey_id %}
+        {% include 'sportdiag/common/main-nav.html' %}
+    {% else %}
+        {% url 'sportdiag:survey_detail' survey_id as survey_detail_url %}
+        {% if request.get_full_path != survey_detail_url %}
+            {% include 'sportdiag/common/main-nav.html' %}
+        {% endif %}
+    {% endif %}
 </header>
 
 {% include "sportdiag/common/messages.html" %}
 
-<div class="container-xl bg-light p-4">
-    {% block content %}{% endblock %}
+{% url 'sportdiag:home_researcher' as researcher_home_url %}
+{% if request.get_full_path == researcher_home_url %}
+    <div class="container-fluid bg-light p-4">
+{% else %}
+    <div class="container-xl bg-light p-4">
+{% endif %}
+{% block content %}{% endblock %}
 </div>
 
 <!-- Bootstrap Bundle with Popper -->

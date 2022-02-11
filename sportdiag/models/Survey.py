@@ -15,7 +15,7 @@ class Survey(models.Model):
         return str(self.name)
 
     def get_absolute_url(self):
-        return reverse("sportdiag:survey_detail", kwargs={"id": self.pk})
+        return reverse("sportdiag:survey_detail", kwargs={"survey_id": self.id})
 
     def non_empty_categories(self):
         # todo change to return non empty categories
@@ -24,3 +24,6 @@ class Survey(models.Model):
 
     def non_empty_likert_scales(self):
         return [ls for ls in self.likert_scales.order_by("id") if ls.questions.count() > 0]
+
+    def get_questions(self):
+        return self.questions.all()

@@ -1,3 +1,5 @@
+import datetime
+
 from django.db import models
 from django.contrib.auth import get_user_model
 from django.utils.translation import gettext_lazy as _
@@ -12,7 +14,12 @@ class ClientProfile(BaseUserProfile):
     birthdate = models.DateField(_('datum narození'))
     sex = models.CharField(_('pohlaví'), max_length=1, choices=sex_choices.SEX_CHOICES, default=sex_choices.NOTSET)
 
-    # todo property age
+    @property
+    def age(self):
+        today = datetime.datetime.utcnow()
+        return today.year - self.birthdate.year - (
+                    (today.month, today.day) < (self.birthdate.month, self.birthdate.day))
+
     class Meta:
         verbose_name = _('klient')
         verbose_name_plural = _('klienti')

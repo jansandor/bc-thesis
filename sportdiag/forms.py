@@ -163,7 +163,9 @@ class ResponseForm(models.ModelForm):
         # todo handle questions without category
         self.helper.layout.append(
             Div(Submit("submit", _("Odeslat")),
-                Button("cancel", "Ukončit a zapomenout volby", css_class="btn-secondary"), css_class="mt-3"))
+                HTML("""<button data-bs-toggle="modal" data-bs-target="#cancelSurveyModal"
+                type="button" class="btn btn-secondary">Ukončit a zapomenout odpovědi</button>""")))
+        # todo css_class="d-flex justify-content-end" ??? tlacitka vpravo dole misto vlevo
 
     def add_question(self, question):
         """Add a question to the form.

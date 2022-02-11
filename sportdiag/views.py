@@ -17,7 +17,8 @@ from django.http import HttpResponseNotFound
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib import messages
-from sportdiag.models import SurveyResponseRequest
+from sportdiag.models import SurveyResponseRequest, Answer, Question
+from datetime import datetime, timezone
 import logging
 
 from .models import Survey, Response
@@ -64,7 +65,7 @@ def request_survey_response(request):
         message = render_to_string(request_survey_response_email_html_template,
                                    {
                                        'psychologist_fullname': psychologist.__str__(),
-                                       'survey_id': survey_id,
+                                       # todo delete nejspis 'survey_id': survey_id,
                                        'domain': get_current_site(request).domain,
                                    })
         email = EmailMessage(mail_subject, message, to=[client_email])
@@ -94,8 +95,8 @@ class PsychologistHomeView(TemplateView):
     template_name = 'sportdiag/home/psychologist_home.html'
 
     def get_context_data(self, **kwargs):
-        user = self.request.user
         context = super().get_context_data(**kwargs)
+        user = self.request.user
         surveys = Survey.objects.all()
         clients = ClientProfile.objects.filter(psychologist_id=user.id)
         client_user_ids = list(clients.values_list("user_id", flat=True))
@@ -120,13 +121,72 @@ class ResearcherHomeView(TemplateView):
     # export
     template_name = 'sportdiag/home/researcher_home.html'
 
+    @staticmethod
+    def compute_score(answers):
+        total_score = 0
+        for i, answer in enumerate(answers):
+            try:
+                answer_score = int(answer)
+            except ValueError:
+                if answer is not "":
+                    answers[i] = answer.replace("-", " ")
+                else:
+                    answers[i] = "-"
+                continue
+            else:
+                total_score += answer_score
+        return total_score
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        responses = Response.objects.all().order_by("-created")  # todo data by selected survey
+        clients = ClientProfile.objects \
+            .filter(user_id__in=responses.values_list("user_id", flat=True)) \
+            .order_by("user_id")
+        # todo data by selected survey
+        questions_queryset = Question.objects.filter(survey_id=responses.first().survey_id).order_by("order")
+        questions = []
+        for question in questions_queryset:
+            questions.append(question.get_short_name())
+        context['questions'] = questions
+        data = []
+        counter = 1
+        for response in responses:
+            for client in clients:
+                if client.user_id == response.user_id:
+                    answers = list(Answer.objects
+                                   .filter(response_id=response.id)
+                                   .order_by("created")
+                                   .values_list("body", flat=True))
+                    score = self.compute_score(answers)
+                    data.append({
+                        "row_number": counter,
+                        "survey_name": Survey.objects.get(id=response.survey_id).name[:8],  # todo shrot name for survey
+                        "interview_uuid": response.id,  # todo uuid?
+                        "created": response.created,
+                        "client_uuid": client.user_id,  # todo uuid?
+                        "sex": client.sex,
+                        "age": client.age,
+                        "answers": answers,
+                        "score": score,
+                    })
+                    counter += 1
+        context["data"] = data
+        return context
+
 
 class ClientHomeView(TemplateView):
     template_name = 'sportdiag/home/client_home.html'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['surveys'] = Survey.objects.all()
+        user = self.request.user
+        survey_response_requests_ids = SurveyResponseRequest.objects \
+            .filter(client_id=user.id, is_pending=True) \
+            .values_list("survey_id", flat=True)
+        # todo should be only 1 active request for client per survey
+        surveys = Survey.objects.filter(id__in=survey_response_requests_ids)
+        context['surveys'] = surveys
         return context
 
 
@@ -147,19 +207,42 @@ class SurveyDetail(View):
         # todo check jestli je zaznam v tabulce survey response requests pro client id & survey id
         # pokud ano, klient ma na home tlacitko "vyplnit"
         # pokud ne, klient je presmerovan na home a prida se message pozadavek je neplatny/byl zrusen?
-        survey_id = kwargs.pop('id')
-        survey = Survey.objects.get(id=survey_id)
-        form = ResponseForm(survey=survey, user=request.user)
-        context = {'response_form': form}
+        user = request.user
+        survey_id = kwargs.get('survey_id')
+        context = {}
+        if user and survey_id:
+            try:
+                response_request = SurveyResponseRequest.objects.get(client_id=user.id, survey_id=survey_id,
+                                                                     is_pending=True)
+            except SurveyResponseRequest.DoesNotExist:
+                # todo handle - responze uz byla vytvorena nebo byl pozadavek zrusen psychologem
+                # todo pokud nastane, vratit na home a message?
+                print("SurveyResponseRequest.DoesNotExist")
+                pass
+            except SurveyResponseRequest.MultipleObjectsReturned:
+                # todo handle, nemelo by nikdy nastat!
+                pass
+            survey = Survey.objects.get(id=survey_id)
+            form = ResponseForm(survey=survey, user=request.user)
+            context = {'response_form': form, 'survey_id': survey_id}
+        else:
+            # todo handle, nejaky error
+            pass
         return render(request, self.template_name, context)
 
     def post(self, request, *args, **kwargs):
-        survey_id = kwargs.get("id")
+        survey_id = kwargs.get("survey_id")
         survey = Survey.objects.get(id=survey_id)
         form = ResponseForm(request.POST, survey=survey, user=request.user)
         context = {"response_form": form}  # , "categories": categories
         if form.is_valid():
             response = form.save()
+            # todo melo by vzdy vratit 1 request, handle try except
+            survey_response_request = SurveyResponseRequest.objects.get(client_id=request.user.id, survey_id=survey.id,
+                                                                        is_pending=True)
+            survey_response_request.responded_on_date = datetime.now(timezone.utc)
+            survey_response_request.is_pending = False
+            survey_response_request.save()
             if response is None:
                 # todo message? stane se mi to vubec nekdy?
                 return redirect(reverse("sportdiag:home"))

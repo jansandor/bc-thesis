@@ -5,17 +5,67 @@
 {% block content %}
     <div class="row">
         <div class="col">
-            <h1>Home</h1>
+            <h1>Výsledky testování</h1>
         </div>
         <hr>
     </div>
-    <div class="row">
+    <div class="row bg-white pt-2">
         <div class="col">
-            {% if request.user.is_researcher and request.user.is_staff %}
-                <p>staff researcher</p>
-            {% else %}
-                <p>researcher</p>
-            {% endif %}
+            <div class="table-responsive">
+                <table class="table table-hover table-bordered table-sm align-middle">
+                    <thead>
+                    <tr>
+                        <th scope="col" class="col text-nowrap">#</th>
+                        <th scope="col" class="col text-nowrap">Dotazník</th>
+                        <th scope="col" class="col text-nowrap">ID Responze</th>
+                        <th scope="col" class="col text-nowrap">Datum responze</th>
+                        <th scope="col" class="col text-nowrap">ID Klienta</th>
+                        <th scope="col" class="col text-nowrap">Pohlaví</th>
+                        <th scope="col" class="col text-nowrap">Věk</th>
+                        {% comment %}
+                        todo <th scope="col" class="col">Statní příslušnost</th>
+                        {% endcomment %}
+                        {% for question in questions %}
+                            <th scope="col" class="col text-nowrap text-center">{{ question }}</th>
+                        {% endfor %}
+                        <th scope="col" class="col text-nowrap">Skóre</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for item in data %}
+                        <tr>
+                            <td class="text-nowrap text-center">{{ item.row_number }}</td>
+                            <td class="text-nowrap">{{ item.survey_name }}</td>
+                            <td class="text-nowrap">{{ item.interview_uuid }}</td>
+                            <td class="text-nowrap">{{ item.created }}</td>
+                            <td class="text-nowrap">{{ item.client_uuid }}</td>
+                            <td class="text-nowrap text-center">{{ item.sex }}</td>
+                            <td class="text-nowrap text-center">{{ item.age }}</td>
+                            {% for answer in item.answers %}
+                                <td class="text-nowrap text-center">
+                                    {{ answer }}
+                                </td>
+                            {% endfor %}
+                            <td class="text-nowrap text-center">{{ item.score }}</td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td></td>
+                            <td>Žádná data.</td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 {% endblock %}

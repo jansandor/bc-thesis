@@ -33,7 +33,7 @@ urlpatterns = [
          name='deactivate_researcher_account'),
     path('sportdiag/prehled-vyzkumniku/reaktivovat_vyzkumnika/<int:pk>/', reactivate_researcher_account,
          name='reactivate_researcher_account'),
-    path('sportdiag/dotaznik/<int:id>/', SurveyDetail.as_view(), name='survey_detail'),
+    path('sportdiag/dotaznik/<int:survey_id>/', SurveyDetail.as_view(), name='survey_detail'),
     path('sportdiag/dotaznik/potvrzeni/<uuid4>/', SurveyConfirmView.as_view(), name="survey_confirmation"),
     path('sportdiag/zadost-o-responzi/', request_survey_response, name='request_survey_response'),
 ]

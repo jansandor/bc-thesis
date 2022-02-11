@@ -20,25 +20,27 @@
                 <li class="nav-item">
                     <a class="nav-link" href="{% url 'sportdiag:contact' %}">Kontakt</a>
                 </li>
+                {% comment %}
+                    todo trosku preskladat podminky -> duplikace <div class="vr text-white d-none d-lg-block"></div>
+                {%  endcomment %}
                 {% if request.user.is_authenticated and request.user.is_researcher %}
                     <div class="vr text-white d-none d-lg-block"></div>
                     <li class="nav-item">
-                        <a class="nav-link" href="">
-                            <i class="bi bi-check2-circle"></i> Test</a>
+                        <a class="nav-link" href="{% url 'sportdiag:home_researcher' %}">
+                            <i class="bi bi-table"></i> Výsledky testování</a>
                     </li>
                     {% if request.user.is_staff %}
                         <li class="nav-item">
-                            <!-- todo text-primary + url pagination param -->
-                            <a class="nav-link" href="{% url 'sportdiag:approve_psychologists' %}">
+                            <a class="nav-link" href="{% url 'sportdiag:approve_psychologists' page=1 %}">
                                 <i class="bi bi-check2-circle"></i> Schvalování psychologů</a>
                         </li>
                         <li class="nav-item">
-                            <!-- todo text-primary + url pagination param -->
-                            <a class="nav-link" href="{% url 'sportdiag:researchers_overview' %}">
+                            <a class="nav-link" href="{% url 'sportdiag:researchers_overview' page=1 %}">
                                 <i class="bi bi-people-fill"></i> Přehled výzkumníků</a>
                         </li>
                     {% endif %}
                 {% endif %}
+
                 {% if user.is_authenticated and user.is_psychologist %}
                     <div class="vr text-white d-none d-lg-block"></div>
                     <li class="nav-item">
@@ -48,6 +50,14 @@
                     <li class="nav-item">
                         <a class="nav-link disabled" href="">
                             <i class="bi bi-book"></i> Dotazníky a manuály</a>
+                    </li>
+                {% endif %}
+
+                {% if user.is_authenticated and user.is_client %}
+                    <div class="vr text-white d-none d-lg-block"></div>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'sportdiag:home_client' %}">
+                            <i class="bi bi-list-ul"></i> Žádosti o vyplnění dotazníku</a>
                     </li>
                 {% endif %}
             </ul>
@@ -61,7 +71,7 @@
                         </li>
                     {% endif %}
                     <li class="nav-item my-2 mx-lg-2">
-                        <a class="btn btn-outline-secondary" href="">
+                        <a class="btn btn-outline-secondary disabled" href="">
                             <i class="bi bi-gear-fill"></i> Nastavení</a>
                     </li>
                     <li class="nav-item my-2 mx-lg-2">

@@ -6,7 +6,7 @@ from accounts.utils.user import user_types, sex_choices
 import random
 from django.db import transaction
 from django.contrib.auth.hashers import make_password
-import pytz
+from datetime import timezone
 
 Faker.seed(0)
 fake = Faker()  # (['cs'])
@@ -34,7 +34,7 @@ def add_approved_psychologists(apps, schema_editor):
             email_verified=True,
             confirmed_by_staff=True,
             password=make_password(password),
-            date_joined=fake.date_time(tzinfo=pytz.UTC),
+            date_joined=fake.date_time(tzinfo=timezone.utc),
         )
         file.write(f'ID: {user.id}\t{email}\t{password}\n')
         user.save()
@@ -63,7 +63,7 @@ def add_not_approved_psychologists(apps, schema_editor):
             email_verified=True,
             confirmed_by_staff=False,
             is_active=False,
-            date_joined=fake.date_time(tzinfo=pytz.UTC),
+            date_joined=fake.date_time(tzinfo=timezone.utc),
             password=make_password(fake.password(length=12)),
         )
         user.save()
@@ -94,7 +94,7 @@ def add_clients(apps, schema_editor):
             last_name=last_name,
             email_verified=True,
             password=make_password(fake.password(length=12)),
-            date_joined=fake.date_time(tzinfo=pytz.UTC),
+            date_joined=fake.date_time(tzinfo=timezone.utc),
         )
         user.save()
         random_index = random.randrange(len(psychologists))
@@ -122,7 +122,7 @@ def add_researchers(apps, schema_editor):
             last_name=last_name,
             email_verified=True,
             password=make_password(password),
-            date_joined=fake.date_time(tzinfo=pytz.UTC),
+            date_joined=fake.date_time(tzinfo=timezone.utc),
         )
         file.write(f'ID: {user.id}\t{email}\t{password}\n')
     file.close()
@@ -140,7 +140,7 @@ def add_staff_researcher(apps, schema_editor):
         is_active=True,
         is_staff=True,
         is_researcher=True,
-        date_joined=fake.date_time(tzinfo=pytz.UTC),
+        date_joined=fake.date_time(tzinfo=timezone.utc),
         password=make_password('little'),
     )
 

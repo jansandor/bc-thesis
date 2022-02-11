@@ -5,9 +5,34 @@
 {% block title %}Nová responze{% endblock %}
 
 {% block content %}
-    <div class="row">
+    <!-- MODAL FORM -->
+    <div class="modal fade" tabindex="-1" id="cancelSurveyModal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Upozornění</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Vaše odpovědi budou zahozeny a žádná data nebudou uložena.</p>
+                    <p>Opravdu chcete vyplňování dotazníku ukončit?</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Pokračovat v responzi</button>
+                    <a href="{% url 'sportdiag:home_client' %}" class="btn btn-secondary">Ukončit</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- END MODAL FORM -->
+    <div class="row justify-content-between align-items-center">
         <div class="col">
             <h1>Nová responze</h1>
+        </div>
+        <div class="col-3 d-flex justify-content-end">
+            <button data-bs-toggle="modal" data-bs-target="#cancelSurveyModal"
+                    type="button" class="btn btn-secondary">Ukončit a zapomenout odpovědi
+            </button>
         </div>
         <hr>
     </div>
