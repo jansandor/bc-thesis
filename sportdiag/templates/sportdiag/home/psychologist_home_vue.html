@@ -1,0 +1,126 @@
+{% extends 'sportdiag/common/base.html' %}
+
+{% load static %}
+
+{% block title %}Sportdiag | Home{% endblock %}
+
+{% block content %}
+    <script src="https://unpkg.com/vue@3"></script>
+    <script type='text/javascript'>
+        const responseRequestsJson = {{ client_response_requests_json|safe }};
+        const clientsJson = {{ clients_json|safe }};
+        const surveysJson = {{ surveys_json|safe }};
+    </script>
+    <div class="row">
+        <div class="col">
+            <h1>Přehled klientů</h1>
+        </div>
+        <hr>
+    </div>
+    <div class="row">
+        <div class="col fw-light">
+            <p>Pokud klienta požádáte o responzi zvoleného dotazníku, bude mu zaslán informativní
+                e-mail s pozvánkou k vyplnění dotazníku.</p>
+            <p>Jakmile dotazník vyplní a odešle, budete informován(a) e-mailem o nové responzi a budete klienta moci
+                znovu požádat o další responzi.</p>
+        </div>
+    </div>
+    <div id="app">
+        <ul class="list-group">
+            <li v-for="client in clients" class="list-group-item">
+                <div class="row align-items-center">
+                    <div class="col">
+                        <a href="">[[getClientFullname(client)]]</a>
+                    </div>
+                    <div class="col-6">
+                        <select class="form-select form-select-sm"
+                                @change="surveyChanged($event, client.pk)">
+                            <option v-for="survey in surveys" :value="survey.pk">
+                                <!-- :disabled="resolveOption(client.pk, survey.pk)" -->
+                                [[survey.fields.name]]
+                            </option>
+                        </select>
+                    </div>
+                    <div class="col">
+                        <!-- todo button zrusit zadost o responzi -->
+                        <button v-if="resolveButton(client.pk)" type="button"
+                                class="btn btn-primary btn-sm disabled">
+                            Responze vyžádána
+                        </button>
+                        <button v-else type="button" class="btn btn-primary btn-sm align-middle"
+                                :ref="`requestResponseBtn-${client.pk}`"
+                                @click="requestSurveyResponse(client.pk, '{% url "sportdiag:request_survey_response" %}')">
+                            <span :ref="`spinner-${client.pk}`" class="spinner-border spinner-border-sm me-1 d-none"
+                                  role="status"
+                                  aria-hidden="true"></span>
+                            <span>Požádat o responzi</span>
+                        </button>
+                    </div>
+                </div>
+            </li>
+        </ul>
+    </div>
+    <script>
+        const app = Vue.createApp({
+            delimiters: ['[[', ']]'],
+            data() {
+                return {
+                    responseRequests: responseRequestsJson,
+                    clients: clientsJson,
+                    surveys: surveysJson,
+                    selectionState: {},
+                }
+            },
+            beforeMount() {
+                // init selection state - each client has selected first survey initially
+                for (let i = 0; i < this.clients.length; i++) {
+                    this.selectionState[this.clients[i].pk] = this.surveys[0]?.pk ?? "None";
+                }
+            },
+            methods: {
+                getClientFullname(client) {
+                    return client.fields.first_name + ' ' + client.fields.last_name;
+                },
+                surveyChanged(event, clientId) {
+                    this.selectionState[clientId] = parseInt(event.target.value);
+                },
+                resolveButton(clientId) {
+                    return this.responseRequests[clientId].includes(this.selectionState[clientId]);
+                },
+                resolveOption(clientId, surveyId) {
+                    return this.responseRequests[clientId].includes(surveyId);
+                },
+                requestSurveyResponse(clientId, requestUrl) {
+                    selectedSurveyId = this.selectionState[clientId];
+                    let button = this.$refs[`requestResponseBtn-${clientId}`];
+                    let spinner = this.$refs[`spinner-${clientId}`];
+                    button[0].classList.add("disabled");
+                    spinner[0].classList.remove("d-none");
+                    $.ajax({
+                        type: "POST",
+                        url: requestUrl,
+                        beforeSend: (xhr) => {
+                            xhr.setRequestHeader("X-CSRFToken", $.cookie('csrftoken'));
+                        },
+                        data: {
+                            "client_id": clientId,
+                            "survey_id": selectedSurveyId,
+                        },
+                        success: (response) => {
+                            this.responseRequests[clientId].push(selectedSurveyId);
+                            // todo logging console.log("REQUEST_SURVEY_RESPONSE_SUCCESS");
+                        },
+                        error: (response) => {
+                            // todo logging console.log("REQUEST_SURVEY_RESPONSE_ERROR", response);
+                        },
+                        complete: () => {
+                            button[0].classList.remove("disabled");
+                            spinner[0].classList.add("d-none");
+                        },
+                    });
+                },
+            }
+        });
+        app.mount('#app');
+    </script>
+{% endblock %}

@@ -19,30 +19,25 @@
                 znovu požádat o další responzi.</p>
         </div>
     </div>
-    <div class="table-responsive bg-white mb-2 mb-md-0 px-2">
-        <table class="table align-middle">
-            <thead>
-            <tr>
-                <th scope="col" class="col">Klient</th>
-                <th scope="col" class="col">Dotazník</th>
-                <th scope="col" class="col-2">Akce</th>
-            </tr>
-            </thead>
-            <tbody>
-            {% for client in clients %}
-                <tr>
-                    <td><a href="">{{ client }}</a></td>
-                    <td>
+    <ul class="list-group">
+        {% for client in clients %}
+            <li class="list-group-item">
+                <div class="row">
+                    <div class="col">
+                        <a href="">{{ client }}</a>
+                    </div>
+                    <div class="col-6">
                         <select id="surveySelect-{{ client.user.id }}" class="form-select form-select-sm"
-                                aria-label="surveySelect-{{ client.user.id }}">
+                                aria-label="surveySelect-{{ client.user.id }}"
+                                onchange="surveyChanged(this.value, {{ client.user.id }}, {{ client_response_requests }}, '{% url "sportdiag:request_survey_response" %}', {{ client_ids_no_pending_request }})">
                             {% for survey in surveys %}
                                 <option value="{{ survey.id }}">{{ survey.name }}</option>
                             {% empty %}
                                 <option value="None">Žádné dotazníky</option>
                             {% endfor %}
                         </select>
-                    </td>
-                    <td>
+                    </div>
+                    <div class="col" id="actionBtnWrapper-{{ client.user.id }}">
                         {% if client.user.id in client_ids_where_pending_survey_response_request %}
                             <!-- todo button zrusit zadost o responzi -->
                             <button type="button" class="btn btn-primary btn-sm" disabled>
@@ -56,19 +51,14 @@
                                 <span>Požádat o responzi</span>
                             </button>
                         {% endif %}
-                    </td>
-                </tr>
-            {% empty %}
-                <tr>
-                    <td>Nemáte žádné klienty.</td>
-                    <td></td>
-                    <td></td>
-                </tr>
-            {% endfor %}
-            </tbody>
-        </table>
-    </div>
+                    </div>
+                </div>
+            </li>
+        {% empty %}
+            <li class="list-group-item">Nemáte žádné klienty.</li>
+        {% endfor %}
+    </ul>
 {% endblock %}
 {% block js %}
-    <script type="text/javascript" src="{% static 'sportdiag/js/request_survey_response.js' %}"></script>
+    <script type="text/javascript" src="{% static 'sportdiag/js/psychologist_home.js' %}"></script>
 {% endblock %}

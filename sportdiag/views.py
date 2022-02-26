@@ -20,6 +20,8 @@ from django.contrib import messages
 from sportdiag.models import SurveyResponseRequest, Answer, Question
 from datetime import datetime, timezone
 import logging
+import json
+from django.core import serializers
 
 from .models import Survey, Response
 
@@ -74,11 +76,12 @@ def request_survey_response(request):
             email.send()
         except Exception:
             # todo logging, DRY
-            messages.error(request, "Něco se pokazilo. E-mail nebyl odeslán.")
+            # messages.error(request, "Něco se pokazilo. E-mail nebyl odeslán.")
             return HttpResponse(status=HTTPStatus.INTERNAL_SERVER_ERROR)
         else:
             SurveyResponseRequest.objects.create(client_id=client_id, survey_id=survey_id)
-            messages.success(request, "Responze vyžádána.")
+            # todo return refreshed client_response_requests ? currently updated in JS
+            # messages.success(request, "Responze vyžádána.")
             return HttpResponse()
         # ulozit do DB nove tabulky, ze je response requested na CID, SID
         # todo zaznam smaze az odeslani responze nebo zruseni pozadavku psychologem
@@ -86,31 +89,31 @@ def request_survey_response(request):
         # -> smaze zaznam s tabulky survey response requests (klient dotaznik nebude moci vyplnit
         # pokud zaznam v tabulce pozadavku neexistuje
 
-    messages.error(request, "Něco se pokazilo. E-mail nebyl odeslán.")
+    # messages.error(request, "Něco se pokazilo. E-mail nebyl odeslán.")
     return HttpResponse(status=HTTPStatus.INTERNAL_SERVER_ERROR)
 
 
 class PsychologistHomeView(TemplateView):
     # todo paginace?
-    template_name = 'sportdiag/home/psychologist_home.html'
+    template_name = 'sportdiag/home/psychologist_home_vue.html'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         user = self.request.user
-        surveys = Survey.objects.all()
+        surveys = Survey.objects.all().order_by("id")
         clients = ClientProfile.objects.filter(psychologist_id=user.id)
         client_user_ids = list(clients.values_list("user_id", flat=True))
-        # todo solve situation, when psychologist changes survey in select!!
-        # client has different pending survey response request value for different surveys...
-        # but for now we have only one survey, so...
-        client_ids_where_pending_survey_response_request = list(SurveyResponseRequest.objects
-                                                                .filter(is_pending=True, client_id__in=client_user_ids)
-                                                                .values_list("client_id", flat=True))
-        context['surveys'] = surveys
-        context['clients'] = clients
-        context['client_ids_no_pending_request'] = [item for item in client_user_ids if
-                                                    item not in client_ids_where_pending_survey_response_request]
-        context['client_ids_where_pending_survey_response_request'] = client_ids_where_pending_survey_response_request
+        client_response_requests = {}
+        for client in clients:
+            client_response_requests[client.user.id] = list(
+                SurveyResponseRequest.objects
+                    .filter(client_id=client.user.id, is_pending=True)
+                    .values_list("survey_id", flat=True))
+        context['surveys_json'] = serializers.serialize("json", surveys, fields=("name"))
+        context['clients_json'] = serializers.serialize("json", User.objects.filter(id__in=client_user_ids),
+                                                        fields=("first_name", "last_name"))
+
+        context['client_response_requests_json'] = json.dumps(client_response_requests)
         return context
 
 
