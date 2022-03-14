@@ -4,6 +4,7 @@ from django.urls import reverse
 
 
 class Survey(models.Model):
+    # todo short name, ie. OMSAT-3
     name = models.CharField(_('název'), max_length=400)
     description = models.TextField(_('popis'))
 

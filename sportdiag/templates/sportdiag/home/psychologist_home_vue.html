@@ -30,7 +30,7 @@
             <li v-for="client in clients" class="list-group-item">
                 <div class="row align-items-center">
                     <div class="col">
-                        <a href="">[[getClientFullname(client)]]</a>
+                        <a :href="clientDetailUrl + client.pk">[[getClientFullname(client)]]</a>
                     </div>
                     <div class="col-6">
                         <select class="form-select form-select-sm"
@@ -69,6 +69,7 @@
                     clients: clientsJson,
                     surveys: surveysJson,
                     selectionState: {},
+                    clientDetailUrl: "/ucty/detail_klienta/", // todo not very good - hardcoded url
                 }
             },
             beforeMount() {

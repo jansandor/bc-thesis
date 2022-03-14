@@ -1,5 +1,5 @@
 <nav class="navbar navbar-expand-lg bg-dark navbar-dark">
-    <div class="container">
+    <div class="container-fluid">
         <a class="navbar-brand" href="{% url 'sportdiag:home' %}">Sportdiag</a>
 
         <button class="navbar-toggler"
@@ -29,6 +29,10 @@
                         <a class="nav-link" href="{% url 'sportdiag:home_researcher' %}">
                             <i class="bi bi-table"></i> Výsledky testování</a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'sportdiag:surveys_manuals' %}">
+                            <i class="bi bi-book"></i> Dotazníky a manuály</a>
+                    </li>
                     {% if request.user.is_staff %}
                         <li class="nav-item">
                             <a class="nav-link" href="{% url 'sportdiag:approve_psychologists' page=1 %}">
@@ -48,7 +52,7 @@
                             <i class="bi bi-people-fill"></i> Přehled klientů</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link disabled" href="">
+                        <a class="nav-link" href="{% url 'sportdiag:surveys_manuals' %}">
                             <i class="bi bi-book"></i> Dotazníky a manuály</a>
                     </li>
                 {% endif %}
@@ -71,7 +75,7 @@
                         </li>
                     {% endif %}
                     <li class="nav-item my-2 mx-lg-2">
-                        <a class="btn btn-outline-secondary disabled" href="">
+                        <a class="btn btn-outline-secondary" href="">
                             <i class="bi bi-gear-fill"></i> Nastavení</a>
                     </li>
                     <li class="nav-item my-2 mx-lg-2">

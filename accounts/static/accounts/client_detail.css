@@ -1,0 +1,7 @@
+.question-answer {
+    box-sizing: border-box;
+    border: 1px solid black;
+    width: fit-content;
+    border-radius: 5px;
+    padding: 4px 8px;
+}

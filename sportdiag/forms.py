@@ -260,3 +260,33 @@ class ResponseForm(models.ModelForm):
         # todo k cemu je ten signal completed??
         # survey_completed.send(sender=Response, instance=response, data=data)
         return response
+
+
+class ResponsesFilterForm(forms.Form):
+    survey = forms.ModelChoiceField(queryset=Survey.objects.order_by('id'), label=_("Dotazník"), empty_label=None,
+                                    required=False)
+
+    # todo dalsi fieldy - filtry pro tabulku vysledku + vizual filter formu
+    # todo helper property instead of using init?
+    class Meta:
+        fields = ['survey']
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.helper = FormHelper(self)
+        # self.helper.form_class = 'row'
+        self.helper.label_class = 'fw-light'
+        self.helper.field_class = 'col-2'
+        self.helper.layout = Layout('survey', Submit('submit', 'Filtrovat'))
+
+
+class UploadFilesForm(forms.Form):
+    file_field = forms.FileField(widget=forms.ClearableFileInput(attrs={'multiple': True}))
+
+    # todo crispy
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.helper = FormHelper(self)
+        self.helper.form_show_labels = False
+        self.helper.form_tag = False
+        self.helper.disable_csrf = True

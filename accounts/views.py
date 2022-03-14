@@ -1,12 +1,12 @@
 from django.shortcuts import render
 from django.views.generic.base import TemplateView
-from django.views.generic.edit import FormView, CreateView
 from django.views.generic.edit import CreateView
-from django.contrib.auth.views import SetPasswordForm, PasswordChangeView
+from django.views.generic import DetailView
 from django.contrib.auth import get_user_model
 from django.urls import reverse_lazy
 from .forms import ClientUserCreationForm, PsychologistUserCreationForm, ResearcherUserCreationForm
 from .models import ClientProfile, PsychologistProfile, User
+from sportdiag.models import Response, Survey, Question, Answer, SurveyResponseRequest
 from django.shortcuts import redirect
 from django.contrib.sites.shortcuts import get_current_site
 from django.utils.encoding import force_bytes, force_text
@@ -14,7 +14,6 @@ from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.template.loader import render_to_string
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import EmailMessage
-from django.contrib.auth import authenticate, login
 from .tokens import account_activation_token_generator
 from django.contrib.auth.views import PasswordResetView as DjangoPasswordResetView, \
     PasswordResetDoneView as DjangoPasswordResetDoneView
@@ -204,7 +203,99 @@ class ResearcherCreateView(CreateView):
         else:
             return render(request, self.template_name, {'form': form})
 
+
 # todo prepsat login view.. pridat checkbox remember me
-# pro psychologa hazet warning/info/alert message
-# pokud jeho ucet jeste nebyl schvalen adminem
+# pro psychologa hazet warning/info/alert message, pokud jeho ucet jeste nebyl schvalen adminem
 # pro kazdeho usera hazet message, pokud nema aktivovany ucet
+likert_scale_values_text = [
+    "",
+    "rozhodně nesouhlasím",
+    "nesouhlasím",
+    "spíše nesouhlasím",
+    "ani nesouhlasím/ani souhlasím",
+    "spíše souhlasím ",
+    "souhlasím",
+    "rozhodně souhlasím",
+]
+
+
+class ClientDetailView(TemplateView):
+    model = ClientProfile
+    template_name = "accounts/client_detail.html"
+
+    @staticmethod
+    def get_answer_body(answer):
+        try:
+            int(answer)
+        except ValueError:
+            if answer != "":
+                answer = answer.replace("-", " ")
+            else:
+                answer = "-"
+        return answer
+
+    @staticmethod
+    def get_answer_int(answer):
+        try:
+            answer = int(answer)
+        except ValueError:
+            return 0
+        return answer
+
+    @staticmethod
+    def compute_score(answers):  # todo extract method and reuse in researchers home
+        total_score = 0
+        for i, answer in enumerate(answers):
+            try:
+                answer_score = int(answer)
+            except ValueError:
+                if answer != "":
+                    answers[i] = answer.replace("-", " ")
+                else:
+                    answers[i] = "-"
+                continue
+            else:
+                total_score += answer_score
+        return total_score
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user_id = kwargs.get('pk')
+        survey = kwargs.get('survey')
+        if not survey:
+            survey = Survey.objects.order_by('id').first()  # initial_survey
+        # todo error handling
+        if user_id and survey != None:
+            client = ClientProfile.objects.get(user_id=user_id)
+            context['client'] = client  # survey_id=survey.id,
+            responses = Response.objects.filter(user_id=user_id).order_by(
+                "-created")
+            table_data = []
+            for response in responses:
+                answers = Answer.objects.filter(response_id=response.id).order_by("created")
+                answers_bodies = list(answers.values_list("body", flat=True))
+                score = self.compute_score(answers_bodies)
+                questions_queryset = Question.objects.filter(survey_id=response.survey_id).order_by("order")
+                questions_answers = []
+                for answer in answers:
+                    question = questions_queryset.get(id=answer.question_id)
+                    questions_answers.append({
+                        "abbrev": question.get_short_name(),
+                        "answer_score": self.get_answer_body(answer.body),
+                        "tooltip": question.text,
+                        "answer_text": likert_scale_values_text[
+                            self.get_answer_int(answer.body)] if question.type == Question.LIKERT_SCALE else ""
+                    })
+                print("questions_answers", questions_answers)
+                table_data.append({
+                    "survey_name": Survey.objects.get(id=response.survey_id).name[:8],
+                    # todo short name for survey
+                    "interview_uuid": response.id,  # todo uuid?
+                    # "response_requested_date": SurveyResponseRequest.objects.get(id=response.)
+                    "created": response.created,
+                    "answers": answers_bodies[:4],
+                    "score": score,
+                    "questions_answers": questions_answers[4:],
+                })
+            context["table_data"] = table_data
+        return context
