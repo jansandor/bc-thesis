@@ -5,178 +5,176 @@
 {% block title %}Sportdiag | Přehled výzkumníků{% endblock %}
 
 {% block content %}
-    <div class="container-fluid bg-light">
-        <div class="row">
-            <div class="col">
-                <h1>Přehled výzkumníků</h1>
-            </div>
-            <hr>
+    <div class="row">
+        <div class="col">
+            <h1>Přehled výzkumníků</h1>
         </div>
-        <div class="row">
-            <p>Deaktivace účtu</p>
-            <div class="col fw-light">
-                <p>Provedení akce zabrání danému výzkumníkovi používat aplikaci. Vyzkumníkovi nebude umožněno přihlásit
-                    se
-                    do aplikace, ale jeho účet nebude vymazán.</p>
-                <p>Akci proveďte, pokud některému výzkumníkovi nadále nechcete umožnit používání aplikace. Výzkumník
-                    bude
-                    informován e-mailem.</p>
-            </div>
-            <p>Reaktivace účtu</p>
-            <div class="col fw-light">
-                <p>Naopak, pokud chcete některému již registrovanému výzkumníkovi s deaktivovaným účtem obnovit přístup
-                    do
-                    aplikace, využijte k tomu tuto akci. Výzkumník bude informován e-mailem.</p>
-            </div>
+        <hr>
+    </div>
+    <div class="row">
+        <p>Deaktivace účtu</p>
+        <div class="col fw-light">
+            <p>Provedení akce zabrání danému výzkumníkovi používat aplikaci. Vyzkumníkovi nebude umožněno přihlásit
+                se
+                do aplikace, ale jeho účet nebude vymazán.</p>
+            <p>Akci proveďte, pokud některému výzkumníkovi nadále nechcete umožnit používání aplikace. Výzkumník
+                bude
+                informován e-mailem.</p>
         </div>
-        <div class="row bg-white py-1">
-            <div class="col-12 mt-1">
-                <div class="d-flex justify-content-between flex-wrap">
-                    <p class="fs-4">Výzkumníci</p>
-                    <div> <!-- div to prevent link/button vertical stretch -->
-                        <a href="{% url 'create_researcher_account' %}" class="btn btn-primary">Vytvořit účet
-                            výzkumníka</a>
-                    </div>
+        <p>Reaktivace účtu</p>
+        <div class="col fw-light">
+            <p>Naopak, pokud chcete některému již registrovanému výzkumníkovi s deaktivovaným účtem obnovit přístup
+                do
+                aplikace, využijte k tomu tuto akci. Výzkumník bude informován e-mailem.</p>
+        </div>
+    </div>
+    <div class="row bg-white py-1">
+        <div class="col-12 mt-1">
+            <div class="d-flex justify-content-between flex-wrap">
+                <p class="fs-4">Výzkumníci</p>
+                <div> <!-- div to prevent link/button vertical stretch -->
+                    <a href="{% url 'create_researcher_account' %}" class="btn btn-primary">Vytvořit účet
+                        výzkumníka</a>
                 </div>
             </div>
-            <div class="col">
-                <div class="table-responsive mb-2 mb-md-0">
-                    <table class="table table-hover align-middle">
-                        <thead>
+        </div>
+        <div class="col">
+            <div class="table-responsive mb-2 mb-md-0">
+                <table class="table table-hover align-middle">
+                    <thead>
+                    <tr>
+                        <th scope="col" class="col">Výzkumník</th>
+                        <th scope="col" class="col">Datum registrace</th>
+                        <th scope="col" class="col">E-mail</th>
+                        <th scope="col" class="col">Ověřený e-mail</th>
+                        <th scope="col" class="col">Správce</th>
+                        <th scope="col" class="col">Aktivní účet</th>
+                        <th scope="col" class="col">Akce</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for researcher in object_list %}
                         <tr>
-                            <th scope="col" class="col">Výzkumník</th>
-                            <th scope="col" class="col">Datum registrace</th>
-                            <th scope="col" class="col">E-mail</th>
-                            <th scope="col" class="col">Ověřený e-mail</th>
-                            <th scope="col" class="col">Správce</th>
-                            <th scope="col" class="col">Aktivní účet</th>
-                            <th scope="col" class="col">Akce</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        {% for researcher in object_list %}
-                            <tr>
-                                <td>{{ researcher }}</td>
-                                <td>{{ researcher.date_joined }}</td>
-                                <td>{{ researcher.email }}</td>
-                                <td>{{ researcher.email_verified|bool_cz }}</td>
-                                <td>{{ researcher.is_staff|bool_cz }}</td>
-                                <td>{{ researcher.is_active|bool_cz }}</td>
-                                <td>
-                                    <!-- MODAL FORM -->
-                                    <div class="modal fade" tabindex="-1" id="confirmModal-{{ researcher.id }}">
-                                        <div class="modal-dialog">
-                                            <div class="modal-content">
-                                                <div class="modal-header">
-                                                    <h5 class="modal-title">Upozornění</h5>
-                                                    <button type="button" class="btn-close"
-                                                            data-bs-dismiss="modal"></button>
-                                                </div>
-                                                <div class="modal-body">
+                            <td>{{ researcher }}</td>
+                            <td>{{ researcher.date_joined }}</td>
+                            <td>{{ researcher.email }}</td>
+                            <td>{{ researcher.email_verified|bool_cz }}</td>
+                            <td>{{ researcher.is_staff|bool_cz }}</td>
+                            <td>{{ researcher.is_active|bool_cz }}</td>
+                            <td>
+                                <!-- MODAL FORM -->
+                                <div class="modal fade" tabindex="-1" id="confirmModal-{{ researcher.id }}">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title">Upozornění</h5>
+                                                <button type="button" class="btn-close"
+                                                        data-bs-dismiss="modal"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                {% if researcher.is_active %}
+                                                    <p>Deaktivace účtu znemožní výzkumníkovi používat aplikaci.</p>
+                                                {% elif researcher.is_active == False and researcher.email_verified %}
+                                                    <p>Reaktivace účtu opět umožní výzkumníkovi používat
+                                                        aplikaci.</p>
+                                                {% endif %}
+                                                <p>Opravdu chcete pokračovat?</p>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <form class="row row-cols-auto g-1">
+                                                    {% csrf_token %}
                                                     {% if researcher.is_active %}
-                                                        <p>Deaktivace účtu znemožní výzkumníkovi používat aplikaci.</p>
-                                                    {% elif researcher.is_active == False and researcher.email_verified %}
-                                                        <p>Reaktivace účtu opět umožní výzkumníkovi používat
-                                                            aplikaci.</p>
-                                                    {% endif %}
-                                                    <p>Opravdu chcete pokračovat?</p>
-                                                </div>
-                                                <div class="modal-footer">
-                                                    <form class="row row-cols-auto g-1">
-                                                        {% csrf_token %}
-                                                        {% if researcher.is_active %}
-                                                            <div class="col">
-                                                                <input type="submit"
-                                                                       formaction="{% url 'sportdiag:deactivate_researcher_account' researcher.id %}"
-                                                                       formmethod="post"
-                                                                       class="btn btn-danger form-control"
-                                                                       value="Deaktivovat účet">
-                                                            </div>
-                                                        {% elif researcher.is_active == False and researcher.email_verified %}
-                                                            <div class="col">
-                                                                <input
-                                                                        type="submit"
-                                                                        formaction="{% url 'sportdiag:reactivate_researcher_account' researcher.id %}"
-                                                                        formmethod="post"
-                                                                        class="btn btn-success form-control"
-                                                                        value="Reaktivovat účet">
-                                                            </div>
-                                                        {% endif %}
                                                         <div class="col">
-                                                            <input type="button" class="btn btn-secondary"
-                                                                   data-bs-dismiss="modal" value="Zrušit">
+                                                            <input type="submit"
+                                                                   formaction="{% url 'sportdiag:deactivate_researcher_account' researcher.id %}"
+                                                                   formmethod="post"
+                                                                   class="btn btn-danger form-control"
+                                                                   value="Deaktivovat účet">
                                                         </div>
-                                                    </form>
-                                                </div>
+                                                    {% elif researcher.is_active == False and researcher.email_verified %}
+                                                        <div class="col">
+                                                            <input
+                                                                    type="submit"
+                                                                    formaction="{% url 'sportdiag:reactivate_researcher_account' researcher.id %}"
+                                                                    formmethod="post"
+                                                                    class="btn btn-success form-control"
+                                                                    value="Reaktivovat účet">
+                                                        </div>
+                                                    {% endif %}
+                                                    <div class="col">
+                                                        <input type="button" class="btn btn-secondary"
+                                                               data-bs-dismiss="modal" value="Zrušit">
+                                                    </div>
+                                                </form>
                                             </div>
                                         </div>
                                     </div>
-                                    <!-- END MODAL FORM -->
-                                    {% if researcher.is_active %}
-                                        <button type="button" class="btn btn-danger btn-sm"
-                                                data-bs-toggle="modal"
-                                                data-bs-target="#confirmModal-{{ researcher.id }}">
-                                            Deaktivovat účet
-                                        </button>
-                                    {% elif researcher.is_active == False and researcher.email_verified %}
-                                        <button type="button" class="btn btn-success btn-sm"
-                                                data-bs-toggle="modal"
-                                                data-bs-target="#confirmModal-{{ researcher.id }}">
-                                            Reaktivovat účet
-                                        </button>
-                                    {% else %}
-                                        <button type="button" class="btn btn-info btn-sm" disabled>
-                                            Čekání na dokončení registrace
-                                        </button>
-                                    {% endif %}
-                                </td>
-                            </tr>
-                        {% empty %}
-                            <tr>
-                                <td>Žádní výzkumníci.</td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                            </tr>
-                        {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-                <ul class="pagination justify-content-end">
-                    {% if page_obj.has_previous %}
-                        <li class="page-item">
-                            <a class="page-link"
-                               href="{% url 'sportdiag:researchers_overview' page=page_obj.previous_page_number %}">Předchozí</a>
-                        </li>
-                    {% else %}
-                        <li class=" page-item disabled">
-                            <a class="page-link">Předchozí</a>
-                        </li>
-                    {% endif %}
-                    {% for page in page_obj.paginator %}
-                        {% if page.number == page_obj.number %}
-                            <li class="page-item active">
+                                </div>
+                                <!-- END MODAL FORM -->
+                                {% if researcher.is_active %}
+                                    <button type="button" class="btn btn-danger btn-sm"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#confirmModal-{{ researcher.id }}">
+                                        Deaktivovat účet
+                                    </button>
+                                {% elif researcher.is_active == False and researcher.email_verified %}
+                                    <button type="button" class="btn btn-success btn-sm"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#confirmModal-{{ researcher.id }}">
+                                        Reaktivovat účet
+                                    </button>
                                 {% else %}
-                            <li class="page-item">
-                        {% endif %}
-                    <a class="page-link"
-                       href="{% url 'sportdiag:researchers_overview' page=page.number %}">{{ page.number }}</a>
-                    </li>
+                                    <button type="button" class="btn btn-info btn-sm" disabled>
+                                        Čekání na dokončení registrace
+                                    </button>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td>Žádní výzkumníci.</td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
                     {% endfor %}
-                    {% if page_obj.has_next %}
-                        <li class="page-item">
-                            <a class="page-link"
-                               href="{% url 'sportdiag:researchers_overview' page=page_obj.next_page_number %}">Další</a>
-                        </li>
-                    {% else %}
-                        <li class="page-item disabled">
-                            <a class="page-link">Další</a>
-                        </li>
-                    {% endif %}
-                </ul>
+                    </tbody>
+                </table>
             </div>
+            <ul class="pagination justify-content-end">
+                {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link"
+                           href="{% url 'sportdiag:researchers_overview' page=page_obj.previous_page_number %}">Předchozí</a>
+                    </li>
+                {% else %}
+                    <li class=" page-item disabled">
+                        <a class="page-link">Předchozí</a>
+                    </li>
+                {% endif %}
+                {% for page in page_obj.paginator %}
+                    {% if page.number == page_obj.number %}
+                        <li class="page-item active">
+                            {% else %}
+                        <li class="page-item">
+                    {% endif %}
+                <a class="page-link"
+                   href="{% url 'sportdiag:researchers_overview' page=page.number %}">{{ page.number }}</a>
+                </li>
+                {% endfor %}
+                {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link"
+                           href="{% url 'sportdiag:researchers_overview' page=page_obj.next_page_number %}">Další</a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled">
+                        <a class="page-link">Další</a>
+                    </li>
+                {% endif %}
+            </ul>
         </div>
     </div>
 {% endblock %}

@@ -24,6 +24,8 @@ import json
 import csv
 import bp.settings as settings
 from django.core import serializers
+from django.core.paginator import Paginator
+from urllib.parse import urlencode
 
 from .models import Survey, Response
 
@@ -53,7 +55,13 @@ def redirect_to_user_type_home(request):
         elif user.is_psychologist:
             return redirect('sportdiag:home_psychologist')
         elif user.is_researcher:  # is_staff se poresi v sablone
-            return redirect('sportdiag:home_researcher')
+            initial_survey = Survey.objects.order_by('id').first()  # todo WHAT IF NO SURVEY
+            base_url = reverse('sportdiag:home_researcher')
+            # query_string = urlencode({'survey_id': initial_survey.id, 'page': 1})
+            query_string = urlencode({'page': 1})
+            url = f'{base_url}?{query_string}'
+            print("url", url)
+            return redirect(url)
         else:
             return HttpResponseNotFound()
 
@@ -119,13 +127,22 @@ class PsychologistHomeView(TemplateView):
         return context
 
 
+class ApprovePsychologistsView(LoginRequiredMixin, ListView):
+    model = User
+    paginate_by = 10
+    template_name = 'sportdiag/approve_psychologists.html'
+    # query jen is_active false a is_psychologist true?
+    queryset = User.objects.filter(is_psychologist=True, email_verified=True, confirmed_by_staff=False, is_active=False)
+    ordering = ['-date_joined']
+
+
 class ResearcherHomeView(TemplateView):
     # todo tabulkas daty, prokliky na answer/response detail?
     # klientovi pridat uuid?
     # v tabulce krome ostatniho interviewuuid a client uuid jako anonymni ident.?
-    # export
     template_name = 'sportdiag/home/researcher_home.html'
     filter_form = ResponsesFilterForm
+    paginated_by = 2
 
     @staticmethod
     def compute_score(answers):  # todo extract method and reuse in client detail
@@ -145,13 +162,14 @@ class ResearcherHomeView(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        survey = kwargs.get('survey')
-        if not survey:
+        survey_id = kwargs.get('survey_id')
+        print("survey_id", survey_id)
+        if not survey_id:
             survey = Survey.objects.order_by('id').first()  # initial_survey
+            survey_id = survey.id
         # todo error handling
-        context['filter_form'] = self.filter_form(initial={'survey': survey.id})
-        responses = Response.objects.filter(survey_id=survey.id).order_by(
-            "-created")
+        context['filter_form'] = self.filter_form(initial={'survey': survey_id})
+        responses = Response.objects.filter(survey_id=survey_id).order_by("-created")
         clients = ClientProfile.objects \
             .filter(user_id__in=responses.values_list("user_id", flat=True)) \
             .order_by("user_id")
@@ -179,15 +197,33 @@ class ResearcherHomeView(TemplateView):
                         "score": score,
                     })
                     counter += 1
-        context["table_data"] = table_data
-        context["survey_id"] = survey.id
+        # print("table_data", table_data)
+        paginator = Paginator(table_data, self.paginated_by)
+        page_number = kwargs.get('page')
+        print("page_number", page_number)
+        page_obj = paginator.get_page(page_number)
+        # context["table_data"] = Paginator
+        context['page_obj'] = page_obj
+        context["survey_id"] = survey_id
         return context
+
+    def get(self, request, *args, **kwargs):
+        print("request", request)
+        print("kwargs", kwargs)
+        page_number = request.GET.get('page')
+        survey_id = request.GET.get('survey_id')
+        if survey_id:
+            kwargs.update({"survey_id": survey_id})
+        print("kwargs after update", kwargs)
+        context = self.get_context_data(**kwargs)
+        return render(request, self.template_name, context)
 
     def post(self, request, *args, **kwargs):
         filter_form = self.filter_form(request.POST)
         if filter_form.is_valid():
             selected_survey = filter_form.cleaned_data['survey']
-            context = self.get_context_data(survey=selected_survey)
+            print("selected_survey", selected_survey)
+            context = self.get_context_data(survey_id=selected_survey.id)
             return render(request, self.template_name, context)
         else:
             pass
