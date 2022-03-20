@@ -185,7 +185,7 @@ class ResponseForm(models.ModelForm):
         field.widget.attrs["category"] = question.category.name if question.category else ""
         field.widget.attrs["likert_scale"] = question.likert_scale.name if question.likert_scale else ""
         # logging.debug("Field for %s : %s", question, field.__dict__)
-        field_key = "question_%d" % question.id
+        field_key = f"{question.id}"
         # add question to crispy form Layout manually to customize rendering
         # if question.type == Question.LIKERT_SCALE
         # self.helper.layout.append(Field(field_key))
@@ -203,8 +203,8 @@ class ResponseForm(models.ModelForm):
             question_choices = question.get_choices()
             # add an empty option at the top so that the user has to explicitly
             # select one of the options
-            if question.type in [Question.SELECT]:
-                question_choices = tuple([("-", _("Nevybráno"))]) + question_choices
+            # if question.type in [Question.SELECT]: todo solve validation for "nevybrano"
+            #    question_choices = tuple([("-", _("Nevybráno"))]) + question_choices
         return question_choices
 
     def get_question_widget(self, question):

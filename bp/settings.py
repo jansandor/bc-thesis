@@ -165,5 +165,3 @@ EMAIL_HOST_PASSWORD = 'eylebmxwwjoagncq'
 EMAIL_PORT = 587
 
 DEFAULT_FROM_EMAIL = 'info@sportdiag.cz'
-
-# TEMPLATE_CONTEXT_PROCESSORS = 'django.core.context_processors.request'

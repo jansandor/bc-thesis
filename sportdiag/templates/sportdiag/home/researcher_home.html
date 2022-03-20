@@ -29,15 +29,12 @@
                     <thead>
                     <tr>
                         <th scope="col" class="col text-nowrap">#</th>
-                        <th scope="col" class="col text-nowrap">Dotazník</th>
-                        <th scope="col" class="col text-nowrap">ID Responze</th>
                         <th scope="col" class="col text-nowrap">Datum responze</th>
+                        <th scope="col" class="col text-nowrap">ID Responze</th>
                         <th scope="col" class="col text-nowrap">ID Klienta</th>
+                        <th scope="col" class="col text-nowrap">Statní příslušnost</th>
                         <th scope="col" class="col text-nowrap">Pohlaví</th>
                         <th scope="col" class="col text-nowrap">Věk</th>
-                        {% comment %}
-                        todo <th scope="col" class="col">Statní příslušnost</th>
-                        {% endcomment %}
                         {% for question in questions %}
                             <th scope="col" class="col text-nowrap text-center">{{ question }}</th>
                         {% endfor %}
@@ -48,10 +45,10 @@
                     {% for item in table_data %}
                         <tr>
                             <td class="text-nowrap text-center">{{ item.row_number }}</td>
-                            <td class="text-nowrap">{{ item.survey_name }}</td>
-                            <td class="text-nowrap">{{ item.interview_uuid }}</td>
                             <td class="text-nowrap">{{ item.created }}</td>
+                            <td class="text-nowrap">{{ item.interview_uuid }}</td>
                             <td class="text-nowrap">{{ item.client_uuid }}</td>
+                            <td class="text-nowrap text-center">{{ item.nationality }}</td>
                             <td class="text-nowrap text-center">{{ item.sex }}</td>
                             <td class="text-nowrap text-center">{{ item.age }}</td>
                             {% for answer in item.answers %}
@@ -65,9 +62,6 @@
                         <tr>
                             <td></td>
                             <td>Žádná data.</td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
                             <td></td>
                             <td></td>
                             <td></td>

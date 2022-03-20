@@ -169,10 +169,10 @@ class ResearcherHomeView(TemplateView):
                     score = self.compute_score(answers)
                     table_data.append({
                         "row_number": counter,
-                        "survey_name": Survey.objects.get(id=response.survey_id).name[:8],  # todo shrot name for survey
-                        "interview_uuid": response.id,  # todo uuid?
                         "created": response.created,
+                        "interview_uuid": response.id,  # todo uuid?
                         "client_uuid": client.user_id,  # todo uuid?
+                        "nationality": client.nationality,
                         "sex": client.sex,
                         "age": client.age,
                         "answers": answers,
@@ -309,7 +309,7 @@ class InviteClient(FormView):
     def post(self, request, *args, **kwargs):
         form = self.form_class(request.POST)
         user = request.user
-        profile = PsychologistProfile.objects.get(user=user)
+        profile = PsychologistProfile.objects.get(user_id=user.id)
         if form.is_valid():
             client_email = form.cleaned_data.get('client_email')
             mail_subject = f'Sportdiag | {profile.__str__()} Vás zve k registraci do aplikace Sportdiag'
@@ -325,7 +325,7 @@ class InviteClient(FormView):
             # todo message, ze email byl odeslan
             return redirect('sportdiag:home')
         else:
-            return render(request, self.template_name, {'form': form})
+            return render(request, self.template_name, {'form': form, 'psychologist': profile})
 
 
 def reject_psychologist(request, pk):
@@ -545,20 +545,23 @@ def export_survey_responses_to_csv(request, survey_id):
                                  headers={'Content-Disposition': f'attachment; filename="{filename}"'})
     writer = csv.writer(http_response)
     writer.writerow(
-        ['#', 'Dotazník', 'ID Responze', 'Datum responze', 'ID Klienta', 'Pohlaví',
+        ['#', 'Dotazník', 'Datum responze', 'ID Responze', 'ID Klienta', 'Státní příslušnost', 'Pohlaví',
          'Věk', *questions, 'Skóre'])
     counter = 1
     for response in responses:
         for client in clients:
             if client.user_id == response.user_id:
+                print("response.created.__str__()", datetime.fromisoformat(response.created.__str__()))
                 answers = list(Answer.objects
                                .filter(response_id=response.id)
                                .order_by("created")
                                .values_list("body", flat=True))
                 score = compute_score(answers)
                 # todo uuid? user, response
+                response_created = datetime.fromisoformat(response.created.__str__())
                 writer.writerow(
-                    [f'{counter}', f'{survey.name[:8]}', f'{response.id}', f'{response.created}', f'{client.user_id}',
-                     f'{client.sex}', f'{client.age}', *answers, f'{score}'])
+                    [f'{counter}', f'{survey.short_name}', f'{response_created.strftime("%Y-%m-%d %H:%M:%S")}',
+                     f'{response.id}', f'{client.user_id}', f'{client.nationality}', f'{client.sex}', f'{client.age}',
+                     *answers, f'{score}'])
                 counter += 1
     return http_response

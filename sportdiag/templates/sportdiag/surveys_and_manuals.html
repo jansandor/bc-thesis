@@ -1,8 +1,13 @@
 {% extends 'sportdiag/common/base.html' %}
 
+{% load static %}
 {% load sportdiag_filters %}
 {% load crispy_forms_tags %}
 {% load crispy_forms_filters %}
+
+{% block styles %}
+    <link rel="stylesheet" type="text/css" href="{% static 'sportdiag/css/surveys_and_manuals.css' %}">
+{% endblock %}
 
 {% block title %}Sportdiag | Dotazníky a manuály{% endblock %}
 
@@ -33,7 +38,7 @@
                                 <div class="modal-dialog">
                                     <div class="modal-content">
                                         <div class="modal-header">
-                                            <h5 class="modal-title">Nahrávání příloh</h5>
+                                            <h5 class="modal-title">Vyberte přílohy</h5>
                                             <button type="button" class="btn-close"
                                                     data-bs-dismiss="modal"></button>
                                         </div>
@@ -73,7 +78,7 @@
                                                     data-bs-target="#uploadModal-{{ survey.id }}">
                                                 Přidat přílohy
                                             </button>
-                                            <a href="#" class="btn btn-sm btn-danger">Odstranit dotazník</a>
+                                            <a href="#" class="btn btn-sm btn-danger disabled">Odstranit dotazník</a>
                                         </div>
                                     </div>
                                 {% endif %}
@@ -91,13 +96,13 @@
                                                             <input type="submit"
                                                                    formaction="{% url 'sportdiag:download_survey_attachment' survey.id attachment_name %}"
                                                                    formmethod="get"
-                                                                   class="btn btn-sm btn-light"
+                                                                   class="btn btn-sm btn-light attachment-input--download"
                                                                    value="{{ attachment_name }}">
                                                             {% if user.is_researcher and user.is_staff %}
                                                                 <input type="submit"
                                                                        formaction="{% url 'sportdiag:delete_survey_attachment' survey.id attachment_name %}"
                                                                        formmethod="post"
-                                                                       class="btn btn-sm bg-light text-danger"
+                                                                       class="btn btn-sm btn-light attachment-input--remove"
                                                                        value="X">
                                                             {% endif %}
                                                         </div>
@@ -109,6 +114,33 @@
                                 </div>
                             </div>
                             <div class="row mb-2">
+                                {% comment %}
+                                                                <div class="col">
+                                    <div class="accordion accordion-flush" id="surveysDescriptions">
+                                        <div class="accordion-item">
+                                            <h2 class="accordion-header" id="flush-heading-{{ survey.id }}">
+                                                <button class="accordion-button collapsed ps-0 text-secondary"
+                                                        type="button"
+                                                        data-bs-toggle="collapse"
+                                                        data-bs-target="#surveyDescription-{{ survey.id }}"
+                                                        aria-expanded="false"
+                                                        aria-controls="surveyDescription-{{ survey.id }}">
+                                                    Popis:
+                                                </button>
+                                            </h2>
+                                            <div id="surveyDescription-{{ survey.id }}"
+                                                 class="accordion-collapse collapse"
+                                                 aria-labelledby="flush-heading-{{ survey.id }}"
+                                                 data-bs-parent="#surveysDescriptions">
+                                                <div class="accordion-body ps-0">
+                                                    <p class="fw-light">{{ survey.description }}</p>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                </div>
+                                {%  endcomment %}
                                 <div class="col-12">
                                     <span class="d-block text-secondary mb-1">Popis:</span>
                                 </div>

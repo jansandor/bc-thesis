@@ -11,10 +11,10 @@ from django.core.exceptions import ObjectDoesNotExist
 
 from crispy_forms.helper import FormHelper
 from crispy_forms.bootstrap import InlineRadios
-from crispy_forms.layout import Layout, Submit, Field, Div
+from crispy_forms.layout import Layout, Submit, Field, Div, HTML
 
 from accounts.utils.forms import DateInput
-from accounts.utils.user import user_types, sex_choices, academic_degrees
+from accounts.utils.user import user_types, sex_choices, academic_degrees, nationality
 
 
 class UserCreationForm(DjangoUserCreationForm):
@@ -29,16 +29,19 @@ class UserCreationForm(DjangoUserCreationForm):
 class ClientUserCreationForm(UserCreationForm):
     class Meta(UserCreationForm.Meta):
         fields = ['first_name', 'last_name', 'email', 'password1', 'password2',
-                  'birthdate', 'sex', 'psychologist_key']
+                  'birthdate', 'sex', 'psychologist_key', 'terms_accepted']
 
     birthdate = forms.DateField(widget=DateInput(attrs={'min': datetime.date(dt.today().year - 100, 1, 1).__str__(),
                                                         'max': dt.today().date().__str__()}),
                                 label=_('Datum narození'))
     sex = forms.ChoiceField(widget=forms.RadioSelect(), choices=sex_choices.SEX_CHOICES, initial=sex_choices.NOTSET,
                             label=_('Pohlaví'))
+    nationality = forms.ChoiceField(choices=nationality.CHOICES, initial=nationality.CZE, label=_('Státní příslušnost'))
     psychologist_key = forms.UUIDField(label=_('Klíč psychologa'),
                                        error_messages={'invalid': 'Zadejte validní klíč.',
-                                                       'required': '!'})  # TODO prepsat
+                                                       'required': '!'})  # TODO prepsat error podle docs
+    terms_accepted = forms.BooleanField(label=_('Souhlasím s účastí ve výzkumu a se zpracováním osobních údajů'),
+                                        required=True)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -52,7 +55,11 @@ class ClientUserCreationForm(UserCreationForm):
             'password2',
             'birthdate',
             InlineRadios('sex'),  # not working for |crispy, use tag
+            'nationality',
             'psychologist_key',
+            'terms_accepted',
+            HTML("""<button type="button" class="btn btn-sm btn-secondary mb-3" data-bs-toggle="modal" 
+                data-bs-target="#termsOfUseDetailModal">Zobrazit souhlas</button>"""),
             Div(Submit('submit', 'Registrovat se'),
                 css_class='d-flex flex-column justify-content-center')
         )
@@ -78,7 +85,8 @@ class ClientUserCreationForm(UserCreationForm):
         data = self.cleaned_data
         psychologist = PsychologistProfile.objects.get(personal_key__exact=data.get('psychologist_key'))
         ClientProfile.objects.create(user=user, user_type=user_types.CLIENT, birthdate=data.get('birthdate'),
-                                     sex=data.get('sex'), psychologist=psychologist.user)
+                                     sex=data.get('sex'), psychologist=psychologist.user,
+                                     terms_accepted=data.get('terms_accepted'), nationality=data.get('nationality'))
         return user
 
 

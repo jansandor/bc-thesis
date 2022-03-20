@@ -2,7 +2,6 @@
 
 <!doctype html>
 <html lang="cs">
-
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
@@ -21,18 +20,17 @@
     {%  comment %}
     {% include 'sportdiag/common/main-nav.html' %}
        {%  endcomment %}
-    {% if not survey_id %}
-        {% include 'sportdiag/common/main-nav.html' %}
-    {% else %}
+    {% if survey_id %}
         {% url 'sportdiag:survey_detail' survey_id as survey_detail_url %}
         {% if request.get_full_path != survey_detail_url %}
             {% include 'sportdiag/common/main-nav.html' %}
         {% endif %}
+    {% else %}
+        {% include 'sportdiag/common/main-nav.html' %}
     {% endif %}
 </header>
 
 {% include "sportdiag/common/messages.html" %}
-
 
 {% url 'sportdiag:home_researcher' as researcher_home_url %}
 {% if request.get_full_path == researcher_home_url %}

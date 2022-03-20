@@ -1,0 +1,22 @@
+.attachment-input--download {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+.attachment-input--download:hover {
+    color: #0d6efd;
+    background-color: #dee2e6;
+    border-color: #dee2e6;
+}
+
+.attachment-input--remove {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+    color: #dc3545;
+}
+
+.attachment-input--remove:hover {
+    color: red;
+    background-color: #dee2e6;
+    border-color: #dee2e6;
+}

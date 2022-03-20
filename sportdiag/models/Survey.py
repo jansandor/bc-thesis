@@ -4,8 +4,8 @@ from django.urls import reverse
 
 
 class Survey(models.Model):
-    # todo short name, ie. OMSAT-3
     name = models.CharField(_('název'), max_length=400)
+    short_name = models.CharField(_('zkratka názvu'), max_length=30, help_text=_('Např.: OMSAT-3*, ACSI-28 apod.'))
     description = models.TextField(_('popis'))
 
     class Meta:
