@@ -19,7 +19,9 @@ urlpatterns = [
     path('sportdiag/', redirect_to_user_type_home, name='home'),
     path('sportdiag/c/', login_required(ClientHomeView.as_view()), name='home_client'),
     path('sportdiag/p/', login_required(PsychologistHomeView.as_view()), name='home_psychologist'),
-    path('sportdiag/r/', login_required(ResearcherHomeView.as_view()), name='home_researcher'),
+    re_path(r'sportdiag/r/(?:\?page=(?P<page>\d+))?$',  # survey_id=(?P<survey_id>\d+)?&
+            login_required(ResearcherHomeView.as_view()),
+            name='home_researcher'),
     path('sportdiag/pozvat_klienta/', InviteClient.as_view(), name='invite_client'),
     re_path(r'sportdiag/schvalovani_psychologu/(?:\?page=(?P<page>\d+))?$', ApprovePsychologistsView.as_view(),
             name='approve_psychologists'),

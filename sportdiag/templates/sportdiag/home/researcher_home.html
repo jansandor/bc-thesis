@@ -24,7 +24,7 @@
             </div>
         </div>
         <div class="col">
-            <div class="table-responsive"> <!-- <div class="table-responsive mb-2 mb-md-0"> -->
+            <div class="table-responsive mb-2">
                 <table class="table table-hover table-bordered table-sm align-middle">
                     <thead>
                     <tr>
@@ -42,7 +42,7 @@
                     </tr>
                     </thead>
                     <tbody>
-                    {% for item in table_data %}
+                    {% for item in page_obj.object_list %}
                         <tr>
                             <td class="text-nowrap text-center">{{ item.row_number }}</td>
                             <td class="text-nowrap">{{ item.created }}</td>
@@ -72,8 +72,39 @@
                     {% endfor %}
                     </tbody>
                 </table>
-                <!-- todo paginace -->
             </div>
+            <ul class="pagination justify-content-end">
+                {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link"
+                           href="{% url 'sportdiag:home_researcher' page=page_obj.previous_page_number %}">Předchozí</a>
+                    </li>
+                {% else %}
+                    <li class=" page-item disabled">
+                        <a class="page-link">Předchozí</a>
+                    </li>
+                {% endif %}
+                {% for page in page_obj.paginator %}
+                    {% if page.number == page_obj.number %}
+                        <li class="page-item active">
+                            {% else %}
+                        <li class="page-item">
+                    {% endif %}
+                <a class="page-link"
+                   href="{% url 'sportdiag:home_researcher' page=page.number %}">{{ page.number }}</a>
+                </li>
+                {% endfor %}
+                {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link"
+                           href="{% url 'sportdiag:home_researcher' page=page_obj.next_page_number %}">Další</a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled">
+                        <a class="page-link">Další</a>
+                    </li>
+                {% endif %}
+            </ul>
         </div>
     </div>
 {% endblock %}
