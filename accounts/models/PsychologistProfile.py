@@ -5,7 +5,7 @@ import uuid
 
 from accounts.models import BaseUserProfile
 from accounts.utils.user import academic_degrees
-from accounts.utils.user.functions import user_specific_upload_dir
+from accounts.utils.user.functions import user_specific_upload_file_path
 
 
 class PsychologistProfile(BaseUserProfile):
@@ -17,7 +17,7 @@ class PsychologistProfile(BaseUserProfile):
                                                   default=academic_degrees.NO_DEGREE)
     # TODO multiplefiles input
     # https://stackoverflow.com/questions/38257231/how-can-i-upload-multiple-files-to-a-model-field
-    certificate = models.FileField(upload_to=user_specific_upload_dir, verbose_name=_('certifikát'))
+    certificate = models.FileField(upload_to=user_specific_upload_file_path, verbose_name=_('certifikát'))
     # todo uuid by mel byt sam o sobe s vysokou pravdepodobnosti unikatni, je dobry napad setovat ho defaultne unique?
     # aby se pak nekdy nestalo, ciste velkou nahodou, ze spadne tvorba profilu v DB, protoze se nevygeneroval nahodny...
     personal_key = models.UUIDField(_('osobní klíč'), default=uuid.uuid4, editable=False, unique=True)

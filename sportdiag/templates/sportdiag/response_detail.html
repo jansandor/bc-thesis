@@ -1,0 +1,80 @@
+{% extends 'sportdiag/common/base.html' %}
+
+{% block title %}Detail responze{% endblock %}
+
+{% block content %}
+    <div class="row justify-content-between align-items-center">
+        <div class="col-auto">
+            <h1>Detail responze</h1>
+        </div>
+        <div class="col-auto">
+            <a href="{% url 'client_detail' client.user_id %}" class="btn btn-secondary">Zpět</a>
+        </div>
+        <hr>
+    </div>
+    <div class="row mb-2">
+        <div class="col">
+            <div class="d-flex flex-wrap mb-1">
+                <div class="text-secondary me-2">ID responze:</div>
+                <div>{{ response.interview_uuid }}</div>
+            </div>
+            <div class="d-flex flex-wrap mb-1">
+                <div class="text-secondary me-2">Klient:</div>
+                <div>{{ client }}, {{ client.age }} let, {{ client.sex }}</div>
+            </div>
+            <div class="d-flex flex-wrap mb-1">
+                <div class="text-secondary me-2">Dotazník:</div>
+                <div>{{ survey.name }}</div>
+            </div>
+            <div class="d-flex flex-wrap mb-1">
+                <div class="text-secondary me-2">Datum responze:</div>
+                <div>{{ response.created }}</div>
+            </div>
+            <div class="d-flex flex-wrap mb-1">
+                <div class="text-secondary me-2">Celkové skóre:</div>
+                <div>{{ response_total_score }}b</div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col">
+            <h2>Otázky a odpovědi</h2>
+        </div>
+        <hr>
+    </div>
+    {% for category in categories %}
+        <div class="pb-3">
+            <div class="table-responsive">
+                <table class="table caption-top bg-white">
+                    <caption>Subškála: <span class="text-body">{{ category.category_name }}</span></caption>
+                    <thead>
+                    <tr>
+                        <th scope="col">#</th>
+                        <th scope="col">Text otázky</th>
+                        <th scope="col">Odpověď</th>
+                        <th scope="col">Skóre odpovědi</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for question_data in category.questions_data %}
+                        <tr>
+                            <th scope="row">{{ question_data.question_tag }}{% if question_data.required %}<span
+                                    class="asteriskField">*</span>{% endif %}
+                            </th>
+                            <td>{{ question_data.question_text }}</td>
+                            <td>{{ question_data.answer_text }}</td>
+                            <td>{{ question_data.answer_score }}</td>
+                        </tr>
+                    {% endfor %}
+                    <tr>
+                        <th scope="row" class="text-wrap">Skóre</th>
+                        <td></td>
+                        <td></td>
+                        <td>{{ category.category_score }}b</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    {% endfor %}
+{% endblock %}

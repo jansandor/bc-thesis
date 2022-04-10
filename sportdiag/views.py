@@ -1,32 +1,31 @@
-from django.shortcuts import render, redirect, reverse
-from django.views.generic.base import TemplateView, RedirectView, View
-from django.views.generic import ListView, FormView, DeleteView
-from django.contrib.auth.views import PasswordChangeView
-from accounts.models import ClientProfile, PsychologistProfile, User
-from .forms import InviteClientForm, ResponseForm, ResponsesFilterForm, UploadFilesForm
-from django.core.exceptions import ObjectDoesNotExist
-from django.template.loader import render_to_string
-from django.core.mail import EmailMessage
-from django.contrib.sites.shortcuts import get_current_site
-from django.urls import reverse_lazy
-import mimetypes
-from django.http import HttpResponse, HttpResponseRedirect
-from http import HTTPStatus
-import os
-from django.http import HttpResponseNotFound
-from django.contrib.auth.mixins import LoginRequiredMixin
-from django.contrib.admin.views.decorators import staff_member_required
-from django.contrib import messages
-from sportdiag.models import SurveyResponseRequest, Answer, Question
-from datetime import datetime, timezone
-import logging
-import json
 import csv
-import bp.settings as settings
-from django.core import serializers
-from django.core.paginator import Paginator
+import json
+import logging
+import mimetypes
+import os
+import shutil
+from datetime import datetime, timezone
+from http import HTTPStatus
 from urllib.parse import urlencode
 
+from django.contrib import messages
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.sites.shortcuts import get_current_site
+from django.core import serializers
+from django.core.mail import EmailMessage
+from django.core.paginator import Paginator
+from django.http import HttpResponse
+from django.http import HttpResponseNotFound
+from django.shortcuts import render, redirect, reverse
+from django.template.loader import render_to_string
+from django.views.generic import ListView, FormView
+from django.views.generic.base import TemplateView, View
+
+import bp.settings as settings
+from accounts.models import ClientProfile, PsychologistProfile, User
+from accounts.utils.user.functions import user_specific_upload_dir
+from sportdiag.models import SurveyResponseRequest, Answer, Question, Category
+from .forms import InviteClientForm, ResponseForm, ResponsesFilterForm, UploadFilesForm
 from .models import Survey, Response
 
 LOGGER = logging.getLogger(__name__)
@@ -110,7 +109,7 @@ class PsychologistHomeView(TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         user = self.request.user
-        surveys = Survey.objects.all().order_by("id")
+        surveys = Survey.objects.filter(is_published=True, is_deleted=False).order_by("id")
         clients = ClientProfile.objects.filter(psychologist_id=user.id)
         client_user_ids = list(clients.values_list("user_id", flat=True))
         client_response_requests = {}
@@ -165,7 +164,7 @@ class ResearcherHomeView(TemplateView):
         survey_id = kwargs.get('survey_id')
         print("survey_id", survey_id)
         if not survey_id:
-            survey = Survey.objects.order_by('id').first()  # initial_survey
+            survey = Survey.objects.filter(is_deleted=False).order_by('id').first()  # initial_survey
             survey_id = survey.id
         # todo error handling
         context['filter_form'] = self.filter_form(initial={'survey': survey_id})
@@ -250,12 +249,12 @@ class SurveyConfirmView(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["uuid4"] = str(kwargs["uuid4"])  # todo get?
+        context["uuid4"] = str(kwargs.get("uuid4"))  # todo get?
         context["response"] = Response.objects.get(interview_uuid=context["uuid4"])
         return context
 
 
-class SurveyDetail(View):
+class SurveyDetailView(TemplateView):
     template_name = "sportdiag/survey_detail.html"
     new_response_email_html_template = "sportdiag/emails/new_response_email_html_template.html"
 
@@ -265,7 +264,7 @@ class SurveyDetail(View):
         # pokud ne, klient je presmerovan na home a prida se message pozadavek je neplatny/byl zrusen?
         user = request.user
         survey_id = kwargs.get('survey_id')
-        context = {}
+        context = self.get_context_data(**kwargs)
         if user and survey_id:
             try:
                 response_request = SurveyResponseRequest.objects.get(client_id=user.id, survey_id=survey_id,
@@ -379,6 +378,9 @@ def reject_psychologist(request, pk):
             email = EmailMessage(mail_subject, message, to=[user.email])
             email.content_subtype = 'html'
             email.send()
+            user_uploaded_files_dir_path = settings.MEDIA_ROOT / user_specific_upload_dir(user=user)
+            if os.path.exists(user_uploaded_files_dir_path):
+                shutil.rmtree(user_uploaded_files_dir_path)  # todo onerror logging
             user.delete()
             return redirect(request.META.get('HTTP_REFERER'))  # redirect('sportdiag:approve_psychologists')
 
@@ -416,7 +418,7 @@ def download_certificate(request, pk):
         file = open(filepath, 'rb')
         mime_type, _ = mimetypes.guess_type(filepath)
         response = HttpResponse(file, content_type=mime_type)
-        response['Content-Disposition'] = "attachment; filename=%s" % filename
+        response['Content-Disposition'] = f"attachment; filename={filename}"
         return response
 
 
@@ -472,7 +474,10 @@ class SurveysAndManualsView(TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['upload_attachments_form'] = self.upload_survey_attachments_form()
-        surveys = Survey.objects.all().order_by('id')
+        surveys = Survey.objects.filter(is_deleted=False).order_by('id')
+        user = kwargs.get("user")
+        if user and user.is_psychologist:
+            surveys = surveys.filter(is_published=True)
         context['surveys'] = surveys
         surveys_attachments = {}
         for survey in surveys:
@@ -482,15 +487,17 @@ class SurveysAndManualsView(TemplateView):
         context['surveys_attachments'] = surveys_attachments
         return context
 
+    def get(self, request, *args, **kwargs):
+        context = self.get_context_data(user=request.user)
+        return render(request, self.template_name, context)
+
 
 def get_survey_attachments_upload_dir_path(survey):
     survey_media_dir_path = settings.MEDIA_ROOT / 'sportdiag/surveys' / f'survey_{survey.id}'
     if not os.path.exists(survey_media_dir_path):
-        print("mkdir ", survey_media_dir_path)
         os.mkdir(survey_media_dir_path)
     survey_attachments_dir_path = survey_media_dir_path / 'attachments'
     if not os.path.exists(survey_attachments_dir_path):
-        print("mkdir ", survey_attachments_dir_path)
         os.mkdir(survey_attachments_dir_path)
     return survey_attachments_dir_path
 
@@ -568,7 +575,8 @@ def compute_score(answers):  # todo extract method and reuse in client detail
 
 def export_survey_responses_to_csv(request, survey_id):
     survey = Survey.objects.get(id=survey_id)
-    filename = f"odpovedi_{datetime.now(timezone.utc).date()}_{survey.name[:8]}.csv".replace(" ", "_").replace("-", "_")
+    filename = f"odpovedi_{datetime.now(timezone.utc).date()}_{survey.short_name}.csv".replace(" ", "_").replace("-",
+                                                                                                                 "_")
     # todo survey short name
     responses = Response.objects.filter(survey_id=survey.id).order_by("-created")
     clients = ClientProfile.objects \
@@ -601,3 +609,123 @@ def export_survey_responses_to_csv(request, survey_id):
                      *answers, f'{score}'])
                 counter += 1
     return http_response
+
+
+def toggle_is_published(request, survey_id):
+    survey = Survey.objects.get(id=survey_id)
+    if survey:
+        survey.is_published = not survey.is_published
+        survey.save()
+    else:
+        messages.error(request, "Dotazník nenalezen.")
+    return redirect("sportdiag:surveys_manuals")
+
+
+# performs soft delete
+def delete_survey(request, survey_id):
+    survey = Survey.objects.get(id=survey_id)
+    if survey:
+        survey.is_deleted = True
+        survey.deleted_date = datetime.now(timezone.utc)
+        survey.save()
+    else:
+        messages.error(request, "Dotazník nenalezen.")
+    return redirect("sportdiag:surveys_manuals")
+
+
+likert_scale_values_text = [
+    "",
+    "rozhodně nesouhlasím",
+    "nesouhlasím",
+    "spíše nesouhlasím",
+    "ani nesouhlasím/ani souhlasím",
+    "spíše souhlasím ",
+    "souhlasím",
+    "rozhodně souhlasím",
+]
+
+
+class ResponseDetailView(TemplateView):
+    template_name = "sportdiag/response_detail.html"
+
+    @staticmethod
+    def get_answer_body(answer):
+        try:
+            int(answer)
+        except ValueError:
+            if answer != "":
+                answer = answer.replace("-", " ")
+            else:
+                answer = "-"
+        return answer
+
+    @staticmethod
+    def get_answer_int(answer_body):
+        try:
+            answer_value = int(answer_body)
+        except ValueError:
+            return 0
+        return answer_value
+
+    @staticmethod
+    def compute_score(answers):  # todo extract method and reuse in researchers home
+        total_score = 0
+        for i, answer in enumerate(answers):
+            try:
+                answer_score = int(answer)
+            except ValueError:
+                if answer != "":
+                    answers[i] = answer.replace("-", " ")
+                else:
+                    answers[i] = "-"
+                continue
+            else:
+                total_score += answer_score
+        return total_score
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        response = Response.objects.get(id=kwargs.get("response_id"))
+        client = ClientProfile.objects.get(user_id=response.user_id)
+        survey = Survey.objects.get(id=response.survey_id)
+        context["response"] = response
+        context["client"] = client
+        context["survey"] = survey
+        categories = survey.non_empty_categories()
+        print("categories", categories)
+        categories_data = []
+        response_total_score = 0
+        for category in categories:
+            cat_score = 0
+            questions_data = []
+            cat_questions = Question.objects.filter(category_id=category.id).order_by("number")
+            for question in cat_questions:
+                answer = Answer.objects.get(response_id=response.id, question_id=question.id)
+                cat_score += self.get_answer_int(answer.body)
+                answer_text = ""
+                if question.type == Question.LIKERT_SCALE:
+                    answer_text = likert_scale_values_text[self.get_answer_int(answer.body)]
+                if answer_text == "":
+                    answer_text = self.get_answer_body(answer)
+                question_data = {
+                    "question_tag": question.get_short_name(),
+                    "required": question.required,
+                    "question_text": question.text,
+                    "answer_text": answer_text,
+                    "answer_score": self.get_answer_int(answer.body)
+                }
+                questions_data.append(question_data)
+            categories_data.append({
+                "category_name": category.name,
+                "questions_data": questions_data,
+                "category_score": cat_score,
+            })
+            response_total_score += cat_score
+        context["categories"] = categories_data
+        context["response_total_score"] = response_total_score
+        print("categories", categories_data)
+        return context
+
+    def get(self, request, *args, **kwargs):
+        context = self.get_context_data(**kwargs)
+        return render(request, self.template_name, context)

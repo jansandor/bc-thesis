@@ -23,6 +23,7 @@ class Question(models.Model):
     )
 
     text = models.TextField(_('text otázky'))
+    number = models.PositiveIntegerField(_("číslo otázky"), default=1)
     order = models.PositiveIntegerField(_('pořadí v dotazníku'), default=1)
     required = models.BooleanField(_('povinná odpověď'))
     choices = models.TextField(_('odpovědi'), help_text='Zadejte možné odpovědi na otázku oddělené čárkou.', null=True,
@@ -63,7 +64,7 @@ class Question(models.Model):
         return choices_tuple
 
     def get_short_name(self):
-        return f"Q{self.order}"
+        return f"O{self.number}"
 
     def __str__(self):
         if self.category:

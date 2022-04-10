@@ -38,64 +38,33 @@
     <div class="row">
         <div class="col">
             <h2>Výsledky testování</h2>
-            <hr>
         </div>
+        <hr>
+    </div>
+    <div class="row">
         <ul class="list-group">
-            {% for item in table_data %}
+            {% for response in responses %}
                 <li class="list-group-item py-4">
-                    <div class="row mb-2">
-                        <div class="col-md-6 col-xs-12">
-                            <div class="mb-2">
-                                <span class="d-bock text-secondary me-1">Dotazník:</span>
-                                <span>{{ item.survey_name }}</span>
-                            </div>
-                            <div class="mb-2">
-                                <span class="d-bock text-secondary me-1">ID Responze:</span>
-                                <span>{{ item.interview_uuid }}</span>
-                            </div>
-                            <div class="mb-2">
-                                <span class="d-bock text-secondary me-1">Datum responze:</span>
-                                <span>{{ item.created }}</span>
-                            </div>
-                            <div class="mb-2">
-                                <span class="d-bock text-secondary me-1">Skóre:</span>
-                                <span>{{ item.score }}</span>
-                            </div>
-                            <div class="mb-2">
-                                <span class="d-bock text-secondary me-1">Sport:</span>
-                                <span>{{ item.answers.0 }}</span>
-                            </div>
-                        </div>
-                        <div class="col-md-6 col-xs-12">
-                            <div class="mb-2">
-                                <span class="d-bock text-secondary me-1">Současná úroveň ve sportu:</span>
-                                <span>{{ item.answers.1 }}</span>
-                            </div>
-                            <div class="mb-2">
-                                <span class="d-bock text-secondary me-1">Nejvyšší úroveň ve sportu:</span>
-                                <span>{{ item.answers.2 }}</span>
-                            </div>
-                            <div class="mb-2">
-                                <span class="d-bock text-secondary me-1">Nejvyšší stupeň dokončeného vzdělání:</span>
-                                <span>{{ item.answers.3 }}</span>
-                            </div>
-                        </div>
-                    </div>
                     <div class="row">
-                        <div class="col">
-                            <div class="d-flex flex-wrap gap-2">
-                                {% for question in item.questions_answers %}
-                                    <div class="question-answer">
-                                        <span>{{ question.abbrev }}:</span>
-                                        <span>{{ question.answer_score }}</span>
-                                        <span class="text-secondary">{{ question.answer_text }}</span>
-                                    </div>
-                                {% endfor %}
-                            </div>
+                        <div class="col-xs-12 col-lg-3 mb-2">
+                            <span class="d-block text-secondary">Dotazník:</span>
+                            <span>{{ response.survey_name }}</span>
+                        </div>
+                        <div class="col-xs-12 col-lg-4 mb-2">
+                            <span class="d-block text-secondary">ID Responze:</span>
+                            <span>{{ response.interview_uuid }}</span>
+                        </div>
+                        <div class="col-xs-12 col-lg-4 mb-2">
+                            <span class="d-block text-secondary">Datum responze:</span>
+                            <span>{{ response.created }}</span>
+                        </div>
+                        <div class="col-xs-12 col-lg-1">
+                            <span class="d-flex justify-content-end align-items-center h-100">
+                                <a href="{% url 'sportdiag:response_detail' response.id %}">Detail</a>
+                            </span>
                         </div>
                     </div>
-                </li>
-            {% empty %}
+                    {% empty %}
                 <li class="list-group-item">Klient dosud nebyl testován.</li>
             {% endfor %}
         </ul>

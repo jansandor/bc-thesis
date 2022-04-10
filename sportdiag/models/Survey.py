@@ -7,6 +7,9 @@ class Survey(models.Model):
     name = models.CharField(_('název'), max_length=400)
     short_name = models.CharField(_('zkratka názvu'), max_length=30, help_text=_('Např.: OMSAT-3*, ACSI-28 apod.'))
     description = models.TextField(_('popis'))
+    is_published = models.BooleanField(_("zvěřejněný"), default=False)
+    is_deleted = models.BooleanField(_("smazaný"), default=False)
+    deleted_date = models.DateTimeField(_('datum smazání'), blank=True, null=True)
 
     class Meta:
         verbose_name = _('dotazník')
@@ -20,8 +23,8 @@ class Survey(models.Model):
 
     def non_empty_categories(self):
         # todo change to return non empty categories
-        # return [cat for cat in list(self.categories.order_by("id") if cat.questions.count() > 0]
-        return list(self.categories.all())
+        return [cat for cat in self.categories.order_by("id") if cat.questions.count() > 0]
+        # return self.categories.all()
 
     def non_empty_likert_scales(self):
         return [ls for ls in self.likert_scales.order_by("id") if ls.questions.count() > 0]

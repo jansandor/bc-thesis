@@ -263,7 +263,8 @@ class ResponseForm(models.ModelForm):
 
 
 class ResponsesFilterForm(forms.Form):
-    survey = forms.ModelChoiceField(queryset=Survey.objects.order_by('id'), label=_("Dotazník"), empty_label=None,
+    survey = forms.ModelChoiceField(queryset=Survey.objects.filter(is_deleted=False).order_by('id'),
+                                    label=_("Dotazník"), empty_label=None,
                                     required=False)
 
     # todo dalsi fieldy - filtry pro tabulku vysledku + vizual filter formu
@@ -276,7 +277,7 @@ class ResponsesFilterForm(forms.Form):
         self.helper = FormHelper(self)
         # self.helper.form_class = 'row'
         self.helper.label_class = 'fw-light'
-        self.helper.field_class = 'col-2'
+        self.helper.field_class = 'col-sm-8 col-md-6 col-lg-4'
         self.helper.layout = Layout('survey', Submit('submit', 'Filtrovat'))
 
 

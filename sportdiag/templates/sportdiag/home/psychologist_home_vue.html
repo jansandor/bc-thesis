@@ -17,47 +17,53 @@
         </div>
         <hr>
     </div>
-    <div class="row">
-        <div class="col fw-light">
-            <p>Pokud klienta požádáte o responzi zvoleného dotazníku, bude mu zaslán informativní
-                e-mail s pozvánkou k vyplnění dotazníku.</p>
-            <p>Jakmile dotazník vyplní a odešle, budete informován(a) e-mailem o nové responzi a budete klienta moci
-                znovu požádat o další responzi.</p>
-        </div>
-    </div>
     <div id="app">
-        <ul class="list-group">
-            <li v-for="client in clients" class="list-group-item">
-                <div class="row align-items-center">
-                    <div class="col">
-                        <a :href="clientDetailUrl + client.pk">[[getClientFullname(client)]]</a>
-                    </div>
-                    <div class="col-6">
-                        <select class="form-select form-select-sm"
-                                @change="surveyChanged($event, client.pk)">
-                            <option v-for="survey in surveys" :value="survey.pk">
-                                <!-- :disabled="resolveOption(client.pk, survey.pk)" -->
-                                [[survey.fields.name]]
-                            </option>
-                        </select>
-                    </div>
-                    <div class="col">
-                        <!-- todo button zrusit zadost o responzi -->
-                        <button v-if="resolveButton(client.pk)" type="button"
-                                class="btn btn-primary btn-sm disabled">
-                            Responze vyžádána
-                        </button>
-                        <button v-else type="button" class="btn btn-primary btn-sm align-middle"
-                                :ref="`requestResponseBtn-${client.pk}`"
-                                @click="requestSurveyResponse(client.pk, '{% url "sportdiag:request_survey_response" %}')">
+        <div v-if="!isClientsEmpty">
+            <div class="row">
+                <div class="col fw-light">
+                    <p>Pokud klienta požádáte o responzi zvoleného dotazníku, bude mu zaslán informativní
+                        e-mail s pozvánkou k vyplnění dotazníku.</p>
+                    <p>Jakmile dotazník vyplní a odešle, budete informován(a) e-mailem o nové responzi a budete klienta
+                        moci
+                        znovu požádat o další responzi.</p>
+                </div>
+            </div>
+            <ul class="list-group">
+                <li v-for="client in clients" class="list-group-item">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <a :href="clientDetailUrl + client.pk">[[getClientFullname(client)]]</a>
+                        </div>
+                        <div class="col-6">
+                            <select class="form-select form-select-sm"
+                                    @change="surveyChanged($event, client.pk)">
+                                <option v-for="survey in surveys" :value="survey.pk">
+                                    <!-- :disabled="resolveOption(client.pk, survey.pk)" -->
+                                    [[survey.fields.name]]
+                                </option>
+                            </select>
+                        </div>
+                        <div class="col">
+                            <!-- todo button zrusit zadost o responzi -->
+                            <button v-if="resolveButton(client.pk)" type="button"
+                                    class="btn btn-primary btn-sm disabled">
+                                Responze vyžádána
+                            </button>
+                            <button v-else type="button" class="btn btn-primary btn-sm align-middle"
+                                    :ref="`requestResponseBtn-${client.pk}`"
+                                    @click="requestSurveyResponse(client.pk, '{% url "sportdiag:request_survey_response" %}')">
                             <span :ref="`spinner-${client.pk}`" class="spinner-border spinner-border-sm me-1 d-none"
                                   role="status"
                                   aria-hidden="true"></span>
-                            <span>Požádat o responzi</span>
-                        </button>
+                                <span>Požádat o responzi</span>
+                            </button>
+                        </div>
                     </div>
-                </div>
-            </li>
+                </li>
+            </ul>
+        </div>
+        <ul v-else class="list-group">
+            <li class="list-group-item">Nemáte žádné klienty.</li>
         </ul>
     </div>
     <script>
@@ -70,12 +76,17 @@
                     surveys: surveysJson,
                     selectionState: {},
                     clientDetailUrl: "/ucty/detail_klienta/", // todo not very good - hardcoded url
+                    isClientsEmpty: false,
                 }
             },
             beforeMount() {
                 // init selection state - each client has selected first survey initially
-                for (let i = 0; i < this.clients.length; i++) {
-                    this.selectionState[this.clients[i].pk] = this.surveys[0]?.pk ?? "None";
+                if (this.clients.length === 0) {
+                    this.isClientsEmpty = true;
+                } else {
+                    for (let i = 0; i < this.clients.length; i++) {
+                        this.selectionState[this.clients[i].pk] = this.surveys[0]?.pk ?? "None";
+                    }
                 }
             },
             methods: {

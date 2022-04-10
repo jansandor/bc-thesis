@@ -1,12 +1,12 @@
-from django.urls import path, include, re_path
-from django.conf.urls import url
+from django.contrib.auth.decorators import login_required
+from django.urls import path, re_path
+
 from .views import IndexView, BeneficiariesView, ContactView, PsychologistHomeView, InviteClient, \
     ApprovePsychologistsView, reject_psychologist, approve_psychologist, download_certificate, \
     redirect_to_user_type_home, ResearcherHomeView, ClientHomeView, ResearchersOverviewView, \
-    deactivate_researcher_account, reactivate_researcher_account, SurveyDetail, SurveyConfirmView, \
+    deactivate_researcher_account, reactivate_researcher_account, SurveyDetailView, SurveyConfirmView, \
     request_survey_response, SurveysAndManualsView, upload_survey_attachments, download_survey_attachment, \
-    delete_survey_attachment, export_survey_responses_to_csv
-from django.contrib.auth.decorators import login_required
+    delete_survey_attachment, export_survey_responses_to_csv, toggle_is_published, delete_survey, ResponseDetailView
 
 # todo views, co jsou nyni ve sportdiagu, ale tykaji se accounts models importovat z accounts.views a nemit je ve sportdiagu
 
@@ -36,7 +36,7 @@ urlpatterns = [
          name='deactivate_researcher_account'),
     path('sportdiag/prehled_vyzkumniku/reaktivovat_vyzkumnika/<int:pk>/', reactivate_researcher_account,
          name='reactivate_researcher_account'),
-    path('sportdiag/dotaznik/<int:survey_id>/', SurveyDetail.as_view(), name='survey_detail'),
+    path('sportdiag/dotaznik/<int:survey_id>/', SurveyDetailView.as_view(), name='survey_detail'),
     path('sportdiag/dotaznik/potvrzeni/<uuid4>/', SurveyConfirmView.as_view(), name="survey_confirmation"),
     path('sportdiag/zadost_o_responzi/', request_survey_response, name='request_survey_response'),
     path('sportdiag/dotazniky_manualy/', SurveysAndManualsView.as_view(), name='surveys_manuals'),
@@ -48,4 +48,9 @@ urlpatterns = [
          name='delete_survey_attachment'),
     path('sportdiag/export_do_csv/<int:survey_id>/', export_survey_responses_to_csv,
          name="export_survey_responses_to_csv"),
+    path('sportdiag/dotazniky_manualy/toggle_is_published/<int:survey_id>/', toggle_is_published,
+         name="toggle_is_published"),
+    path('sportdiag/dotazniky_manualy/odstranit_dotaznik/<int:survey_id>/', delete_survey,
+         name="delete_survey"),
+    path('sportdiag/detail_responze/<int:response_id>/', ResponseDetailView.as_view(), name="response_detail"),
 ]
