@@ -6,7 +6,6 @@ import os
 import shutil
 from datetime import datetime, timezone
 from http import HTTPStatus
-from urllib.parse import urlencode
 
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -54,13 +53,14 @@ def redirect_to_user_type_home(request):
         elif user.is_psychologist:
             return redirect('sportdiag:home_psychologist')
         elif user.is_researcher:  # is_staff se poresi v sablone
-            initial_survey = Survey.objects.order_by('id').first()  # todo WHAT IF NO SURVEY
-            base_url = reverse('sportdiag:home_researcher')
-            # query_string = urlencode({'survey_id': initial_survey.id, 'page': 1})
-            query_string = urlencode({'page': 1})
-            url = f'{base_url}?{query_string}'
-            print("url", url)
-            return redirect(url)
+            # initial_survey = Survey.objects.order_by('id').first()  # todo WHAT IF NO SURVEY
+            # base_url = reverse('sportdiag:home_researcher')
+            ## query_string = urlencode({'survey_id': initial_survey.id, 'page': 1})
+            # query_string = urlencode({'page': 1})
+            # url = f'{base_url}?{query_string}'
+            # print("url", url)
+            # return redirect(url)
+            return redirect('sportdiag:home_researcher')
         else:
             return HttpResponseNotFound()
 
@@ -143,57 +143,47 @@ class ResearcherHomeView(TemplateView):
     filter_form = ResponsesFilterForm
     paginated_by = 2
 
-    @staticmethod
-    def compute_score(answers):  # todo extract method and reuse in client detail
-        total_score = 0
-        for i, answer in enumerate(answers):
-            try:
-                answer_score = int(answer)
-            except ValueError:
-                if answer != "":
-                    answers[i] = answer.replace("-", " ")
-                else:
-                    answers[i] = "-"
-                continue
-            else:
-                total_score += answer_score
-        return total_score
-
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         survey_id = kwargs.get('survey_id')
         print("survey_id", survey_id)
         if not survey_id:
-            survey = Survey.objects.filter(is_deleted=False).order_by('id').first()  # initial_survey
+            survey = Survey.objects.order_by("id").first()
+            if not survey:
+                context['filter_form'] = self.filter_form()
+                return context
             survey_id = survey.id
+            context['filter_form'] = self.filter_form(initial={'survey': survey_id})
+        survey = Survey.objects.get(id=survey_id)  # initial_survey
+        # survey_id = survey.id
         # todo error handling
         context['filter_form'] = self.filter_form(initial={'survey': survey_id})
-        responses = Response.objects.filter(survey_id=survey_id).order_by("-created")
+        responses = Response.objects.filter(survey_id=survey_id).order_by("-created").select_related()
         clients = ClientProfile.objects \
             .filter(user_id__in=responses.values_list("user_id", flat=True)) \
             .order_by("user_id")
-        questions_queryset = Question.objects.filter(survey_id=responses.first().survey_id).order_by("order")
-        context['questions'] = [question.get_short_name() for question in questions_queryset]
+        context['questions'] = survey.questions.order_by("order")
         table_data = []
         counter = 1
         for response in responses:
+            client = response.survey_id
             for client in clients:
                 if client.user_id == response.user_id:
                     answers = list(Answer.objects
                                    .filter(response_id=response.id)
-                                   .order_by("created")
-                                   .values_list("body", flat=True))
-                    score = self.compute_score(answers)
+                                   .order_by("created"))
                     table_data.append({
                         "row_number": counter,
                         "created": response.created,
-                        "interview_uuid": response.id,  # todo uuid?
+                        "response_id": response.id,
+                        "interview_uuid": response.interview_uuid,
                         "client_uuid": client.user_id,  # todo uuid?
                         "nationality": client.nationality,
                         "sex": client.sex,
                         "age": client.age,
                         "answers": answers,
-                        "score": score,
+                        "score": response.total_score,
+                        "max_score": response.max_score,
                     })
                     counter += 1
         # print("table_data", table_data)
@@ -206,27 +196,27 @@ class ResearcherHomeView(TemplateView):
         context["survey_id"] = survey_id
         return context
 
-    def get(self, request, *args, **kwargs):
-        print("request", request)
-        print("kwargs", kwargs)
-        page_number = request.GET.get('page')
-        survey_id = request.GET.get('survey_id')
-        if survey_id:
-            kwargs.update({"survey_id": survey_id})
-        print("kwargs after update", kwargs)
-        context = self.get_context_data(**kwargs)
-        return render(request, self.template_name, context)
+    # def get(self, request, *args, **kwargs):
+    # print("request", request)
+    # print("kwargs", kwargs)
+    # page_number = request.GET.get('page')
+    # survey_id = request.GET.get('survey_id')
+    # if survey_id:
+    #    kwargs.update({"survey_id": survey_id})
+    # print("kwargs after update", kwargs)
+    # context = self.get_context_data(**kwargs)
+    # return render(request, self.template_name, context)
 
     def post(self, request, *args, **kwargs):
         filter_form = self.filter_form(request.POST)
         if filter_form.is_valid():
             selected_survey = filter_form.cleaned_data['survey']
-            print("selected_survey", selected_survey)
-            context = self.get_context_data(survey_id=selected_survey.id)
+            if selected_survey is None:
+                context = self.get_context_data()
+            else:
+                context = self.get_context_data(survey_id=selected_survey.id)
             return render(request, self.template_name, context)
-        else:
-            pass
-        return HttpResponse(status=HTTPStatus.INTERNAL_SERVER_ERROR)
+        return redirect("sportdiag:home")
 
 
 class ClientHomeView(TemplateView):
@@ -249,13 +239,13 @@ class SurveyConfirmView(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["uuid4"] = str(kwargs.get("uuid4"))  # todo get?
+        context["uuid4"] = str(kwargs.get("uuid4"))
         context["response"] = Response.objects.get(interview_uuid=context["uuid4"])
         return context
 
 
-class SurveyDetailView(TemplateView):
-    template_name = "sportdiag/survey_detail.html"
+class NewResponseFormView(TemplateView):
+    template_name = "sportdiag/new_response.html"
     new_response_email_html_template = "sportdiag/emails/new_response_email_html_template.html"
 
     def get(self, request, *args, **kwargs):
@@ -277,7 +267,7 @@ class SurveyDetailView(TemplateView):
             except SurveyResponseRequest.MultipleObjectsReturned:
                 # todo handle, nemelo by nikdy nastat!
                 pass
-            survey = Survey.objects.get(id=survey_id)
+            survey = Survey.objects.get(id=survey_id)  # todo select related
             form = ResponseForm(survey=survey, user=request.user)
             context = {'response_form': form, 'survey_id': survey_id}
         else:
@@ -492,8 +482,12 @@ class SurveysAndManualsView(TemplateView):
         return render(request, self.template_name, context)
 
 
+def get_survey_media_dir_path(survey):
+    return settings.MEDIA_ROOT / 'sportdiag/surveys' / f'survey_{survey.id}'
+
+
 def get_survey_attachments_upload_dir_path(survey):
-    survey_media_dir_path = settings.MEDIA_ROOT / 'sportdiag/surveys' / f'survey_{survey.id}'
+    survey_media_dir_path = get_survey_media_dir_path(survey)
     if not os.path.exists(survey_media_dir_path):
         os.mkdir(survey_media_dir_path)
     survey_attachments_dir_path = survey_media_dir_path / 'attachments'
@@ -577,37 +571,31 @@ def export_survey_responses_to_csv(request, survey_id):
     survey = Survey.objects.get(id=survey_id)
     filename = f"odpovedi_{datetime.now(timezone.utc).date()}_{survey.short_name}.csv".replace(" ", "_").replace("-",
                                                                                                                  "_")
-    # todo survey short name
-    responses = Response.objects.filter(survey_id=survey.id).order_by("-created")
-    clients = ClientProfile.objects \
-        .filter(user_id__in=responses.values_list("user_id", flat=True)) \
-        .order_by("user_id")
-    questions_queryset = Question.objects.filter(survey_id=responses.first().survey_id).order_by("order")
-    questions = [question.get_short_name() for question in questions_queryset]
-
+    questions = []
+    questions += [question.text for question in survey.no_category_questions()]
+    questions += [question.short_name for question in survey.categorized_questions()]
     http_response = HttpResponse(content_type='text/csv',
                                  headers={'Content-Disposition': f'attachment; filename="{filename}"'})
     writer = csv.writer(http_response)
     writer.writerow(
         ['#', 'Dotazník', 'Datum responze', 'ID Responze', 'ID Klienta', 'Státní příslušnost', 'Pohlaví',
-         'Věk', *questions, 'Skóre'])
+         'Věk', *questions, 'Skóre', 'Max Skóre'])
     counter = 1
-    for response in responses:
-        for client in clients:
-            if client.user_id == response.user_id:
-                print("response.created.__str__()", datetime.fromisoformat(response.created.__str__()))
-                answers = list(Answer.objects
-                               .filter(response_id=response.id)
-                               .order_by("created")
-                               .values_list("body", flat=True))
-                score = compute_score(answers)
-                # todo uuid? user, response
-                response_created = datetime.fromisoformat(response.created.__str__())
-                writer.writerow(
-                    [f'{counter}', f'{survey.short_name}', f'{response_created.strftime("%Y-%m-%d %H:%M:%S")}',
-                     f'{response.id}', f'{client.user_id}', f'{client.nationality}', f'{client.sex}', f'{client.age}',
-                     *answers, f'{score}'])
-                counter += 1
+    for response in Response.objects.filter(survey_id=survey.id).order_by("-created"):
+        client = ClientProfile.objects.get(user_id=response.user_id)
+        no_cat_question_answers = Answer.objects.filter(response_id=response.id,
+                                                        question_id__in=survey.no_category_questions()).order_by(
+            "created").values_list("body", flat=True)
+        answers = Answer.objects.filter(response_id=response.id,
+                                        question_id__in=survey.categorized_questions()).order_by(
+            "created").values_list("score", flat=True)
+        response_created = datetime.fromisoformat(response.created.__str__()).strftime("%Y-%m-%d %H:%M:%S")
+        writer.writerow(
+            [f'{counter}', f'{survey.short_name}', f'{response_created}',
+             f'{response.interview_uuid}', f'{client.user_id}', f'{client.nationality}', f'{client.sex}',
+             f'{client.age}',
+             *no_cat_question_answers, *answers, f'{response.total_score}', f'{response.max_score}'])
+        counter += 1
     return http_response
 
 
@@ -628,6 +616,10 @@ def delete_survey(request, survey_id):
         survey.is_deleted = True
         survey.deleted_date = datetime.now(timezone.utc)
         survey.save()
+        # todo remove attachments - TEST
+        survey_media_dir_path = get_survey_media_dir_path(survey)
+        if os.path.exists(survey_media_dir_path):
+            shutil.rmtree(survey_media_dir_path)  # todo onerror logging
     else:
         messages.error(request, "Dotazník nenalezen.")
     return redirect("sportdiag:surveys_manuals")
@@ -648,41 +640,6 @@ likert_scale_values_text = [
 class ResponseDetailView(TemplateView):
     template_name = "sportdiag/response_detail.html"
 
-    @staticmethod
-    def get_answer_body(answer):
-        try:
-            int(answer)
-        except ValueError:
-            if answer != "":
-                answer = answer.replace("-", " ")
-            else:
-                answer = "-"
-        return answer
-
-    @staticmethod
-    def get_answer_int(answer_body):
-        try:
-            answer_value = int(answer_body)
-        except ValueError:
-            return 0
-        return answer_value
-
-    @staticmethod
-    def compute_score(answers):  # todo extract method and reuse in researchers home
-        total_score = 0
-        for i, answer in enumerate(answers):
-            try:
-                answer_score = int(answer)
-            except ValueError:
-                if answer != "":
-                    answers[i] = answer.replace("-", " ")
-                else:
-                    answers[i] = "-"
-                continue
-            else:
-                total_score += answer_score
-        return total_score
-
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         response = Response.objects.get(id=kwargs.get("response_id"))
@@ -691,41 +648,33 @@ class ResponseDetailView(TemplateView):
         context["response"] = response
         context["client"] = client
         context["survey"] = survey
-        categories = survey.non_empty_categories()
-        print("categories", categories)
         categories_data = []
-        response_total_score = 0
-        for category in categories:
-            cat_score = 0
+        for category in survey.non_empty_categories():
             questions_data = []
-            cat_questions = Question.objects.filter(category_id=category.id).order_by("number")
-            for question in cat_questions:
-                answer = Answer.objects.get(response_id=response.id, question_id=question.id)
-                cat_score += self.get_answer_int(answer.body)
-                answer_text = ""
-                if question.type == Question.LIKERT_SCALE:
-                    answer_text = likert_scale_values_text[self.get_answer_int(answer.body)]
-                if answer_text == "":
-                    answer_text = self.get_answer_body(answer)
+            for question in category.questions.order_by("number"):
+                answer = question.answers.get(response_id=response.id)
                 question_data = {
-                    "question_tag": question.get_short_name(),
+                    "question_tag": question.short_name,
                     "required": question.required,
                     "question_text": question.text,
-                    "answer_text": answer_text,
-                    "answer_score": self.get_answer_int(answer.body)
+                    "answer_text": answer.body,
+                    "answer_score": answer.score
                 }
                 questions_data.append(question_data)
             categories_data.append({
-                "category_name": category.name,
+                "id": category.id,  # todo response detail - links to categories
+                "name": category.name,
                 "questions_data": questions_data,
-                "category_score": cat_score,
+                "score": response.compute_category_score(category)
             })
-            response_total_score += cat_score
-        context["categories"] = categories_data
-        context["response_total_score"] = response_total_score
-        print("categories", categories_data)
+        context["categories_data"] = categories_data
+        no_cat_questions_data = []
+        for question in survey.no_category_questions():
+            answer = question.answers.get(response_id=response.id)
+            no_cat_questions_data.append({
+                "required": question.required,
+                "question_text": question.text,
+                "answer_text": answer.body,
+            })
+        context["no_cat_questions_data"] = no_cat_questions_data
         return context
-
-    def get(self, request, *args, **kwargs):
-        context = self.get_context_data(**kwargs)
-        return render(request, self.template_name, context)

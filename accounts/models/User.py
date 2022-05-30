@@ -14,9 +14,13 @@ class User(AbstractUser):
     first_name = models.CharField(_('jméno'), max_length=150, blank=False)
     last_name = models.CharField(_('příjmení'), max_length=150, blank=False)
     email_verified = models.BooleanField(_('ověřený e-mail'), default=False)
-    # next attribute is only for psychologists todo maybe researchers too?
-    confirmed_by_staff = models.BooleanField(_('schválený obsluhou'), default=True)
-    # todo is active default false
+    # todo move confirmed_by_staff attribute to PsychologistProfile?
+    confirmed_by_staff = models.BooleanField(_('schválený hlavním výzkumníkem'), default=False)
+    is_active = models.BooleanField(_('active'), default=False,
+                                    help_text=_(
+                                        'Designates whether this user should be treated as active. '
+                                        'Unselect this instead of deleting accounts.'
+                                    ), )
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
 

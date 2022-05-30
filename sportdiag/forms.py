@@ -42,13 +42,22 @@ class InviteClientForm(forms.Form):
             params={'value': client_email})
 
 
+from django.forms.widgets import ChoiceWidget
+
+
+# todo custom radio?
+class LikertRadio(ChoiceWidget):
+    input_type = 'radio'
+    template_name = 'sportdiag/widgets/likert_radio/likert_radio.html'
+    # template_name = 'django/forms/widgets/radio.html'
+    option_template_name = 'sportdiag/widgets/likert_radio/liker_radio_option.html'
+    # option_template_name = 'django/forms/widgets/radio_option.html'
+
+
 class ResponseForm(models.ModelForm):
     FIELDS = {
         Question.SHORT_TEXT: forms.CharField,
-        # Question.RADIO: forms.RadioSelect, # choices field?
-        # Question.SELECT: forms.Select, # choices field
         Question.INTEGER: forms.IntegerField,
-        Question.LIKERT_SCALE: forms.ChoiceField
     }
 
     WIDGETS = {
@@ -56,29 +65,25 @@ class ResponseForm(models.ModelForm):
         Question.RADIO: forms.RadioSelect,
         Question.SELECT: forms.Select,
         Question.INTEGER: forms.IntegerField,
-        Question.LIKERT_SCALE: forms.RadioSelect
+        Question.LIKERT_SCALE: LikertRadio
     }
 
     class Meta:
         model = Response
         fields = ()
 
-    likert_scale_table_header = '<div class="table-responsive">\
+    def get_likert_scale_table_header(self, likert_scale):
+        html = '<div class="table-responsive">\
                         <table class="table table-bordered bg-white">\
                             <thead>\
-                            <tr>\
-                                <th scope="col"></th>\
-                                <th scope="col">rozhodně<br/>nesouhlasím</th>\
-                                <th scope="col">nesouhlasím</th>\
-                                <th scope="col">spíše<br/>nesouhlasím</th>\
-                                <th scope="col">ani&nbsp;nesouhlasím<br/>ani&nbsp;souhlasím</th>\
-                                <th scope="col">spíše<br/>souhlasím</th>\
-                                <th scope="col">souhlasím</th>\
-                                <th scope="col">rozhodně<br/>souhlasím</th>\
-                            </tr>\
-                            </thead>\
-                            <tbody>'
+                            <tr> \
+                                <th scope="col"></th>'
+        for choice in likert_scale.get_choices():
+            html += f'<th scope="col" class="text-center">{choice}</th>'
+        html += '</tr></thead><tbody>'
+        return html
 
+    # expects survey and user in kwargs
     def __init__(self, *args, **kwargs):
         self.survey = kwargs.pop('survey')
         self.user = kwargs.pop('user')
@@ -87,7 +92,7 @@ class ResponseForm(models.ModelForm):
         self.helper.label_class = 'fw-light'
         self.helper.layout = Layout()
 
-        self.categories = self.survey.non_empty_categories()
+        self.groups = self.survey.non_empty_question_groups()
         self.likert_scales = self.survey.non_empty_likert_scales()
         # todo to list()?
         # self.other_questions = self.survey.questions.filter(category__isnull=True, likert_scale__isnull=True).order_by(
@@ -101,40 +106,46 @@ class ResponseForm(models.ModelForm):
             }
         print(self.processed_likert_scales)
         # todo nejaka logika by mela jit do modelu survey
-        self.processed_categories = {}
-        for cat in self.categories:
-            cat_questions = list(self.survey.questions.filter(category__id=cat.id))
-            self.processed_categories[cat.id] = {
-                "category_start_added": False,
-                "questions": [q.id for q in cat_questions]
+        self.processed_question_groups = {}
+        for group in self.groups:
+            group_questions = group.questions.all()
+            self.processed_question_groups[group.id] = {
+                "group_start_added": False,
+                "questions": [q.id for q in group_questions]
             }
         self.add_questions()
 
     @staticmethod
-    def get_category_start_html(category):
-        return f'<div class="accordion" id="accordion{category.id}">\
+    def get_group_start_html(group):  # todo group
+        html = f'<div class="accordion" id="accordion{group.id}">\
                             <div class="accordion-item">\
-                                <h3 class="accordion-header" id="heading{category.id}">\
+                                <h3 class="accordion-header" id="heading{group.id}">\
                                     <button class="accordion-button" type="button" data-bs-toggle="collapse"\
-                                    data-bs-target="#collapse{category.id}" aria-expanded="true"\
-                                    aria-controls="collapse{category.id}">\
-                                    {category.name}\
+                                    data-bs-target="#collapse{group.id}" aria-expanded="true"\
+                                    aria-controls="collapse{group.id}">\
+                                    {group.name}\
                                     </button>\
                                 </h3>\
-                            <div id="collapse{category.id}" class="accordion-collapse collapse show"\
-                            aria-labelledby="heading{category.id}"\
-                            data-bs-parent="#accordion{category.id}">\
-                        <div class="accordion-body">\
-                        <p>{category.description}</p>'
+                            <div id="collapse{group.id}" class="accordion-collapse collapse show"\
+                            aria-labelledby="heading{group.id}"\
+                            data-bs-parent="#accordion{group.id}">\
+                        <div class="accordion-body">'
+        if group.description != "":
+            html += f'<p class="fw-bolder">Popis:</p><p class="fst-italic">{group.description}</p>'
+        if group.instructions != "":
+            html += f'<p class="fw-bolder">Instrukce:</p><p class="fst-italic">{group.instructions}</p>'
+        return html
 
     def add_likert_scale_question(self, question):
         ls_id = question.likert_scale.id
         if not self.processed_likert_scales[ls_id]["table_header_added"]:
-            self.helper.layout.append(HTML(self.likert_scale_table_header))
+            self.helper.layout.append(HTML(self.get_likert_scale_table_header(question.likert_scale)))
             self.processed_likert_scales[ls_id]["table_header_added"] = True
         self.helper.layout.append(HTML('<tr>'))
         required = '<span class="asteriskField">*</span>' if question.required else ""
-        self.helper.layout.append(HTML(f'<td style="width: 500px">{question.text}{required}</td>'))
+        self.helper.layout.append(
+            HTML(
+                f'<td style="width: 500px" class="align-middle fw-light">{question.order}) {question.text}{required}</td>'))
         self.add_question(question)
         self.helper.layout.append(HTML('</tr>'))
         self.processed_likert_scales[ls_id]["questions"].remove(question.id)
@@ -143,35 +154,38 @@ class ResponseForm(models.ModelForm):
 
     def add_questions(self):
         for question in self.survey.questions.order_by('order'):  # enumerate(self.survey.questions.all())
-            if question.category is not None:
-                cat_id = question.category.id
-                category = self.survey.categories.get(id=cat_id)
-                if not self.processed_categories[cat_id]["category_start_added"]:
-                    self.helper.layout.append(HTML(self.get_category_start_html(category)))
-                    self.processed_categories[cat_id]["category_start_added"] = True
+            if question.group is not None:
+                group_id = question.group_id
+                group = self.survey.question_groups.get(id=group_id)
+                if not self.processed_question_groups[group_id]["group_start_added"]:
+                    self.helper.layout.append(HTML(self.get_group_start_html(group)))
+                    self.processed_question_groups[group_id]["group_start_added"] = True
                 if question.likert_scale is not None:
                     self.add_likert_scale_question(question)
                 else:
                     self.add_question(question)
-                self.processed_categories[cat_id]["questions"].remove(question.id)
-                if self.processed_categories[cat_id]["questions"].__len__() == 0:
-                    self.helper.layout.append(HTML('</div></div></div><br/>'))  # category end
+                self.processed_question_groups[group_id]["questions"].remove(question.id)
+                if self.processed_question_groups[group_id]["questions"].__len__() == 0:
+                    self.helper.layout.append(HTML('</div></div></div></div><br/>'))  # group end
             elif question.likert_scale is not None:
                 self.add_likert_scale_question(question)
             else:
                 self.add_question(question)
         # todo handle questions without category
         self.helper.layout.append(
-            Div(Submit("submit", _("Odeslat")),
+            Div(Div(Submit("submit", _("Odeslat")), css_class="mb-1"),
                 HTML("""<button data-bs-toggle="modal" data-bs-target="#cancelSurveyModal"
-                type="button" class="btn btn-secondary">Ukončit a zapomenout odpovědi</button>""")))
+                type="button" class="btn btn-secondary ms-1 mb-1">Ukončit a zapomenout odpovědi</button>"""),
+                css_class="d-flex flex-wrap justify-content-end"))
         # todo css_class="d-flex justify-content-end" ??? tlacitka vpravo dole misto vlevo
 
     def add_question(self, question):
         """Add a question to the form.
         :param Question question: The question to add.
         :param dict data: The pre-existing values from a post request."""
-        kwargs = {"label": question.text, "required": question.required}
+        kwargs = {
+            "label": f'{question.order}) {question.text}',
+            "required": question.required}
         choices = self.get_question_choices(question)
         if choices:
             kwargs["choices"] = choices
@@ -182,10 +196,10 @@ class ResponseForm(models.ModelForm):
         # field = forms.ChoiceField(widget=forms.RadioSelect(), choices=choices,
         #                          label=_(question.text),
         #                          required=question.required)
-        field.widget.attrs["category"] = question.category.name if question.category else ""
+        field.widget.attrs["question_group"] = question.group.name if question.group else ""
         field.widget.attrs["likert_scale"] = question.likert_scale.name if question.likert_scale else ""
         # logging.debug("Field for %s : %s", question, field.__dict__)
-        field_key = f"{question.id}"
+        field_key = f"question_{question.id}"
         # add question to crispy form Layout manually to customize rendering
         # if question.type == Question.LIKERT_SCALE
         # self.helper.layout.append(Field(field_key))
@@ -228,13 +242,19 @@ class ResponseForm(models.ModelForm):
         except KeyError:
             return forms.ChoiceField(**kwargs)
 
+    def get_answer_body(self, question, field_value):
+        choices = [choice.replace("(", "").replace(")", "") for choice in question.get_clean_choices()]
+        if field_value in choices:
+            index = choices.index(field_value)
+            return question.get_clean_choices()[index]
+
     def save(self, commit=True):
         """Save the response object"""
         # Recover an existing response from the database if any
         #  There is only one response by logged user.
         response = super().save(commit=False)
         response.survey = self.survey
-        # response.interview_uuid = uuid.uuid4
+        response.interview_uuid = uuid.uuid4()
         if self.user.is_authenticated:
             response.user = self.user
         response.save()
@@ -243,8 +263,6 @@ class ResponseForm(models.ModelForm):
         # create an answer object for each question and associate it with this
         # response.
         for field_name, field_value in list(self.cleaned_data.items()):
-            print("field name")
-            print("field value")
             if field_name.startswith("question_"):
                 # warning: this way of extracting the id is very fragile and
                 # entirely dependent on the way the question_id is encoded in
@@ -252,7 +270,10 @@ class ResponseForm(models.ModelForm):
                 q_id = int(field_name.split("_")[1])
                 question = Question.objects.get(id=q_id)
                 answer = Answer(question=question)
-                answer.body = field_value
+                # todo get_answer_body to Question class or get_answer_score to ResponseForm class?
+                answer.body = self.get_answer_body(question, field_value.replace("-", " ")) if question.type in [
+                    Question.SELECT, Question.RADIO, Question.LIKERT_SCALE] else field_value.replace("-", " ")
+                answer.score = question.get_answer_score(answer)
                 data["responses"].append((answer.question.id, answer.body))
                 LOGGER.debug("Creating answer for question %d of type %s : %s", q_id, answer.question.type, field_value)
                 answer.response = response
@@ -264,8 +285,7 @@ class ResponseForm(models.ModelForm):
 
 class ResponsesFilterForm(forms.Form):
     survey = forms.ModelChoiceField(queryset=Survey.objects.filter(is_deleted=False).order_by('id'),
-                                    label=_("Dotazník"), empty_label=None,
-                                    required=False)
+                                    label=_("Dotazník"), required=False, empty_label=None)
 
     # todo dalsi fieldy - filtry pro tabulku vysledku + vizual filter formu
     # todo helper property instead of using init?

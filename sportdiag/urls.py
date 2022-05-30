@@ -4,7 +4,7 @@ from django.urls import path, re_path
 from .views import IndexView, BeneficiariesView, ContactView, PsychologistHomeView, InviteClient, \
     ApprovePsychologistsView, reject_psychologist, approve_psychologist, download_certificate, \
     redirect_to_user_type_home, ResearcherHomeView, ClientHomeView, ResearchersOverviewView, \
-    deactivate_researcher_account, reactivate_researcher_account, SurveyDetailView, SurveyConfirmView, \
+    deactivate_researcher_account, reactivate_researcher_account, NewResponseFormView, SurveyConfirmView, \
     request_survey_response, SurveysAndManualsView, upload_survey_attachments, download_survey_attachment, \
     delete_survey_attachment, export_survey_responses_to_csv, toggle_is_published, delete_survey, ResponseDetailView
 
@@ -17,10 +17,10 @@ urlpatterns = [
     path('beneficienti/', BeneficiariesView.as_view(), name='beneficiaries'),
     path('kontakt/', ContactView.as_view(), name='contact'),
     path('sportdiag/', redirect_to_user_type_home, name='home'),
-    path('sportdiag/c/', login_required(ClientHomeView.as_view()), name='home_client'),
-    path('sportdiag/p/', login_required(PsychologistHomeView.as_view()), name='home_psychologist'),
-    re_path(r'sportdiag/r/(?:\?page=(?P<page>\d+))?$',  # survey_id=(?P<survey_id>\d+)?&
-            login_required(ResearcherHomeView.as_view()),
+    path('sportdiag/c/', ClientHomeView.as_view(), name='home_client'),
+    path('sportdiag/p/', PsychologistHomeView.as_view(), name='home_psychologist'),
+    re_path(r'sportdiag/r/(?:\?page=(?P<page>\d+))?$',  # (?:\?page=(?P<page>\d+))?$ survey_id=(?P<survey_id>\d+)?&
+            ResearcherHomeView.as_view(),
             name='home_researcher'),
     path('sportdiag/pozvat_klienta/', InviteClient.as_view(), name='invite_client'),
     re_path(r'sportdiag/schvalovani_psychologu/(?:\?page=(?P<page>\d+))?$', ApprovePsychologistsView.as_view(),
@@ -36,7 +36,7 @@ urlpatterns = [
          name='deactivate_researcher_account'),
     path('sportdiag/prehled_vyzkumniku/reaktivovat_vyzkumnika/<int:pk>/', reactivate_researcher_account,
          name='reactivate_researcher_account'),
-    path('sportdiag/dotaznik/<int:survey_id>/', SurveyDetailView.as_view(), name='survey_detail'),
+    path('sportdiag/nova_responze/<int:survey_id>/', NewResponseFormView.as_view(), name='new_response'),
     path('sportdiag/dotaznik/potvrzeni/<uuid4>/', SurveyConfirmView.as_view(), name="survey_confirmation"),
     path('sportdiag/zadost_o_responzi/', request_survey_response, name='request_survey_response'),
     path('sportdiag/dotazniky_manualy/', SurveysAndManualsView.as_view(), name='surveys_manuals'),

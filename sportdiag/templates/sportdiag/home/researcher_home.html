@@ -1,6 +1,7 @@
 {% extends 'sportdiag/common/base.html' %}
 
 {% load crispy_forms_tags %}
+{% load sportdiag_filters %}
 
 {% block title %}Sportdiag | Home{% endblock %}
 
@@ -19,8 +20,10 @@
     <div class="row bg-white py-2"> <!-- <div class="row bg-white py-1"> -->
         <div class="col-12 mt-1 mb-2">
             <div class="d-flex justify-content-end">
-                <a href="{% url 'sportdiag:export_survey_responses_to_csv' survey_id %}" class="btn btn-primary">
-                    Exportovat do .csv</a>
+                {% if survey_id %}
+                    <a href="{% url 'sportdiag:export_survey_responses_to_csv' survey_id %}" class="btn btn-primary">
+                        Exportovat do .csv</a>
+                {% endif %}
             </div>
         </div>
         <div class="col">
@@ -28,17 +31,18 @@
                 <table class="table table-hover table-bordered table-sm align-middle">
                     <thead>
                     <tr>
-                        <th scope="col" class="col text-nowrap">#</th>
-                        <th scope="col" class="col text-nowrap">Datum responze</th>
-                        <th scope="col" class="col text-nowrap">ID Responze</th>
-                        <th scope="col" class="col text-nowrap">ID Klienta</th>
-                        <th scope="col" class="col text-nowrap">Statní příslušnost</th>
-                        <th scope="col" class="col text-nowrap">Pohlaví</th>
-                        <th scope="col" class="col text-nowrap">Věk</th>
+                        <th scope="col" class="col text-nowrap text-center">#</th>
+                        <th scope="col" class="col text-nowrap text-center">Datum responze</th>
+                        <th scope="col" class="col text-nowrap text-center">ID Responze</th>
+                        <th scope="col" class="col text-nowrap text-center">ID Klienta</th>
+                        <th scope="col" class="col text-nowrap text-center">Statní příslušnost</th>
+                        <th scope="col" class="col text-nowrap text-center">Pohlaví</th>
+                        <th scope="col" class="col text-nowrap text-center">Věk</th>
                         {% for question in questions %}
-                            <th scope="col" class="col text-nowrap text-center">{{ question }}</th>
+                            <th scope="col" class="col text-center">{{ question|question }}</th>
                         {% endfor %}
-                        <th scope="col" class="col text-nowrap">Skóre</th>
+                        <th scope="col" class="col text-nowrap text-center">Skóre</th>
+                        <th scope="col" class="col text-nowrap text-center">Max skóre</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -46,17 +50,20 @@
                         <tr>
                             <td class="text-nowrap text-center">{{ item.row_number }}</td>
                             <td class="text-nowrap">{{ item.created }}</td>
-                            <td class="text-nowrap">{{ item.interview_uuid }}</td>
+                            <td class="text-nowrap"><a
+                                    href="{% url 'sportdiag:response_detail' item.response_id %}">{{ item.interview_uuid }}</a>
+                            </td>
                             <td class="text-nowrap">{{ item.client_uuid }}</td>
                             <td class="text-nowrap text-center">{{ item.nationality }}</td>
                             <td class="text-nowrap text-center">{{ item.sex }}</td>
                             <td class="text-nowrap text-center">{{ item.age }}</td>
                             {% for answer in item.answers %}
                                 <td class="text-nowrap text-center">
-                                    {{ answer }}
+                                    {{ answer|answer }}
                                 </td>
                             {% endfor %}
-                            <td class="text-nowrap text-center">{{ item.score }}</td>
+                            <td class="text-nowrap text-center">{{ item.score|floatformat }}</td>
+                            <td class="text-nowrap text-center">{{ item.max_score }}</td>
                         </tr>
                     {% empty %}
                         <tr>

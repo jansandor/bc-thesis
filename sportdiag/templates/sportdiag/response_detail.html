@@ -3,12 +3,16 @@
 {% block title %}Detail responze{% endblock %}
 
 {% block content %}
-    <div class="row justify-content-between align-items-center">
+    <div class="row justify-content-between">
         <div class="col-auto">
             <h1>Detail responze</h1>
         </div>
         <div class="col-auto">
-            <a href="{% url 'client_detail' client.user_id %}" class="btn btn-secondary">Zpět</a>
+            {% if user.is_researcher %}
+                <a href="{% url 'sportdiag:home_researcher' %}" class="btn btn-secondary">Zpět</a>
+            {% elif user.is_psychologist %}
+                <a href="{% url 'client_detail' client.user_id %}" class="btn btn-secondary">Zpět</a>
+            {% endif %}
         </div>
         <hr>
     </div>
@@ -20,7 +24,14 @@
             </div>
             <div class="d-flex flex-wrap mb-1">
                 <div class="text-secondary me-2">Klient:</div>
-                <div>{{ client }}, {{ client.age }} let, {{ client.sex }}</div>
+                <div>
+                    {% if user.is_researcher %}
+                        <span>ID {{ client.user_id }}</span>
+                    {% else %}
+                        <span>{{ client }}</span>
+                    {% endif %}
+                    <span>, {{ client.age }} let, {{ client.sex }}</span>
+                </div>
             </div>
             <div class="d-flex flex-wrap mb-1">
                 <div class="text-secondary me-2">Dotazník:</div>
@@ -32,7 +43,7 @@
             </div>
             <div class="d-flex flex-wrap mb-1">
                 <div class="text-secondary me-2">Celkové skóre:</div>
-                <div>{{ response_total_score }}b</div>
+                <div>{{ response.total_score|floatformat }}/{{ survey.max_score }}b</div>
             </div>
         </div>
     </div>
@@ -42,11 +53,35 @@
         </div>
         <hr>
     </div>
-    {% for category in categories %}
+    <div class="pb-3">
+        <div class="table-responsive">
+            <table class="table caption-top bg-white">
+                <caption><h3>Otázky mimo škály <span class="text-body">(nehodnocené)</span></h3></caption>
+                <thead>
+                <tr>
+                    <th scope="col">Text otázky</th>
+                    <th scope="col">Odpověď</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for question in no_cat_questions_data %}
+                    <tr>
+                        <td>{{ question.question_text }}{% if question.required %}<span
+                                class="asteriskField">*</span>{% endif %}</td>
+                        <td>{{ question.answer_text }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% for category in categories_data %}
         <div class="pb-3">
             <div class="table-responsive">
                 <table class="table caption-top bg-white">
-                    <caption>Subškála: <span class="text-body">{{ category.category_name }}</span></caption>
+                    <caption id="{{ category.id }}"><h3>Subškála: <span class="text-body">{{ category.name }}</span>
+                    </h3>
+                    </caption>
                     <thead>
                     <tr>
                         <th scope="col">#</th>
@@ -70,7 +105,7 @@
                         <th scope="row" class="text-wrap">Skóre</th>
                         <td></td>
                         <td></td>
-                        <td>{{ category.category_score }}b</td>
+                        <td>{{ category.score|floatformat:2 }}b</td>
                     </tr>
                     </tbody>
                 </table>

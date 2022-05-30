@@ -1,16 +1,20 @@
 from django.db import models
 from django.utils.translation import gettext_lazy as _
-from django.core.validators import MinValueValidator
-from sportdiag.models import Survey, Category
+from sportdiag.models import Survey, QuestionGroup
 
 
 class LikertScale(models.Model):
     name = models.CharField(_('název'), max_length=400)
+    # description = models.CharField(_('popis'), max_length=2000, blank=True, null=True)
     # order = models.PositiveIntegerField(_('pořadí zobrazení'), default=1)
     survey = models.ForeignKey(Survey, on_delete=models.CASCADE, verbose_name=_('dotazník'),
                                related_name='likert_scales')
-    category = models.ForeignKey(Category, on_delete=models.SET_NULL, verbose_name=_('kategorie'), null=True,
-                                 blank=True, related_name="likert_scales")
+    choices = models.TextField(_('odpovědi'),
+                               help_text='Zadejte možné odpovědi likertovi škály oddělené čárkou. Např. téměř nikdy, někdy, často, téměř vždy')
+    scores = models.TextField(_('skóre odpovědí'),
+                              help_text='Zadejte bodové hodnocení každé odpovědi oddělené čárkou. Např. 0,1,2,3')
+    group = models.ForeignKey(QuestionGroup, on_delete=models.SET_NULL, verbose_name=_('skupina'), null=True,
+                              blank=True, related_name="likert_scales")
 
     class Meta:
         verbose_name = _('likertova škála')
@@ -18,3 +22,8 @@ class LikertScale(models.Model):
 
     def __str__(self):
         return self.name
+
+    def get_choices(self):
+        choices = [choice.strip() for choice in self.choices.split(",")]
+        print("LS choices", choices)
+        return choices
