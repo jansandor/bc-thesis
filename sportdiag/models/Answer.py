@@ -19,8 +19,8 @@ class Answer(models.Model):
     question = models.ForeignKey(Question, on_delete=models.CASCADE, verbose_name=_("otázka"), related_name="answers")
     response = models.ForeignKey(Response, on_delete=models.CASCADE, verbose_name=_("responze"), related_name="answers")
     created = models.DateTimeField(_("datum vytvoření"), auto_now_add=True)
-    # updated = models.DateTimeField(_("Update date"), auto_now=True)
     body = models.TextField(_("odpověď"), blank=True, null=True)
+    score = models.IntegerField(_("skóre"), default=0)
 
     def __init__(self, *args, **kwargs):
         try:

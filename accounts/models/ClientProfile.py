@@ -21,8 +21,8 @@ class ClientProfile(BaseUserProfile):
     @property
     def age(self):
         today = datetime.datetime.utcnow()
-        return today.year - self.birthdate.year - (
-                (today.month, today.day) < (self.birthdate.month, self.birthdate.day))
+        return today.year - self.birthdate.year - int(
+            (today.month, today.day) < (self.birthdate.month, self.birthdate.day))
 
     class Meta:
         verbose_name = _('klient')

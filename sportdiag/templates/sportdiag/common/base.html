@@ -21,8 +21,8 @@
     {% include 'sportdiag/common/main-nav.html' %}
        {%  endcomment %}
     {% if survey_id %}
-        {% url 'sportdiag:survey_detail' survey_id as survey_detail_url %}
-        {% if request.get_full_path != survey_detail_url %}
+        {% url 'sportdiag:new_response' survey_id as new_response_url %}
+        {% if request.get_full_path != new_response_url %}
             {% include 'sportdiag/common/main-nav.html' %}
         {% endif %}
     {% else %}

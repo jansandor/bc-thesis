@@ -37,26 +37,29 @@
                         <div class="col-6">
                             <select class="form-select form-select-sm"
                                     @change="surveyChanged($event, client.pk)">
-                                <option v-for="survey in surveys" :value="survey.pk">
+                                <option v-if="surveys.length > 0" v-for="survey in surveys" :value="survey.pk">
                                     <!-- :disabled="resolveOption(client.pk, survey.pk)" -->
                                     [[survey.fields.name]]
                                 </option>
+                                <option v-else>Žádné dotazníky</option>
                             </select>
                         </div>
                         <div class="col">
                             <!-- todo button zrusit zadost o responzi -->
-                            <button v-if="resolveButton(client.pk)" type="button"
-                                    class="btn btn-primary btn-sm disabled">
-                                Responze vyžádána
-                            </button>
-                            <button v-else type="button" class="btn btn-primary btn-sm align-middle"
-                                    :ref="`requestResponseBtn-${client.pk}`"
-                                    @click="requestSurveyResponse(client.pk, '{% url "sportdiag:request_survey_response" %}')">
+                            <div v-if="surveys.length > 0">
+                                <button v-if="resolveButton(client.pk)" type="button"
+                                        class="btn btn-primary btn-sm disabled">
+                                    Responze vyžádána
+                                </button>
+                                <button v-else type="button" class="btn btn-primary btn-sm align-middle"
+                                        :ref="`requestResponseBtn-${client.pk}`"
+                                        @click="requestSurveyResponse(client.pk, '{% url "sportdiag:request_survey_response" %}')">
                             <span :ref="`spinner-${client.pk}`" class="spinner-border spinner-border-sm me-1 d-none"
                                   role="status"
                                   aria-hidden="true"></span>
-                                <span>Požádat o responzi</span>
-                            </button>
+                                    <span>Požádat o responzi</span>
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </li>

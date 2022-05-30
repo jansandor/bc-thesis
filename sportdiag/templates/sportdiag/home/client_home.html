@@ -15,7 +15,8 @@
                 {% for survey in surveys %}
                     <li class="list-group-item d-flex justify-content-between align-items-center">
                         <span>{{ survey.name }}</span>
-                        <a href="{{ survey.get_absolute_url }}" class="btn btn-primary btn-sm">Vyplnit</a>
+                        <a href="{% url 'sportdiag:new_response' survey.id %}"
+                           class="btn btn-primary btn-sm">Vyplnit</a>
                     </li>
                 {% empty %}
                     <li class="list-group-item d-flex align-items-center">Nemáte žádné dotazníky k vyplnění.</li>

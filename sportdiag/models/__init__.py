@@ -1,5 +1,6 @@
 from .Survey import Survey
 from .Category import Category
+from .QuestionGroup import QuestionGroup
 from .LikertScale import LikertScale
 from .Question import Question
 from .Response import Response

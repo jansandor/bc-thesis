@@ -7,12 +7,10 @@ from sportdiag.models import Survey
 
 class Category(models.Model):
     name = models.CharField(_('název'), max_length=400)
-    description = models.CharField(_('popis'), max_length=2000, blank=True, null=True)
-    # order = models.PositiveIntegerField(_('pořadí zobrazení'), default=1)
+    description = models.TextField(_('popis'), blank=True, null=True)
     survey = models.ForeignKey(Survey, on_delete=models.CASCADE, verbose_name=_('dotazník'), related_name='categories')
 
     class Meta:
-        # pylint: disable=too-few-public-methods
         verbose_name = _('kategorie')
         verbose_name_plural = _('kategorie')
 

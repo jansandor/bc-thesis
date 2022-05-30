@@ -7,19 +7,20 @@
         {% for option in options %}
             <td class="align-middle">
                 <div class="d-flex flex-row flex-nowrap justify-content-center align-items-center">
-                    <div class="form-check{% if inline_class %} form-check-inline{% endif %} m-0 p-0">
+                    <div class="form-check{% if inline_class %} form-check-inline{% endif %} m-0 p-0"
+                         style="min-height: initial">
                         <input type="{{ option.type }}"
-                               class="form-check-input{% if field.errors %} is-invalid{% endif %} m-0"
+                               class="form-check-input{% if field.errors %} is-invalid{% endif %} m-0 fs-3"
                                name="{{ field.html_name }}"
                                value="{{ option.value|unlocalize }}" {% include "bootstrap5/layout/attrs.html" with widget=option %}>
                         {% comment %}
                         <label for="{{ option.attrs.id }}" class="form-check-label">
                             {{ option.label|unlocalize }}
                         </label>
-                        {% endcomment %}
                         {% if field.errors and forloop.last and not inline_class and forloop.parentloop.last %}
-                            {% include 'bootstrap5/layout/field_errors_block.html' %}
+                            {% include 'custom_crispy/layout/likert_field_errors_block.html' %}
                         {% endif %}
+                        {% endcomment %}
                     </div>
                 </div>
             </td>
