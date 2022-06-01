@@ -5,15 +5,17 @@
 {% block title %}Sportdiag | Registrace{% endblock %}
 
 {% block content %}
-    <div class="row">
-        <div class="col">
-            <h1>Registrace psychologa</h1>
+    <div class="container-xl bg-light p-4">
+        <div class="row">
+            <div class="col">
+                <h1>Registrace psychologa</h1>
+            </div>
+            <hr>
         </div>
-        <hr>
-    </div>
-    <div class="row">
-        <div class="col col-lg-4">
-            {% crispy form %}
+        <div class="row">
+            <div class="col col-lg-4">
+                {% crispy form %}
+            </div>
         </div>
     </div>
 {% endblock %}

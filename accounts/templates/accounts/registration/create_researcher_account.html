@@ -5,29 +5,32 @@
 {% block title %}Sportdiag | Vytvořit účet výzkumníka{% endblock %}
 
 {% block content %}
-    <div class="row">
-        <div class="col">
-            <h1>Vytvořit účet výzkumníka</h1>
+    <div class="container-xl bg-light p-4">
+        <div class="row">
+            <div class="col">
+                <h1>Vytvořit účet výzkumníka</h1>
+            </div>
+            <hr>
         </div>
-        <hr>
-    </div>
-    <div class="row">
-        <div class="col col-lg-4">
-            <div class="fw-light">
-                <p>Pokud vytvoříte účet výzkumníka, bude mu na zadaný e-mail zaslána zpráva s automaticky vygenerovaným
-                    heslem a odkazem pro dokončení registrace - potvrzením e-mailové adresy.</p>
-                <p>Po potvrzení e-mailové adresy bude jeho účet aktivní.</p>
+        <div class="row">
+            <div class="col col-lg-4">
+                <div class="fw-light">
+                    <p>Pokud vytvoříte účet výzkumníka, bude mu na zadaný e-mail zaslána zpráva s automaticky
+                        vygenerovaným
+                        heslem a odkazem pro dokončení registrace - potvrzením e-mailové adresy.</p>
+                    <p>Po potvrzení e-mailové adresy bude jeho účet aktivní.</p>
+                </div>
             </div>
         </div>
-    </div>
-    <div class="row">
-        <div class="col col-lg-4">
-            <form method="post">
-                {% csrf_token %}
-                {% crispy form %}
-                <input type="submit" value="Vytvořit účet" class="btn btn-primary">
-                <a href="{% url 'sportdiag:researchers_overview' page=1 %}" class="btn btn-secondary">Zrušit</a>
-            </form>
+        <div class="row">
+            <div class="col col-lg-4">
+                <form method="post">
+                    {% csrf_token %}
+                    {% crispy form %}
+                    <input type="submit" value="Vytvořit účet" class="btn btn-primary">
+                    <a href="{% url 'sportdiag:researchers_overview' page=1 %}" class="btn btn-secondary">Zrušit</a>
+                </form>
+            </div>
         </div>
     </div>
 {% endblock %}

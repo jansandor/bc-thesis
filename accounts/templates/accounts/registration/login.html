@@ -5,22 +5,24 @@
 {% block title %}Sportdiag | Přihlášení{% endblock %}
 
 {% block content %}
-    <div class="row">
-        <div class="col">
-            <h1>Přihlášení</h1>
+    <div class="container-xl bg-light p-4">
+        <div class="row">
+            <div class="col">
+                <h1>Přihlášení</h1>
+            </div>
+            <hr>
         </div>
-        <hr>
-    </div>
-    <div class="row">
-        <div class="col col-lg-4">
-            <!-- todo crispy labels ... totez obnoveni hesla -->
-            <!-- todo stay signed in checkbox (sessions?) -->
-            <form method="post">
-                {% csrf_token %}
-                {{ form|crispy }}
-                <input type="submit" value="Přihlásit se" class="btn btn-primary mb-3">
-            </form>
+        <div class="row">
+            <div class="col col-lg-4">
+                <!-- todo crispy labels ... totez obnoveni hesla -->
+                <!-- todo stay signed in checkbox (sessions?) -->
+                <form method="post">
+                    {% csrf_token %}
+                    {{ form|crispy }}
+                    <input type="submit" value="Přihlásit se" class="btn btn-primary mb-3">
+                </form>
+            </div>
         </div>
+        <a href="{% url 'password_reset' %}">Zapomněli jste heslo?</a>
     </div>
-    <a href="{% url 'password_reset' %}">Zapomněli jste heslo?</a>
 {% endblock %}

@@ -11,63 +11,66 @@
         const clientsJson = {{ clients_json|safe }};
         const surveysJson = {{ surveys_json|safe }};
     </script>
-    <div class="row">
-        <div class="col">
-            <h1>Přehled klientů</h1>
-        </div>
-        <hr>
-    </div>
-    <div id="app">
-        <div v-if="!isClientsEmpty">
-            <div class="row">
-                <div class="col fw-light">
-                    <p>Pokud klienta požádáte o responzi zvoleného dotazníku, bude mu zaslán informativní
-                        e-mail s pozvánkou k vyplnění dotazníku.</p>
-                    <p>Jakmile dotazník vyplní a odešle, budete informován(a) e-mailem o nové responzi a budete klienta
-                        moci
-                        znovu požádat o další responzi.</p>
-                </div>
+    <div class="container-xl bg-light p-4">
+        <div class="row">
+            <div class="col">
+                <h1>Přehled klientů</h1>
             </div>
-            <ul class="list-group">
-                <li v-for="client in clients" class="list-group-item">
-                    <div class="row align-items-center">
-                        <div class="col">
-                            <a :href="clientDetailUrl + client.pk">[[getClientFullname(client)]]</a>
-                        </div>
-                        <div class="col-6">
-                            <select class="form-select form-select-sm"
-                                    @change="surveyChanged($event, client.pk)">
-                                <option v-if="surveys.length > 0" v-for="survey in surveys" :value="survey.pk">
-                                    <!-- :disabled="resolveOption(client.pk, survey.pk)" -->
-                                    [[survey.fields.name]]
-                                </option>
-                                <option v-else>Žádné dotazníky</option>
-                            </select>
-                        </div>
-                        <div class="col">
-                            <!-- todo button zrusit zadost o responzi -->
-                            <div v-if="surveys.length > 0">
-                                <button v-if="resolveButton(client.pk)" type="button"
-                                        class="btn btn-primary btn-sm disabled">
-                                    Responze vyžádána
-                                </button>
-                                <button v-else type="button" class="btn btn-primary btn-sm align-middle"
-                                        :ref="`requestResponseBtn-${client.pk}`"
-                                        @click="requestSurveyResponse(client.pk, '{% url "sportdiag:request_survey_response" %}')">
+            <hr>
+        </div>
+        <div id="app">
+            <div v-if="!isClientsEmpty">
+                <div class="row">
+                    <div class="col fw-light">
+                        <p>Pokud klienta požádáte o responzi zvoleného dotazníku, bude mu zaslán informativní
+                            e-mail s pozvánkou k vyplnění dotazníku.</p>
+                        <p>Jakmile dotazník vyplní a odešle, budete informován(a) e-mailem o nové responzi a budete
+                            klienta
+                            moci
+                            znovu požádat o další responzi.</p>
+                    </div>
+                </div>
+                <ul class="list-group">
+                    <li v-for="client in clients" class="list-group-item">
+                        <div class="row align-items-center">
+                            <div class="col">
+                                <a :href="clientDetailUrl + client.pk">[[getClientFullname(client)]]</a>
+                            </div>
+                            <div class="col-6">
+                                <select class="form-select form-select-sm"
+                                        @change="surveyChanged($event, client.pk)">
+                                    <option v-if="surveys.length > 0" v-for="survey in surveys" :value="survey.pk">
+                                        <!-- :disabled="resolveOption(client.pk, survey.pk)" -->
+                                        [[survey.fields.name]]
+                                    </option>
+                                    <option v-else>Žádné dotazníky</option>
+                                </select>
+                            </div>
+                            <div class="col">
+                                <!-- todo button zrusit zadost o responzi -->
+                                <div v-if="surveys.length > 0">
+                                    <button v-if="resolveButton(client.pk)" type="button"
+                                            class="btn btn-primary btn-sm disabled">
+                                        Responze vyžádána
+                                    </button>
+                                    <button v-else type="button" class="btn btn-primary btn-sm align-middle"
+                                            :ref="`requestResponseBtn-${client.pk}`"
+                                            @click="requestSurveyResponse(client.pk, '{% url "sportdiag:request_survey_response" %}')">
                             <span :ref="`spinner-${client.pk}`" class="spinner-border spinner-border-sm me-1 d-none"
                                   role="status"
                                   aria-hidden="true"></span>
-                                    <span>Požádat o responzi</span>
-                                </button>
+                                        <span>Požádat o responzi</span>
+                                    </button>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                </li>
+                    </li>
+                </ul>
+            </div>
+            <ul v-else class="list-group">
+                <li class="list-group-item">Nemáte žádné klienty.</li>
             </ul>
         </div>
-        <ul v-else class="list-group">
-            <li class="list-group-item">Nemáte žádné klienty.</li>
-        </ul>
     </div>
     <script>
         const app = Vue.createApp({

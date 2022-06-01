@@ -5,33 +5,35 @@
 {% block title %}Sportdiag | Pozvat klienta{% endblock %}
 
 {% block content %}
-    <div class="row">
-        <div class="col">
-            <h1>Pozvat klienta</h1>
+    <div class="container-xl bg-light p-4">
+        <div class="row">
+            <div class="col">
+                <h1>Pozvat klienta</h1>
+            </div>
+            <hr>
         </div>
-        <hr>
-    </div>
-    <div class="row">
-        <div class="col col-lg-4">
-            <p class="fw-light">Sdělte klientovi váš osobní klíč, například mu ho předejte napsaný na
-                papíře nebo ho rovnou pozvěte k registraci e-mailem.</p>
+        <div class="row">
+            <div class="col col-lg-4">
+                <p class="fw-light">Sdělte klientovi váš osobní klíč, například mu ho předejte napsaný na
+                    papíře nebo ho rovnou pozvěte k registraci e-mailem.</p>
+            </div>
         </div>
-    </div>
-    <div class="row">
-        <div class="col col-lg-4">
-            <p>Osobní klíč</p>
-            <p class="fw-light">{{ psychologist.personal_key }}</p>
+        <div class="row">
+            <div class="col col-lg-4">
+                <p>Osobní klíč</p>
+                <p class="fw-light">{{ psychologist.personal_key }}</p>
+            </div>
         </div>
-    </div>
-    <div class="row">
-        <div class="col col-lg-4">
-            <form method="post">
-                {% csrf_token %}
-                {{ form|crispy }}
-                <input type="submit" value="Pozvat" class="btn btn-primary">
-                <!-- zatim nalezene jednoduche reseni "back" buttonu -->
-                <a href="{{ request.META.HTTP_REFERER|escape }}" class="btn btn-secondary">Zpět</a>
-            </form>
+        <div class="row">
+            <div class="col col-lg-4">
+                <form method="post">
+                    {% csrf_token %}
+                    {{ form|crispy }}
+                    <input type="submit" value="Pozvat" class="btn btn-primary">
+                    <!-- zatim nalezene jednoduche reseni "back" buttonu -->
+                    <a href="{{ request.META.HTTP_REFERER|escape }}" class="btn btn-secondary">Zpět</a>
+                </form>
+            </div>
         </div>
     </div>
 {% endblock %}

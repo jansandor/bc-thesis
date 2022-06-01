@@ -87,7 +87,7 @@ def request_survey_response(request):
                 email.send()
             except Exception:
                 # todo logging, DRY
-                # messages.error(request, "Něco se pokazilo. E-mail nebyl odeslán.")
+                # todo nefunguje jak by melo - pro zobrazeni msg je nutne udelat new request... messages.error(request, "Něco se pokazilo. E-mail nebyl odeslán.")
                 return HttpResponse(status=HTTPStatus.INTERNAL_SERVER_ERROR)
             else:
                 SurveyResponseRequest.objects.create(client_id=client_id, survey_id=survey_id)
