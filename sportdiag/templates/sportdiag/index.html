@@ -1,6 +1,8 @@
 {% extends 'sportdiag/common/base.html' %}
 
-{% block title %}Kontakt{% endblock %}
+{% load static %}
+
+{% block title %}Sportdiag{% endblock %}
 
 {% block content %}
     <div class="container-xl bg-light p-4">
@@ -9,6 +11,88 @@
                 <h1>Úvodní stránka</h1>
             </div>
             <hr>
+        </div>
+        <div class="row">
+            <div class="col">
+                <!-- todo doplnit &nbsp, zminka o katedre informatiky? -->
+                <!-- todo jak funguje aplikace bych asi nepopisoval? -->
+                <h2>Psychodiagnostické testy ze sportovní oblasti</h2>
+                <p>
+                    Psychologie sportu je dynamicky se rozvíjející obor. Proto vám přinášíme sadu psychodiagnostických
+                    testů ze sportovní oblasti, zaměřených na komplexní analýzu psychické složky výkonu sportovce. Našim
+                    cílem je:
+                </p>
+                <ul>
+                    <li>Poskytnou praktikům – psychologům sportu nástroje pro komplexní analýzu psychické složky výkonu
+                        sportovce
+                    </li>
+                    <li>Napomoci sportovcům systematicky pracovat na psychické složce svého výkonu a monitorovat její
+                        stav
+                    </li>
+                    <li>Díky online prostředí zefektivnit administraci a interpretaci testů</li>
+                    <li>Získat výzkumná data pro další rozvoj testů i psychologie sportu</li>
+                </ul>
+                <p>Využití testů pro psychology a klienty je bezplatné. Aplikace umožňuje trojí různý přístup – z pozice
+                    klienta, psychologa a výzkumníka.</p>
+                <h2>Testy</h2>
+                <p>Aktuálně jsou k dispozici následující testy:</p>
+                <!-- todo dotazniky vylistovat z DB -->
+                <ul>
+                    {% for survey in surveys %}
+                        <li style="list-style: url('{% static 'img/file-text.svg' %}');">{{ survey }}</li>
+                        {%  comment %}
+                        <li>Ottawský dotazník mentálních dovedností ve sportu 3* (OMNSAT-3*)</li>
+                        <li>Dotazník psychických vlastností nutných k rozvoji výjimečnosti (PCDEQ)</li>
+                        <li>Dotazník copingových dovedností pro rozhodčí (ACSI-28 pro rozhodčí)</li>
+                        <li>Dotazník copingových dovedností pro sportovce (ACSI-28 pro sportovce)</li>
+                        <li>Dotazník živosti pohybové imaginace (VMIQ-2)</li>
+                        <li>Krátká škála Flow – FSS-2</li>
+                        {% endcomment %}
+                    {% empty %}
+                        <li>Aktuálně nejsou k dispozici žádné dotazníky</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                <h2>Beneficienti</h2>
+                <p>Tato aplikace vznikala ve spolupráci s Asociaci psychologů sportu ČR a Fakultou tělesné kultury
+                    Univerzity Palackého.</p>
+                <ul>
+                    <li><a href="//www.sportpsy.upol.cz">
+                        <img src="{% static 'img/aps-logo.png' %}"
+                             alt="logo Asociace psychologů sportu">Asociace psychologů sportu</a>
+                    </li>
+                    <!-- todo href rel -->
+                    <li><a href="//www.ftk.upol.cz">
+                        <img src="{% static "img/hlavicka_ftk_studenti_cz_barva.svg" %}"
+                             alt="logo Fakulta tělesné kultury UPOL" width="25%" height="auto">
+                        <span>Fakulta tělesné kultury UPOL</span>
+                    </a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                <h2>Kontakt</h2>
+                <address>
+                    <ul>
+                        <li><i class="bi bi-person-circle"></i>Mgr. Michal Vičar, Ph.D.</li>
+                        <li><i class="bi bi-geo-alt"></i>
+                            <div>
+                                <span>Univerzita Palackého v Olomouci</span>
+                                <span>Fakulta tělesné kultury | Katedra rekreologie</span>
+                                <span>třída Míru 117, 771 11 Olomouc | NC 3.20</span>
+                            </div>
+                        </li>
+                        <li><i class="bi bi-envelope"></i><a href="mailto:michal.vicar@upol.cz">michal.vicar@upol.cz</a>
+                        </li>
+                        <li><i class="bi bi-telephone"></i><a href="tel:+420731268440">+420 731 268 440</a></li>
+                        <li><i class="bi bi-globe"></i><a href="//www.michalvicar.cz">www.michalvicar.cz</a></li>
+                    </ul>
+                </address>
+            </div>
         </div>
     </div>
 {% endblock %}

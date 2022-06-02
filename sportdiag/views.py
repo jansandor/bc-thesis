@@ -33,6 +33,12 @@ LOGGER = logging.getLogger(__name__)
 class IndexView(TemplateView):
     template_name = 'sportdiag/index.html'
 
+    def get(self, request, *args, **kwargs):
+        surveys = Survey.objects.filter(is_published=True).values_list('name', flat=True).order_by("name")
+        context = self.get_context_data()
+        context['surveys'] = surveys
+        return render(request, self.template_name, context)
+
 
 class ContactView(TemplateView):
     template_name = 'sportdiag/contact.html'
@@ -116,8 +122,8 @@ class PsychologistHomeView(TemplateView):
         for client in clients:
             client_response_requests[client.user.id] = list(
                 SurveyResponseRequest.objects
-                    .filter(client_id=client.user.id, is_pending=True)
-                    .values_list("survey_id", flat=True))
+                .filter(client_id=client.user.id, is_pending=True)
+                .values_list("survey_id", flat=True))
         context['surveys_json'] = serializers.serialize("json", surveys, fields=("name"))
         context['clients_json'] = serializers.serialize("json", User.objects.filter(id__in=client_user_ids),
                                                         fields=("first_name", "last_name"))
@@ -420,7 +426,7 @@ class ResearchersOverviewView(ListView):
     def get_queryset(self):
         """ returns all researchers excluding logged in (staff) researcher """
         queryset = super().get_queryset()
-        current_user = self.request.user
+        current_user = self.request.user  # current user is staff researcher
         queryset = queryset.filter(is_researcher=True).difference(User.objects.filter(id=current_user.id)).order_by(
             '-date_joined')
         return queryset
