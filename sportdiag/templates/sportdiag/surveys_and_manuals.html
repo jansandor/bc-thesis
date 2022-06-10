@@ -116,7 +116,7 @@
                                                     <input type="submit"
                                                            formaction="{% url 'sportdiag:download_survey_attachment' survey.id attachment_name %}"
                                                            formmethod="get"
-                                                           class="btn btn-sm btn-light attachment-input--download"
+                                                           class="btn btn-sm btn-light attachment-input--download text-wrap"
                                                            value="{{ attachment_name }}">
                                                     {% if user.is_researcher and user.is_staff %}
                                                         <input type="submit"

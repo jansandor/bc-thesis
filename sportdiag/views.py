@@ -13,12 +13,13 @@ from django.contrib.sites.shortcuts import get_current_site
 from django.core import serializers
 from django.core.mail import EmailMessage
 from django.core.paginator import Paginator
-from django.http import HttpResponse
-from django.http import HttpResponseNotFound
+from django.http import HttpResponse, HttpResponseNotFound, JsonResponse
 from django.shortcuts import render, redirect, reverse
 from django.template.loader import render_to_string
 from django.views.generic import ListView, FormView
 from django.views.generic.base import TemplateView, View
+from django.utils.decorators import method_decorator
+from django.contrib.auth.decorators import login_required, user_passes_test
 
 import bp.settings as settings
 from accounts.models import ClientProfile, PsychologistProfile, User
@@ -26,6 +27,7 @@ from accounts.utils.user.functions import user_specific_upload_dir
 from sportdiag.models import SurveyResponseRequest, Answer, Question, Category
 from .forms import InviteClientForm, ResponseForm, ResponsesFilterForm, UploadFilesForm
 from .models import Survey, Response
+from .decorators import user_is_client, user_is_psychologist, user_is_researcher, user_is_staff
 
 LOGGER = logging.getLogger(__name__)
 
@@ -40,14 +42,6 @@ class IndexView(TemplateView):
         return render(request, self.template_name, context)
 
 
-class ContactView(TemplateView):
-    template_name = 'sportdiag/contact.html'
-
-
-class BeneficiariesView(TemplateView):
-    template_name = 'sportdiag/beneficiaries.html'
-
-
 # login required mixin/decorator
 def redirect_to_user_type_home(request):
     if request.method == "GET":
@@ -59,13 +53,6 @@ def redirect_to_user_type_home(request):
         elif user.is_psychologist:
             return redirect('sportdiag:home_psychologist')
         elif user.is_researcher:  # is_staff se poresi v sablone
-            # initial_survey = Survey.objects.order_by('id').first()  # todo WHAT IF NO SURVEY
-            # base_url = reverse('sportdiag:home_researcher')
-            ## query_string = urlencode({'survey_id': initial_survey.id, 'page': 1})
-            # query_string = urlencode({'page': 1})
-            # url = f'{base_url}?{query_string}'
-            # print("url", url)
-            # return redirect(url)
             return redirect('sportdiag:home_researcher')
         else:
             return HttpResponseNotFound()
@@ -142,87 +129,99 @@ class ApprovePsychologistsView(LoginRequiredMixin, ListView):
 
 
 class ResearcherHomeView(TemplateView):
-    # todo tabulkas daty, prokliky na answer/response detail?
-    # klientovi pridat uuid?
-    # v tabulce krome ostatniho interviewuuid a client uuid jako anonymni ident.?
-    template_name = 'sportdiag/home/researcher_home.html'
+    template_name = 'sportdiag/home/researcher_home_vue.html'
     filter_form = ResponsesFilterForm
-    paginated_by = 2
+    paginated_by = 2  # todo 10
+
+    # todo filter form no longer used - remove from forms.py?
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         survey_id = kwargs.get('survey_id')
-        print("survey_id", survey_id)
-        if not survey_id:
-            survey = Survey.objects.order_by("id").first()
-            if not survey:
-                context['filter_form'] = self.filter_form()
-                return context
-            survey_id = survey.id
-            context['filter_form'] = self.filter_form(initial={'survey': survey_id})
-        survey = Survey.objects.get(id=survey_id)  # initial_survey
-        # survey_id = survey.id
-        # todo error handling
-        context['filter_form'] = self.filter_form(initial={'survey': survey_id})
+        survey = Survey.objects.get(id=survey_id)
         responses = Response.objects.filter(survey_id=survey_id).order_by("-created").select_related()
-        clients = ClientProfile.objects \
-            .filter(user_id__in=responses.values_list("user_id", flat=True)) \
-            .order_by("user_id")
-        context['questions'] = survey.questions.order_by("order")
         table_data = []
         counter = 1
+        # todo questions are ordered by order number, answers are ordered by 'created'
+        # todo will always answer body/score match right Q column in table? It seems so
         for response in responses:
-            client = response.survey_id
-            for client in clients:
-                if client.user_id == response.user_id:
-                    answers = list(Answer.objects
-                                   .filter(response_id=response.id)
-                                   .order_by("created"))
-                    table_data.append({
-                        "row_number": counter,
-                        "created": response.created,
-                        "response_id": response.id,
-                        "interview_uuid": response.interview_uuid,
-                        "client_uuid": client.user_id,  # todo uuid?
-                        "nationality": client.nationality,
-                        "sex": client.sex,
-                        "age": client.age,
-                        "answers": answers,
-                        "score": response.total_score,
-                        "max_score": response.max_score,
-                    })
-                    counter += 1
-        # print("table_data", table_data)
+            client = ClientProfile.objects.get(user_id=response.user_id)
+            answers = response.answers.order_by("created").select_related('question').values('question_id',
+                                                                                             'question__number', 'body',
+                                                                                             'score')
+            table_data.append({
+                "row_number": counter,
+                "created": response.created.strftime('%Y-%m-%dT%H:%M:%S.%f'),
+                "response_id": response.id,
+                "interview_uuid": str(response.interview_uuid),
+                "response_detail_url": response.get_absolute_url(),
+                "client_uuid": client.user_id,  # todo uuid?
+                "nationality": client.nationality,
+                "sex": client.sex,
+                "age": client.age,
+                "answers": list(answers),
+                "score": response.total_score,
+                "max_score": response.max_score,
+            })
+            counter += 1
+        context["export_survey_responses_csv_request_path"] = reverse('sportdiag:export_survey_responses_to_csv',
+                                                                      kwargs={"survey_id": survey_id})
+        context['questions'] = list(
+            survey.questions.order_by("order").values("number", "text", "pk", "required"))
+        context['surveys'] = list(Survey.objects.filter(is_deleted=False).values('pk', 'name'))
         paginator = Paginator(table_data, self.paginated_by)
-        page_number = kwargs.get('page')
-        print("page_number", page_number)
-        page_obj = paginator.get_page(page_number)
-        # context["table_data"] = Paginator
-        context['page_obj'] = page_obj
-        context["survey_id"] = survey_id
+        requested_page_number = kwargs.get("page", 1)
+        page = paginator.page(requested_page_number)
+        context['responses'] = {
+            "items": page.object_list,
+            "items_total": paginator.count,
+            "pages_total": paginator.num_pages,
+            "has_next_page": page.has_next(),
+            "has_previous_page": page.has_previous(),
+        }
         return context
-
-    # def get(self, request, *args, **kwargs):
-    # print("request", request)
-    # print("kwargs", kwargs)
-    # page_number = request.GET.get('page')
-    # survey_id = request.GET.get('survey_id')
-    # if survey_id:
-    #    kwargs.update({"survey_id": survey_id})
-    # print("kwargs after update", kwargs)
-    # context = self.get_context_data(**kwargs)
-    # return render(request, self.template_name, context)
 
     def post(self, request, *args, **kwargs):
         filter_form = self.filter_form(request.POST)
         if filter_form.is_valid():
             selected_survey = filter_form.cleaned_data['survey']
+            # todo improve code below?
             if selected_survey is None:
-                context = self.get_context_data()
+                context = self.get_context_data(survey_id=selected_survey)
             else:
                 context = self.get_context_data(survey_id=selected_survey.id)
             return render(request, self.template_name, context)
         return redirect("sportdiag:home")
+
+    def is_ajax(self, request):
+        return request.headers.get("X-Requested-With") == "XMLHttpRequest"
+
+    def get(self, request, *args, **kwargs):
+        survey_id = request.GET.get("survey_id", None)
+        if survey_id is None:
+            survey = Survey.objects.order_by("id").first()
+            if survey:
+                survey_id = survey.id
+            else:
+                context = {"no_data": True}
+                return render(request, self.template_name, context)
+        kwargs.update({"survey_id": survey_id})
+        kwargs.update({"page": request.GET.get("page", 1)})
+        context = self.get_context_data(**kwargs)
+        if self.is_ajax(request):
+            # return only necessary data for table change
+            data = {
+                "export_survey_responses_csv_request_path": context.get("export_survey_responses_csv_request_path",
+                                                                        None),
+                "questions": context.get("questions", None),
+                "responses": context.get("responses", None),
+                "surveys": context.get("surveys", None)
+            }
+            return JsonResponse(data)
+        context["questions"] = json.dumps(context.get("questions", None))
+        context["responses"] = json.dumps(context.get("responses", None))
+        context["surveys"] = json.dumps(context.get("surveys", None))
+        return render(request, self.template_name, context)
 
 
 class ClientHomeView(TemplateView):
@@ -231,9 +230,9 @@ class ClientHomeView(TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         user = self.request.user
-        survey_response_requests_ids = SurveyResponseRequest.objects \
-            .filter(client_id=user.id, is_pending=True) \
-            .values_list("survey_id", flat=True)
+        survey_response_requests_ids = SurveyResponseRequest.objects.filter(client_id=user.id,
+                                                                            is_pending=True).order_by(
+            "-requested_on_date").values_list("survey_id", flat=True)
         # todo should be only 1 active request for client per survey
         surveys = Survey.objects.filter(id__in=survey_response_requests_ids)
         context['surveys'] = surveys
@@ -574,7 +573,12 @@ def compute_score(answers):  # todo extract method and reuse in client detail
 
 
 def export_survey_responses_to_csv(request, survey_id):
-    survey = Survey.objects.get(id=survey_id)
+    # todo POST? melo by byt chraneno, at na tu URL nevleze kdekdo a nemeni cisla
+    survey = Survey.objects.get(id=survey_id)  # todo remove, use survey id from param?
+    responses = Response.objects.filter(survey_id=survey.id).order_by("-created")
+    if not responses:
+        # todo without redirect to avoid page reload? (it means, do it with js?)
+        return redirect('sportdiag:home_researcher')
     filename = f"odpovedi_{datetime.now(timezone.utc).date()}_{survey.short_name}.csv".replace(" ", "_").replace("-",
                                                                                                                  "_")
     questions = []
@@ -587,21 +591,19 @@ def export_survey_responses_to_csv(request, survey_id):
         ['#', 'Dotazník', 'Datum responze', 'ID Responze', 'ID Klienta', 'Státní příslušnost', 'Pohlaví',
          'Věk', *questions, 'Skóre', 'Max Skóre'])
     counter = 1
-    for response in Response.objects.filter(survey_id=survey.id).order_by("-created"):
+    for response in responses:
         client = ClientProfile.objects.get(user_id=response.user_id)
-        no_cat_question_answers = Answer.objects.filter(response_id=response.id,
-                                                        question_id__in=survey.no_category_questions()).order_by(
+        no_cat_questions_answers = response.answers.filter(question_id__in=survey.no_category_questions()).order_by(
             "created").values_list("body", flat=True)
-        answers = Answer.objects.filter(response_id=response.id,
-                                        question_id__in=survey.categorized_questions()).order_by(
+        answers = response.answers.filter(question_id__in=survey.categorized_questions()).order_by(
             "created").values_list("score", flat=True)
         response_created = datetime.fromisoformat(response.created.__str__()).strftime("%Y-%m-%d %H:%M:%S")
         writer.writerow(
             [f'{counter}', f'{survey.short_name}', f'{response_created}',
              f'{response.interview_uuid}', f'{client.user_id}', f'{client.nationality}', f'{client.sex}',
              f'{client.age}',
-             *no_cat_question_answers, *answers, f'{response.total_score}', f'{response.max_score}'])
-        counter += 1
+             *no_cat_questions_answers, *answers, f'{response.total_score}', f'{response.max_score}'])
+        counter += 1  # todo round total score..
     return http_response
 
 

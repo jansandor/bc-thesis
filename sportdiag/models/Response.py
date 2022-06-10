@@ -4,6 +4,7 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth import get_user_model
 from django.db.models import Avg, Count, Min, Sum
+from django.urls import reverse_lazy, reverse
 
 from sportdiag.models import Survey
 from accounts.models import User
@@ -72,6 +73,9 @@ class Response(models.Model):
     @property
     def max_score(self):
         return self.survey.max_score
+
+    def get_absolute_url(self):
+        return reverse('sportdiag:response_detail', kwargs={'response_id': self.id})
 
     def __str__(self):
         return f"Response to {self.survey} by {self.user} on {self.created}"

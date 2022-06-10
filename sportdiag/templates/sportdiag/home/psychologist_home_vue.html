@@ -32,11 +32,11 @@
                 </div>
                 <ul class="list-group">
                     <li v-for="client in clients" class="list-group-item">
-                        <div class="row align-items-center">
-                            <div class="col">
+                        <div class="row align-items-center gap-2">
+                            <div class="col-xs-12 col-md-3 col-xl-4">
                                 <a :href="clientDetailUrl + client.pk">[[getClientFullname(client)]]</a>
                             </div>
-                            <div class="col-6">
+                            <div class="col-xs-12 col-md-5">
                                 <select class="form-select form-select-sm"
                                         @change="surveyChanged($event, client.pk)">
                                     <option v-if="surveys.length > 0" v-for="survey in surveys" :value="survey.pk">
@@ -46,7 +46,7 @@
                                     <option v-else>Žádné dotazníky</option>
                                 </select>
                             </div>
-                            <div class="col">
+                            <div class="col-xs-12 col-md-3 col-xl-2">
                                 <!-- todo button zrusit zadost o responzi -->
                                 <div v-if="surveys.length > 0">
                                     <button v-if="resolveButton(client.pk)" type="button"

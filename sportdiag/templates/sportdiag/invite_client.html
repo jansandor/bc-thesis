@@ -30,8 +30,7 @@
                     {% csrf_token %}
                     {{ form|crispy }}
                     <input type="submit" value="Pozvat" class="btn btn-primary">
-                    <!-- zatim nalezene jednoduche reseni "back" buttonu -->
-                    <a href="{{ request.META.HTTP_REFERER|escape }}" class="btn btn-secondary">Zpět</a>
+                    <a href="{% url 'sportdiag:home_psychologist' %}" class="btn btn-secondary">Zrušit</a>
                 </form>
             </div>
         </div>

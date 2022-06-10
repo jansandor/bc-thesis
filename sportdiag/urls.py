@@ -1,7 +1,7 @@
 from django.contrib.auth.decorators import login_required
 from django.urls import path, re_path
 
-from .views import IndexView, BeneficiariesView, ContactView, PsychologistHomeView, InviteClient, \
+from .views import IndexView, PsychologistHomeView, InviteClient, \
     ApprovePsychologistsView, reject_psychologist, approve_psychologist, download_certificate, \
     redirect_to_user_type_home, ResearcherHomeView, ClientHomeView, ResearchersOverviewView, \
     deactivate_researcher_account, reactivate_researcher_account, NewResponseFormView, SurveyConfirmView, \
@@ -14,14 +14,10 @@ app_name = 'sportdiag'
 
 urlpatterns = [
     path('', IndexView.as_view(), name='index'),
-    path('beneficienti/', BeneficiariesView.as_view(), name='beneficiaries'),
-    path('kontakt/', ContactView.as_view(), name='contact'),
     path('sportdiag/', redirect_to_user_type_home, name='home'),
     path('sportdiag/c/', ClientHomeView.as_view(), name='home_client'),
     path('sportdiag/p/', PsychologistHomeView.as_view(), name='home_psychologist'),
-    re_path(r'sportdiag/r/(?:\?page=(?P<page>\d+))?$',  # (?:\?page=(?P<page>\d+))?$ survey_id=(?P<survey_id>\d+)?&
-            ResearcherHomeView.as_view(),
-            name='home_researcher'),
+    path('sportdiag/r/', ResearcherHomeView.as_view(), name='home_researcher'),
     path('sportdiag/pozvat_klienta/', InviteClient.as_view(), name='invite_client'),
     re_path(r'sportdiag/schvalovani_psychologu/(?:\?page=(?P<page>\d+))?$', ApprovePsychologistsView.as_view(),
             name='approve_psychologists'),
