@@ -75,7 +75,7 @@ CORS_ORIGIN_WHITELIST = (
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        # 'DIRS': [BASE_DIR / 'templates'],
+        'DIRS': [BASE_DIR / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'debug': DEBUG,
@@ -171,7 +171,7 @@ AUTH_USER_MODEL = 'accounts.User'
 EMAIL_USE_TLS = True
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_HOST_USER = 'sandor.jan9@gmail.com'
-EMAIL_HOST_PASSWORD = 'eylebmxwwjoagncq'
+EMAIL_HOST_PASSWORD = ''
 EMAIL_PORT = 587
 
 DEFAULT_FROM_EMAIL = 'info@sportdiag.cz'

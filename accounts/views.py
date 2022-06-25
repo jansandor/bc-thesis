@@ -1,12 +1,11 @@
 from django.shortcuts import render
 from django.views.generic.base import TemplateView
 from django.views.generic.edit import CreateView
-from django.views.generic import DetailView
 from django.contrib.auth import get_user_model
 from django.urls import reverse_lazy
 from .forms import ClientUserCreationForm, PsychologistUserCreationForm, ResearcherUserCreationForm
 from .models import ClientProfile, PsychologistProfile, User
-from sportdiag.models import Response, Survey, Question, Answer, SurveyResponseRequest
+from sportdiag.models import Response, Survey
 from django.shortcuts import redirect
 from django.contrib.sites.shortcuts import get_current_site
 from django.utils.encoding import force_bytes, force_text
@@ -17,6 +16,8 @@ from django.core.mail import EmailMessage
 from .tokens import account_activation_token_generator
 from django.contrib.auth.views import PasswordResetView as DjangoPasswordResetView, \
     PasswordResetDoneView as DjangoPasswordResetDoneView
+from django.contrib.auth.mixins import LoginRequiredMixin
+from bp.mixins import PsychologistRequiredMixin, StaffResearcherRequiredMixin
 
 
 class SignUpView(TemplateView):
@@ -170,7 +171,7 @@ class PasswordResetDoneView(DjangoPasswordResetDoneView):
     template_name = 'accounts/registration/password_reset_done.html'
 
 
-class ResearcherCreateView(CreateView):
+class ResearcherCreateView(LoginRequiredMixin, StaffResearcherRequiredMixin, CreateView):
     model = get_user_model()
     form_class = ResearcherUserCreationForm
     success_url = reverse_lazy('sportdiag:researchers_overview')
@@ -208,7 +209,7 @@ class ResearcherCreateView(CreateView):
 # todo pro psychologa hazet warning/info/alert message, pokud jeho ucet jeste nebyl schvalen adminem
 # todo pro kazdeho usera hazet message, pokud nema aktivovany ucet
 
-class ClientDetailView(TemplateView):
+class ClientDetailView(LoginRequiredMixin, PsychologistRequiredMixin, TemplateView):
     model = ClientProfile
     template_name = "accounts/client_detail.html"
 

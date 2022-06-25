@@ -17,17 +17,19 @@ from django.http import HttpResponse, HttpResponseNotFound, JsonResponse
 from django.shortcuts import render, redirect, reverse
 from django.template.loader import render_to_string
 from django.views.generic import ListView, FormView
-from django.views.generic.base import TemplateView, View
-from django.utils.decorators import method_decorator
+from django.views.generic.base import TemplateView
 from django.contrib.auth.decorators import login_required, user_passes_test
 
 import bp.settings as settings
 from accounts.models import ClientProfile, PsychologistProfile, User
 from accounts.utils.user.functions import user_specific_upload_dir
-from sportdiag.models import SurveyResponseRequest, Answer, Question, Category
+from sportdiag.models import SurveyResponseRequest
 from .forms import InviteClientForm, ResponseForm, ResponsesFilterForm, UploadFilesForm
 from .models import Survey, Response
-from .decorators import user_is_client, user_is_psychologist, user_is_researcher, user_is_staff
+from bp.decorators import user_is_psychologist, user_is_researcher, user_is_staff_researcher, \
+    user_is_psychologist_or_researcher
+from bp.mixins import ClientRequiredMixin, PsychologistRequiredMixin, ResearcherRequiredMixin, \
+    StaffResearcherRequiredMixin, PsychologistOrResearcherRequiredMixin
 
 LOGGER = logging.getLogger(__name__)
 
@@ -42,13 +44,11 @@ class IndexView(TemplateView):
         return render(request, self.template_name, context)
 
 
-# login required mixin/decorator
+@login_required
 def redirect_to_user_type_home(request):
     if request.method == "GET":
         user = request.user
-        if user.is_anonymous:
-            return redirect('login')
-        elif user.is_client:
+        if user.is_client:
             return redirect('sportdiag:home_client')
         elif user.is_psychologist:
             return redirect('sportdiag:home_psychologist')
@@ -58,6 +58,7 @@ def redirect_to_user_type_home(request):
             return HttpResponseNotFound()
 
 
+@user_passes_test(user_is_psychologist)
 def request_survey_response(request):
     if request.method == "POST":
         request_survey_response_email_html_template = "sportdiag/emails/request_survey_response_email.html"
@@ -95,7 +96,7 @@ def request_survey_response(request):
     return HttpResponse(status=HTTPStatus.INTERNAL_SERVER_ERROR)
 
 
-class PsychologistHomeView(TemplateView):
+class PsychologistHomeView(LoginRequiredMixin, PsychologistRequiredMixin, TemplateView):
     # todo paginace?
     template_name = 'sportdiag/home/psychologist_home_vue.html'
 
@@ -119,16 +120,7 @@ class PsychologistHomeView(TemplateView):
         return context
 
 
-class ApprovePsychologistsView(LoginRequiredMixin, ListView):
-    model = User
-    paginate_by = 10
-    template_name = 'sportdiag/approve_psychologists.html'
-    # query jen is_active false a is_psychologist true?
-    queryset = User.objects.filter(is_psychologist=True, email_verified=True, confirmed_by_staff=False, is_active=False)
-    ordering = ['-date_joined']
-
-
-class ResearcherHomeView(TemplateView):
+class ResearcherHomeView(LoginRequiredMixin, ResearcherRequiredMixin, TemplateView):
     template_name = 'sportdiag/home/researcher_home_vue.html'
     filter_form = ResponsesFilterForm
     paginated_by = 2  # todo 10
@@ -224,7 +216,7 @@ class ResearcherHomeView(TemplateView):
         return render(request, self.template_name, context)
 
 
-class ClientHomeView(TemplateView):
+class ClientHomeView(LoginRequiredMixin, ClientRequiredMixin, TemplateView):
     template_name = 'sportdiag/home/client_home.html'
 
     def get_context_data(self, **kwargs):
@@ -239,7 +231,7 @@ class ClientHomeView(TemplateView):
         return context
 
 
-class SurveyConfirmView(TemplateView):
+class SurveyConfirmView(LoginRequiredMixin, ClientRequiredMixin, TemplateView):
     template_name = "sportdiag/survey_confirm.html"
 
     def get_context_data(self, **kwargs):
@@ -249,7 +241,7 @@ class SurveyConfirmView(TemplateView):
         return context
 
 
-class NewResponseFormView(TemplateView):
+class NewResponseFormView(LoginRequiredMixin, ClientRequiredMixin, TemplateView):
     template_name = "sportdiag/new_response.html"
     new_response_email_html_template = "sportdiag/emails/new_response_email_html_template.html"
 
@@ -313,9 +305,7 @@ class NewResponseFormView(TemplateView):
         return render(request, self.template_name, context)
 
 
-# todo proxy na psychologa?
-# todo staff researcher required decorator/mixin
-class ApprovePsychologistsView(LoginRequiredMixin, ListView):
+class ApprovePsychologistsView(LoginRequiredMixin, StaffResearcherRequiredMixin, ListView):
     model = User
     paginate_by = 10
     template_name = 'sportdiag/approve_psychologists.html'
@@ -324,7 +314,7 @@ class ApprovePsychologistsView(LoginRequiredMixin, ListView):
     ordering = ['-date_joined']
 
 
-class InviteClient(FormView):
+class InviteClient(LoginRequiredMixin, PsychologistRequiredMixin, FormView):
     form_class = InviteClientForm
     success_url = 'home'
     template_name = 'sportdiag/invite_client.html'
@@ -358,6 +348,7 @@ class InviteClient(FormView):
             return render(request, self.template_name, {'form': form, 'psychologist': profile})
 
 
+@user_passes_test(user_is_staff_researcher)
 def reject_psychologist(request, pk):
     if request.method == "POST":
         registration_rejected_email_html_template = "sportdiag/emails/psychologist_registration_rejected_email.html"
@@ -380,6 +371,7 @@ def reject_psychologist(request, pk):
             return redirect(request.META.get('HTTP_REFERER'))  # redirect('sportdiag:approve_psychologists')
 
 
+@user_passes_test(user_is_staff_researcher)
 def approve_psychologist(request, pk):
     if request.method == "POST":
         # uzivatel urcite existuje, proklik je z listu useru, co existuji
@@ -405,6 +397,7 @@ def approve_psychologist(request, pk):
         return redirect(request.META.get('HTTP_REFERER'))  # redirect('sportdiag:approve_psychologists')
 
 
+@user_passes_test(user_is_staff_researcher)
 def download_certificate(request, pk):
     if request.method == "GET":
         user = PsychologistProfile.objects.get(user_id=pk)
@@ -417,7 +410,7 @@ def download_certificate(request, pk):
         return response
 
 
-class ResearchersOverviewView(ListView):
+class ResearchersOverviewView(LoginRequiredMixin, StaffResearcherRequiredMixin, ListView):
     model = User
     paginate_by = 10
     template_name = 'sportdiag/researchers_overview.html'
@@ -431,6 +424,7 @@ class ResearchersOverviewView(ListView):
         return queryset
 
 
+@user_passes_test(user_is_staff_researcher)
 def deactivate_researcher_account(request, pk):
     if request.method == "POST":
         researcher_account_deactivated_email_html_template = "sportdiag/emails/researcher_account_deactivated_email.html"
@@ -445,6 +439,7 @@ def deactivate_researcher_account(request, pk):
         return redirect(request.META.get('HTTP_REFERER'))
 
 
+@user_passes_test(user_is_staff_researcher)
 def reactivate_researcher_account(request, pk):
     if request.method == "POST":
         researcher_account_reactivated_email_html_template = "sportdiag/emails/researcher_account_reactivated_email.html"
@@ -462,7 +457,7 @@ def reactivate_researcher_account(request, pk):
         return redirect(request.META.get('HTTP_REFERER'))
 
 
-class SurveysAndManualsView(TemplateView):
+class SurveysAndManualsView(LoginRequiredMixin, PsychologistOrResearcherRequiredMixin, TemplateView):
     template_name = "sportdiag/surveys_and_manuals.html"
     upload_survey_attachments_form = UploadFilesForm
 
@@ -509,6 +504,7 @@ def handle_uploaded_file(file, attachments_dir_path):
             destination.write(chunk)
 
 
+@user_passes_test(user_is_staff_researcher)
 def upload_survey_attachments(request, **kwargs):
     if request.method == 'POST':
         form = UploadFilesForm(request.POST, request.FILES)
@@ -526,6 +522,7 @@ def upload_survey_attachments(request, **kwargs):
         return redirect('sportdiag:surveys_manuals')
 
 
+@user_passes_test(user_is_psychologist_or_researcher)
 def download_survey_attachment(request, survey_id, filename):
     if request.method == "GET":
         survey = Survey.objects.get(id=survey_id)
@@ -542,6 +539,7 @@ def download_survey_attachment(request, survey_id, filename):
         return response
 
 
+@user_passes_test(user_is_staff_researcher)
 def delete_survey_attachment(request, survey_id, filename):
     if request.method == "POST":
         survey = Survey.objects.get(id=survey_id)
@@ -572,6 +570,7 @@ def compute_score(answers):  # todo extract method and reuse in client detail
     return total_score
 
 
+@user_passes_test(user_is_researcher)
 def export_survey_responses_to_csv(request, survey_id):
     # todo POST? melo by byt chraneno, at na tu URL nevleze kdekdo a nemeni cisla
     survey = Survey.objects.get(id=survey_id)  # todo remove, use survey id from param?
@@ -607,6 +606,7 @@ def export_survey_responses_to_csv(request, survey_id):
     return http_response
 
 
+@user_passes_test(user_is_staff_researcher)
 def toggle_is_published(request, survey_id):
     survey = Survey.objects.get(id=survey_id)
     if survey:
@@ -617,8 +617,9 @@ def toggle_is_published(request, survey_id):
     return redirect("sportdiag:surveys_manuals")
 
 
-# performs soft delete
+@user_passes_test(user_is_staff_researcher)
 def delete_survey(request, survey_id):
+    """performs soft delete"""
     survey = Survey.objects.get(id=survey_id)
     if survey:
         survey.is_deleted = True
@@ -627,7 +628,7 @@ def delete_survey(request, survey_id):
         # todo remove attachments - TEST
         survey_media_dir_path = get_survey_media_dir_path(survey)
         if os.path.exists(survey_media_dir_path):
-            shutil.rmtree(survey_media_dir_path)  # todo onerror logging
+            shutil.rmtree(survey_media_dir_path)  # todo on error logging
     else:
         messages.error(request, "Dotazník nenalezen.")
     return redirect("sportdiag:surveys_manuals")
@@ -645,7 +646,7 @@ likert_scale_values_text = [
 ]
 
 
-class ResponseDetailView(TemplateView):
+class ResponseDetailView(LoginRequiredMixin, PsychologistOrResearcherRequiredMixin, TemplateView):
     template_name = "sportdiag/response_detail.html"
 
     def get_context_data(self, **kwargs):
