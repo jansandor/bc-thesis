@@ -20,7 +20,7 @@ from django.views.generic import ListView, FormView
 from django.views.generic.base import TemplateView
 from django.contrib.auth.decorators import login_required, user_passes_test
 
-import bp.settings as settings
+import bp.settings.development as settings
 from accounts.models import ClientProfile, PsychologistProfile, User
 from accounts.utils.user.functions import user_specific_upload_dir
 from sportdiag.models import SurveyResponseRequest

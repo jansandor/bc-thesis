@@ -7,7 +7,7 @@ from sportdiag.models import Question as _Question
 from bp.utils.migrations import integer_sequence
 
 app_name = 'sportdiag'
-survey_name = "[mig] Dotazník živosti pohybové imaginace – 2"
+survey_name = "Dotazník živosti pohybové imaginace – 2"
 
 
 @transaction.atomic

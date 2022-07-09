@@ -1,0 +1,5 @@
+# todo check "recommended .gitignore" for python/django apps on the web
+.env
+*.dot
+/*.png
+db.sqlite3

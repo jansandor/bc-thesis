@@ -7,6 +7,7 @@ import random
 from django.db import transaction
 from django.contrib.auth.hashers import make_password
 from datetime import timezone
+from bp.settings.base import BASE_DIR
 
 Faker.seed(0)
 fake = Faker()  # (['cs'])
@@ -21,7 +22,7 @@ fake_certificate_file = 'accounts/user_fake/Training_plan.xlsx'
 def add_approved_psychologists(apps, schema_editor):
     User = apps.get_model(app_name, 'User')
     PsychologistProfile = apps.get_model(app_name, 'PsychologistProfile')
-    file = open("/home/jan/PycharmProjects/bp/approved_fake_psychologists_raw_passwords.txt", "w")
+    # file = open(BASE_DIR / 'approved_fake_psychologists_raw_passwords.txt', "w+")
     for i in range(0, psychologists_count):
         last_name = fake.unique.last_name()
         email = str.lower(last_name) + "@example.com"
@@ -37,7 +38,8 @@ def add_approved_psychologists(apps, schema_editor):
             password=make_password(password),
             date_joined=fake.date_time(tzinfo=timezone.utc),
         )
-        file.write(f'ID: {user.id}\t{email}\t{password}\n')
+        # file.write(f'ID: {user.id}\t{email}\t{password}\n')
+        print(f'ID: {user.id}\t{email}\t{password}\n')
         user.save()
         PsychologistProfile.objects.create(
             user=user,
@@ -47,7 +49,7 @@ def add_approved_psychologists(apps, schema_editor):
             certificate=fake_certificate_file,
             personal_key=fake.uuid4(),
         )
-    file.close()
+    # file.close()
 
 
 @transaction.atomic
@@ -104,16 +106,17 @@ def add_clients(apps, schema_editor):
             user_type=user_types.CLIENT,
             psychologist=psychologists[random_index],
             birthdate=fake.date_of_birth(),
-            sex=sex_choices.SEX_CHOICES[random.randrange(len(sex_choices.SEX_CHOICES))],
-            nationality=nationality.CHOICES[random.randrange(len(nationality.CHOICES))],
+            sex=sex_choices.SEX_CHOICES[random.randrange(len(sex_choices.SEX_CHOICES))][0],
+            nationality=nationality.CHOICES[random.randrange(len(nationality.CHOICES))][0],
             terms_accepted=True,
         )
 
 
+@transaction.atomic
 def add_researchers(apps, schema_editor):
     User = apps.get_model(app_name, 'User')
     # ResearcherProfile = apps.get_model(app_name, 'ResearcherProfile')
-    file = open("/home/jan/PycharmProjects/bp/fake_researchers_raw_passwords.txt", "w")
+    # file = open(BASE_DIR / 'fake_researchers_raw_passwords.txt', "w+")
     for i in range(0, researchers_count):
         last_name = fake.unique.last_name()
         email = str.lower(last_name) + "@example.com"
@@ -128,8 +131,9 @@ def add_researchers(apps, schema_editor):
             password=make_password(password),
             date_joined=fake.date_time(tzinfo=timezone.utc),
         )
-        file.write(f'ID: {user.id}\t{email}\t{password}\n')
-    file.close()
+        # file.write(f'ID: {user.id}\t{email}\t{password}\n')
+        print(f'ID: {user.id}\t{email}\t{password}\n')
+    # file.close()
 
 
 @transaction.atomic
@@ -151,16 +155,23 @@ def add_staff_researcher(apps, schema_editor):
 
 def add_users(apps, schema_editor):
     add_approved_psychologists(apps, schema_editor)
+    print('ADDED DEMO APPROVED PSYCHOLOGISTS\n')
     add_not_approved_psychologists(apps, schema_editor)
+    print('ADDED DEMO NOT APPROVED PSYCHOLOGISTS\n')
     add_clients(apps, schema_editor)
+    print('ADDED DEMO CLIENTS\n')
+    print('DEMO RESEARCHERS ACCESS\n')
     add_researchers(apps, schema_editor)
+    print('ADDED DEMO RESEARCHERS\n')
     add_staff_researcher(apps, schema_editor)
+    print('ADDED DEMO STAFF RESEARCHER\n')
 
 
 @transaction.atomic
 def clean(apps, schema_editor):
     User = apps.get_model(app_name, 'User')
-    User.objects.filter(is_staff=True, is_researcher=True).delete()
+    User.objects.all().delete()
+    # User.objects.filter(is_staff=True, is_researcher=True).delete()
 
 
 class Migration(migrations.Migration):

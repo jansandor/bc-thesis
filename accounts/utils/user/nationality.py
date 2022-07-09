@@ -1,4 +1,4 @@
-CZE = 'ČR'
+CZE = 'CZ'
 SK = 'SK'
 
 CHOICES = (

@@ -6,7 +6,7 @@ from sportdiag.models import Survey as _Survey
 from sportdiag.models import Question as _Question
 
 app_name = 'sportdiag'
-survey_name = "[mig] Dotazník copingových dovedností ACSI-28 pro rozhodčí"
+survey_name = "Dotazník copingových dovedností ACSI-28 pro rozhodčí"
 
 
 @transaction.atomic
