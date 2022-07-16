@@ -38,6 +38,9 @@ ROOT_URLCONF = 'bp.urls'
 
 WSGI_APPLICATION = 'bp.wsgi.application'
 
+CORS_ORIGIN_ALLOW_ALL = False
+CORS_ORIGIN_WHITELIST = config('CORS_ORIGIN_WHITELIST', cast=lambda v: [s.strip() for s in v.split(',')])
+
 # Password validation
 # https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators
 
@@ -82,3 +85,6 @@ MEDIA_URL = '/media/'
 
 CRISPY_ALLOWED_TEMPLATE_PACKS = ("bootstrap5", "custom_crispy")
 CRISPY_TEMPLATE_PACK = "custom_crispy"  # "bootstrap5" todo set both?
+
+MANAGERS = [('dev', config('MANAGERS'))]
+ADMINS = [('admin', config('ADMINS'))]

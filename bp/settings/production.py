@@ -1,4 +1,4 @@
-from .settings.base import *
+from .base import *
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
@@ -10,10 +10,7 @@ SECRET_KEY = config('SECRET_KEY')
 DEBUG = False
 TEMPLATE_DEBUG = False
 
-ALLOWED_HOSTS = config('ALLOWED_HOSTS_PROD', cast=lambda v: [s.strip() for s in v.split(',')])
-
-CORS_ORIGIN_ALLOW_ALL = False
-CORS_ORIGIN_WHITELIST = config('CORS_ORIGIN_WHITELIST_PROD', cast=lambda v: [s.strip() for s in v.split(',')])
+ALLOWED_HOSTS = config('ALLOWED_HOSTS', cast=lambda v: [s.strip() for s in v.split(',')])
 
 TEMPLATES = [
     {
@@ -32,9 +29,6 @@ TEMPLATES = [
     },
 ]
 
-# Database
-# https://docs.djangoproject.com/en/3.2/ref/settings/#databases
-
 CRISPY_FAIL_SILENTLY = not DEBUG
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
@@ -46,8 +40,22 @@ EMAIL_PORT = config('EMAIL_PORT_PROD', cast=int)
 DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL_PROD')
 SERVER_EMAIL = config('SERVER_EMAIL')
 EMAIL_SUBJECT_PREFIX = config('EMAIL_SUBJECT_PREFIX_PROD', cast=lambda v: v + " ")
-MANAGERS = [('dev', config('MANAGERS_PROD'))]
-ADMINS = [('admin', config('ADMINS_PROD'))]
 
+# Database
+# https://docs.djangoproject.com/en/3.2/ref/settings/#databases
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': config('DB_NAME_PROD'),
+        'USER': config('DB_USER'),
+        'PASSWORD': config('DB_PASSWORD'),
+        'HOST': config('DB_HOST'),
+        'PORT': config('DB_PORT'),
+    }
+}
+
+# X-FORWARDED-PROTOCOL = 'ssl'
+# X-FORWARDED-PROTO = 'https'
+# X-FORWARDED-SSL = 'on'
 # CSRF_COOKIE_SECURE = True todo set after https
 # SESSION_COOKIE_SECURE = True todo set after https
