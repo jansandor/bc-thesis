@@ -11,26 +11,38 @@ services:
       - DB_PASSWORD=${DB_PASSWORD}
     volumes:
       - ./docker/db/psql-init/db.sql:/docker-entrypoint-initdb.d/db.sql
-      - postgres_data:/var/lib/postgresql/data/
-  app:
+      - pgdata:/var/lib/postgresql/data/
+  sportdiag_web_app:
     build:
       context: ./
       dockerfile: ./docker/app/Dockerfile
-      target: dev
+      target: prod
     restart: always
     depends_on:
       - db
     environment:
-      - DJANGO_SETTINGS_MODULE=${DJANGO_SETTINGS_MODULE}
+      - DJANGO_SETTINGS_MODULE=${DJANGO_SETTINGS_MODULE_PROD}
       - DB_HOST=${DB_HOST}
       - DB_PORT=${DB_PORT}
       - DB_NAME=${DB_NAME}
       - DB_USER=${DB_USER}
       - DB_PASSWORD=${DB_PASSWORD}
-    ports:
-      - 8000:8000
+    expose:
+      - 8000
     volumes:
-      - ./:/home/sportdiag/src
+      - media:/home/sportdiag/src/media
+      - static_files:/home/sportdiag/src/collected_static
+  nginx:
+    build: ./docker/nginx
+    ports:
+      - 1337:1337 # 1337 for prod image localhost testing
+    depends_on:
+      - sportdiag_web_app
+    volumes:
+      - media:/home/sportdiag/src/media
+      - static_files:/home/sportdiag/src/collected_static
 
 volumes:
-  postgres_data:
+  pgdata:
+  media:
+  static_files:
