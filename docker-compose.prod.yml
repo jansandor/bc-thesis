@@ -35,7 +35,7 @@ services:
   nginx:
     build: ./docker/nginx
     ports:
-      - 1337:1337 # 1337 for prod image localhost testing
+      - 80:80 # 1337 for prod image localhost testing
     depends_on:
       - sportdiag_web_app
     volumes:
