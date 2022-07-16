@@ -110,7 +110,8 @@ def add_clients(apps, schema_editor):
     # version than this migration expects. We use the historical version.
     User = apps.get_model(app_name, 'User')
     ClientProfile = apps.get_model(app_name, 'ClientProfile')
-    psychologists = User.objects.filter(is_psychologist=True, confirmed_by_staff=True)
+    psychologists = User.objects.filter(is_psychologist=True, confirmed_by_staff=True).exclude(
+        email='psycholog@example.com')
     for i in range(0, clients_count):
         last_name = fake.unique.last_name()
         user = User.objects.create(
@@ -139,8 +140,8 @@ def add_clients(apps, schema_editor):
     file = open(BASE_DIR / 'demo_clients_raw_passwords.txt', "w+")
     for i in range(0, 8):
         last_name = fake.unique.last_name()
-        email = str.lower(last_name) + "@example.com",
-        password = make_password(fake.password(length=12))
+        email = str.lower(last_name) + "@example.com"
+        password = fake.password(length=12)
         user = User.objects.create(
             email=email,
             is_client=True,
@@ -148,7 +149,7 @@ def add_clients(apps, schema_editor):
             last_name=last_name,
             email_verified=True,
             is_active=True,
-            password=password,
+            password=make_password(password),
             date_joined=fake.date_time(tzinfo=timezone.utc),
         )
         file.write(f'ID: {user.id}\t{email}\t{password}\n')
