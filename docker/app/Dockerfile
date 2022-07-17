@@ -30,28 +30,9 @@ USER sportdiag
 # This script will run before every command executed in the container
 ENTRYPOINT ["entrypoint.sh"]
 
-
-# Define an image for local development. Inherits common packages from the base stage.
-FROM base as dev
-RUN echo "\n***\n***\nDEV IMAGE BUILD STARTED\n***\n***\n"
-CMD ['whoami']
-# Copy file describing development dependencies
-COPY --chown=sportdiag:sportdiag ./requirements/dev.txt requirements/dev.txt
-# Copy the script that starts the development application server (runserver)
-COPY --chown=sportdiag:sportdiag ./docker/app/start-dev-server.sh /usr/local/bin/start-dev-server.sh
-RUN chmod +x /usr/local/bin/start-dev-server.sh
-USER root
-# Install development dependencies
-RUN pip install --no-cache-dir -r requirements/dev.txt
-USER sportdiag
-# The development server starts by default when the container starts
-CMD ["start-dev-server.sh"]
-
-
 # Define an image for production. Inherits common packages from the base stage.
 FROM base as prod
 RUN echo "\n***\n***\nPROD IMAGE BUILD STARTED\n***\n***\n"
-CMD ['whoami']
 # Copy file describing production dependencies
 COPY --chown=sportdiag:sportdiag ./requirements/prod.txt requirements/prod.txt
 # Copy the script that starts the production application server (gunicorn)
@@ -61,10 +42,28 @@ USER root
 # Create directory for collecting static files
 RUN mkdir /home/sportdiag/src/collected_static
 RUN chown sportdiag /home/sportdiag/src/collected_static
+# Create files for storing users access data.. this is just for testing and should be deleted later
+RUN touch approved_fake_psychologists_raw_passwords.txt
+RUN touch demo_clients_raw_passwords.txt
+RUN touch fake_researchers_raw_passwords.txt
+RUN chown sportdiag approved_fake_psychologists_raw_passwords.txt
+RUN chown sportdiag demo_clients_raw_passwords.txt
+RUN chown sportdiag fake_researchers_raw_passwords.txt
+
+# Create media files directories for project apps
+# RUN mkdir /media/accounts
+RUN mkdir -p media/sportdiag/surveys
+RUN chown -R sportdiag media
+
 # Install production dependencies
 RUN pip install --no-cache-dir -r requirements/prod.txt
 # Copy the source code of django app to the working directory
 COPY --chown=sportdiag:sportdiag . ./
 USER sportdiag
+
+#RUN touch approved_fake_psychologists_raw_passwords.txt
+#RUN touch demo_clients_raw_passwords.txt
+#RUN touch fake_researchers_raw_passwords.txt
+
 # The production server starts by default when the container starts
 CMD ["start-prod-server.sh"]
