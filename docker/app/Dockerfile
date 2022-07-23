@@ -30,6 +30,22 @@ USER sportdiag
 # This script will run before every command executed in the container
 ENTRYPOINT ["entrypoint.sh"]
 
+# Define an image for local development. Inherits common packages from the base stage.
+FROM base as dev
+RUN echo "\n***\n***\nDEV IMAGE BUILD STARTED\n***\n***\n"
+CMD ['whoami']
+# Copy file describing development dependencies
+COPY --chown=sportdiag:sportdiag ./requirements/dev.txt requirements/dev.txt
+# Copy the script that starts the development application server (runserver)
+COPY --chown=sportdiag:sportdiag ./docker/app/start-dev-server.sh /usr/local/bin/start-dev-server.sh
+RUN chmod +x /usr/local/bin/start-dev-server.sh
+USER root
+# Install development dependencies
+RUN pip install --no-cache-dir -r requirements/dev.txt
+USER sportdiag
+# The development server starts by default when the container starts
+CMD ["start-dev-server.sh"]
+
 # Define an image for production. Inherits common packages from the base stage.
 FROM base as prod
 RUN echo "\n***\n***\nPROD IMAGE BUILD STARTED\n***\n***\n"
