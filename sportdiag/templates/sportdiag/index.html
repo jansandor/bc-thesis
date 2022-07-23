@@ -36,19 +36,12 @@
                 <p>Aktuálně jsou k dispozici následující testy:</p>
                 <!-- todo dotazniky vylistovat z DB -->
                 <ul class="surveys-list">
-                    {% for survey in surveys %}
-                        <li>{{ survey }}</li>
-                        {%  comment %}
-                        <li>Ottawský dotazník mentálních dovedností ve sportu 3* (OMNSAT-3*)</li>
-                        <li>Dotazník psychických vlastností nutných k rozvoji výjimečnosti (PCDEQ)</li>
-                        <li>Dotazník copingových dovedností pro rozhodčí (ACSI-28 pro rozhodčí)</li>
-                        <li>Dotazník copingových dovedností pro sportovce (ACSI-28 pro sportovce)</li>
-                        <li>Dotazník živosti pohybové imaginace (VMIQ-2)</li>
-                        <li>Krátká škála Flow – FSS-2</li>
-                        {% endcomment %}
-                    {% empty %}
-                        <li>Aktuálně nejsou k dispozici žádné dotazníky</li>
-                    {% endfor %}
+                    <li>Dotazník copingových dovedností pro rozhodčí (ACSI-28 pro rozhodčí)</li>
+                    <li>Dotazník copingových dovedností pro sportovce (ACSI-28 pro sportovce)</li>
+                    <li>Dotazník psychických vlastností nutných k rozvoji výjimečnosti (PCDEQ)</li>
+                    <li>Dotazník živosti pohybové imaginace (VMIQ-2)</li>
+                    {#                    <li>Ottawský dotazník mentálních dovedností ve sportu 3* (OMNSAT-3*)</li>#}
+                    {#                    <li>Krátká škála Flow – FSS-2</li>#}
                 </ul>
             </div>
         </div>
