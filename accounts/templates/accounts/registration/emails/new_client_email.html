@@ -1,5 +1,6 @@
 {% autoescape off %}
     <p>Dobrý den,</p>
-    <p>v aplikaci Sportdiag máte nového klienta <strong>{{ user_fullanme }}</strong></p>
-    <!-- todo link na noveho usera? detail? -->
+    <p>v aplikaci Sportdiag máte nového klienta <a
+            href="http://{{ domain }}{% url 'client_detail' user_id %}">
+        <strong>{{ user_fullname }}</strong></a>.</p>
 {% endautoescape %}

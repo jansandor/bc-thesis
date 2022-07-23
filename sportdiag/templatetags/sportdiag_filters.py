@@ -12,6 +12,7 @@ def bool_cz(value):
     return '-'
 
 
+# not used since vue is used
 @register.filter('answer')
 def answer(answer):
     if answer.question.number == 0:
@@ -19,6 +20,7 @@ def answer(answer):
     return answer.score
 
 
+# not used since vue is used
 @register.filter('question')
 def question(question):
     if question.number == 0:

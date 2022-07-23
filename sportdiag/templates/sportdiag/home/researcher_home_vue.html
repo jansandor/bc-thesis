@@ -49,90 +49,94 @@
                             <option v-else>Žádné dotazníky</option>
                         </select>
                         <button type="button" class="btn btn-primary"
-                                @click="filterSubmitClick()">
+                                @click="filterSubmitClick()" :disabled="surveys.length <= 0">
                             Filtrovat
                         </button>
                     </div>
                 </div>
                 <div class="row bg-white py-2">
-                    <div class="col-12 mt-1 mb-2">
-                        <div class="d-flex justify-content-end">
-                            <!-- todo button onclick a POST request with to avoid link abuse? -->
-                            <a :href="exportRequestPath" class="btn btn-primary">Exportovat do .csv</a>
+                    <div v-if="responses.items.length > 0">
+                        <div class="col-12 mt-1 mb-2">
+                            <div class="d-flex justify-content-end">
+                                <!-- todo button onclick a POST request with to avoid link abuse? -->
+                                <a :href="exportRequestPath" class="btn btn-primary">Exportovat do .csv</a>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="table-responsive mb-2">
+                                <table class="table table-hover table-bordered table-sm align-middle">
+                                    <thead>
+                                    <tr>
+                                        <th scope="col" class="col text-nowrap text-center">#</th>
+                                        <th scope="col" class="col text-nowrap text-center">Datum responze</th>
+                                        <th scope="col" class="col text-nowrap text-center">ID Responze</th>
+                                        <th scope="col" class="col text-nowrap text-center">ID Klienta</th>
+                                        <th scope="col" class="col text-nowrap text-center">Statní příslušnost</th>
+                                        <th scope="col" class="col text-nowrap text-center">Pohlaví</th>
+                                        <th scope="col" class="col text-nowrap text-center">Věk</th>
+                                        <th v-for="question in questions" scope="col" class="col text-center">
+                                            <span v-if="question.number === 0">[[question.text]]</span>
+                                            <span v-else>O[[question.number]]<span
+                                                    v-if="question.required" class="asteriskField">*</span></span>
+                                        </th>
+                                        <th scope="col" class="col text-nowrap text-center">Skóre</th>
+                                        <th scope="col" class="col text-nowrap text-center">Max skóre</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <tr v-for="item in responses.items">
+                                        <td class="text-nowrap text-center">[[item.row_number]]</td>
+                                        <td class="text-nowrap">
+                                            <time :datetime="item.created">[[get_formatted_datetime(item.created)]]
+                                            </time>
+                                        </td>
+                                        <td class="text-nowrap">
+                                            <a :href="item.response_detail_url">[[item.interview_uuid]]</a>
+                                        </td>
+                                        <td class="text-nowrap">[[item.client_uuid]]</td>
+                                        <td class="text-nowrap text-center">[[item.nationality]]</td>
+                                        <td class="text-nowrap text-center">[[item.sex]]</td>
+                                        <td class="text-nowrap text-center">[[item.age]]</td>
+                                        <td v-for="answer in item.answers" class="text-nowrap text-center">
+                                            <span v-if="answer.question__number === 0">[[answer.body]]</span>
+                                            <span v-else>[[answer.score]]</span>
+                                        </td>
+                                        <td class="text-nowrap text-center">[[get_formatted_response_score(item.score)]]
+                                        </td>
+                                        <td class="text-nowrap text-center">[[item.max_score]]</td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <ul class="pagination justify-content-end">
+                                <li v-if="responses.has_previous_page" class="page-item">
+                                    <button type="button" class="page-link"
+                                            @click="paginationBtnClick(pageNumber-1)">Předchozí
+                                    </button>
+                                </li>
+                                <li v-else class="page-item disabled">
+                                    <span class="page-link">Předchozí</span>
+                                </li>
+                                <li v-for="pageNumber in responses.pages_total" class="page-item"
+                                    :ref="`paginationItem-${pageNumber}`">
+                                    <button type="button" class="page-link" @click="paginationBtnClick(pageNumber)">
+                                        [[pageNumber]]
+                                    </button>
+                                </li>
+                                <li v-if="responses.has_next_page" class="page-item">
+                                    <button type="button" class="page-link"
+                                            @click="paginationBtnClick(pageNumber+1)">Další
+                                    </button>
+                                </li>
+                                <li v-else class="page-item disabled">
+                                    <span class="page-link">Další</span>
+                                </li>
+                            </ul>
                         </div>
                     </div>
-                    <div class="col">
-                        <div class="table-responsive mb-2">
-                            <table class="table table-hover table-bordered table-sm align-middle">
-                                <thead>
-                                <tr>
-                                    <th scope="col" class="col text-nowrap text-center">#</th>
-                                    <th scope="col" class="col text-nowrap text-center">Datum responze</th>
-                                    <th scope="col" class="col text-nowrap text-center">ID Responze</th>
-                                    <th scope="col" class="col text-nowrap text-center">ID Klienta</th>
-                                    <th scope="col" class="col text-nowrap text-center">Statní příslušnost</th>
-                                    <th scope="col" class="col text-nowrap text-center">Pohlaví</th>
-                                    <th scope="col" class="col text-nowrap text-center">Věk</th>
-                                    <th v-for="question in questions" scope="col" class="col text-center">
-                                        <span v-if="question.number === 0">[[question.text]]</span>
-                                        <span v-else>O[[question.number]]<span
-                                                v-if="question.required" class="asteriskField">*</span></span>
-                                    </th>
-                                    <th scope="col" class="col text-nowrap text-center">Skóre</th>
-                                    <th scope="col" class="col text-nowrap text-center">Max skóre</th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                <tr v-if="responses.items.length > 0" v-for="item in responses.items">
-                                    <td class="text-nowrap text-center">[[item.row_number]]</td>
-                                    <td class="text-nowrap">
-                                        <time :datetime="item.created">[[get_formatted_datetime(item.created)]]</time>
-                                    </td>
-                                    <td class="text-nowrap">
-                                        <a :href="item.response_detail_url">[[item.interview_uuid]]</a>
-                                    </td>
-                                    <td class="text-nowrap">[[item.client_uuid]]</td>
-                                    <td class="text-nowrap text-center">[[item.nationality]]</td>
-                                    <td class="text-nowrap text-center">[[item.sex]]</td>
-                                    <td class="text-nowrap text-center">[[item.age]]</td>
-                                    <td v-for="answer in item.answers" class="text-nowrap text-center">
-                                        <span v-if="answer.question__number === 0">[[answer.body]]</span>
-                                        <span v-else>[[answer.score]]</span>
-                                    </td>
-                                    <td class="text-nowrap text-center">[[get_formatted_response_score(item.score)]]
-                                    </td>
-                                    <td class="text-nowrap text-center">[[item.max_score]]</td>
-                                </tr>
-                                <tr v-else>
-                                    <td class="text-nowrap text-center">Žádná data.</td>
-                                </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                        <ul class="pagination justify-content-end">
-                            <li v-if="responses.has_previous_page" class="page-item">
-                                <button type="button" class="page-link"
-                                        @click="paginationBtnClick(pageNumber-1)">Předchozí
-                                </button>
-                            </li>
-                            <li v-else class="page-item disabled">
-                                <span class="page-link">Předchozí</span>
-                            </li>
-                            <li v-for="pageNumber in responses.pages_total" class="page-item"
-                                :ref="`paginationItem-${pageNumber}`">
-                                <button type="button" class="page-link" @click="paginationBtnClick(pageNumber)">
-                                    [[pageNumber]]
-                                </button>
-                            </li>
-                            <li v-if="responses.has_next_page" class="page-item">
-                                <button type="button" class="page-link"
-                                        @click="paginationBtnClick(pageNumber+1)">Další
-                                </button>
-                            </li>
-                            <li v-else class="page-item disabled">
-                                <span class="page-link">Další</span>
-                            </li>
-                        </ul>
+                    <div v-else class="text-center">
+                        <p class="mt-3">Žádná data.</p>
+                        <p>Můžete zkusit vybrat jiný dotazník.</p>
                     </div>
                 </div>
             </div>
@@ -159,8 +163,14 @@
                         return response_score?.toFixed(2);
                     },
                     get_formatted_datetime(datetime) {
+                        return datetime;
+                        /*
+                        solved on BE for now
                         const dt = new Date(datetime);
-                        return dt.toLocaleString(); // todo remove seconds
+                        return new Intl.DateTimeFormat('cs-CZ', {
+                            dateStyle: 'short',
+                            timeStyle: 'short'
+                        }).format(dt);*/
                     },
                     surveyChanged(event) {
                         this.selectedSurveyId = event.target.value;

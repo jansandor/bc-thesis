@@ -30,9 +30,17 @@
                             znovu požádat o další responzi.</p>
                     </div>
                 </div>
+                <div class="row mb-3">
+                    <div class="col">
+                        <div class="d-flex justify-content-end">
+                            <a class="btn btn-primary" href="{% url 'sportdiag:invite_client' %}">
+                                <i class="bi bi-plus-circle"></i> Pozvat klienta</a>
+                        </div>
+                    </div>
+                </div>
                 <ul class="list-group">
-                    <li v-for="client in clients" class="list-group-item">
-                        <div class="row align-items-center gap-2">
+                    <li v-for="client in clients" class="list-group-item py-3">
+                        <div class="row align-items-center g-3">
                             <div class="col-xs-12 col-md-3 col-xl-4">
                                 <a :href="clientDetailUrl + client.pk">[[getClientFullname(client)]]</a>
                             </div>

@@ -5,6 +5,7 @@ import mimetypes
 import os
 import shutil
 from datetime import datetime, timezone
+from dateutil import tz
 from http import HTTPStatus
 
 from django.contrib import messages
@@ -38,9 +39,7 @@ class IndexView(TemplateView):
     template_name = 'sportdiag/index.html'
 
     def get(self, request, *args, **kwargs):
-        surveys = Survey.objects.filter(is_published=True).values_list('name', flat=True).order_by("name")
         context = self.get_context_data()
-        context['surveys'] = surveys
         return render(request, self.template_name, context)
 
 
@@ -113,8 +112,8 @@ class PsychologistHomeView(LoginRequiredMixin, PsychologistRequiredMixin, Templa
                 .filter(client_id=client.user.id, is_pending=True)
                 .values_list("survey_id", flat=True))
         context['surveys_json'] = serializers.serialize("json", surveys, fields=("name"))
-        context['clients_json'] = serializers.serialize("json", User.objects.filter(id__in=client_user_ids),
-                                                        fields=("first_name", "last_name"))
+        context['clients_json'] = serializers.serialize("json", User.objects.filter(id__in=client_user_ids).order_by(
+            'last_name', 'first_name'), fields=("first_name", "last_name"))
 
         context['client_response_requests_json'] = json.dumps(client_response_requests)
         return context
@@ -143,7 +142,7 @@ class ResearcherHomeView(LoginRequiredMixin, ResearcherRequiredMixin, TemplateVi
                                                                                              'score')
             table_data.append({
                 "row_number": counter,
-                "created": response.created.strftime('%Y-%m-%dT%H:%M:%S.%f'),
+                "created": response.created.astimezone(tz=tz.tzlocal()).strftime("%Y-%m-%d %H:%M"),
                 "response_id": response.id,
                 "interview_uuid": str(response.interview_uuid),
                 "response_detail_url": response.get_absolute_url(),
@@ -232,7 +231,7 @@ class ClientHomeView(LoginRequiredMixin, ClientRequiredMixin, TemplateView):
 
 
 class SurveyConfirmView(LoginRequiredMixin, ClientRequiredMixin, TemplateView):
-    template_name = "sportdiag/survey_confirm.html"
+    template_name = "sportdiag/new_response_saved_confirm.html"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -573,11 +572,14 @@ def compute_score(answers):  # todo extract method and reuse in client detail
 @user_passes_test(user_is_researcher)
 def export_survey_responses_to_csv(request, survey_id):
     # todo POST? melo by byt chraneno, at na tu URL nevleze kdekdo a nemeni cisla
-    survey = Survey.objects.get(id=survey_id)  # todo remove, use survey id from param?
+    survey = Survey.objects.get(id=survey_id)
     responses = Response.objects.filter(survey_id=survey.id).order_by("-created")
     if not responses:
-        # todo without redirect to avoid page reload? (it means, do it with js?)
+        # todo NOW EXPORT BUTTON IS NOT RENDERED IF NO SURVEYS RESULTS IN TEMPLATE
+        # messages doesnt work with redirect ...
+        messages.error(request, "Žádné responze k exportování.")
         return redirect('sportdiag:home_researcher')
+        # return render(request, self.template_name, context)
     filename = f"odpovedi_{datetime.now(timezone.utc).date()}_{survey.short_name}.csv".replace(" ", "_").replace("-",
                                                                                                                  "_")
     questions = []
@@ -585,7 +587,7 @@ def export_survey_responses_to_csv(request, survey_id):
     questions += [question.short_name for question in survey.categorized_questions()]
     http_response = HttpResponse(content_type='text/csv',
                                  headers={'Content-Disposition': f'attachment; filename="{filename}"'})
-    writer = csv.writer(http_response)
+    writer = csv.writer(http_response)  # todo bad diacritics on win excel
     writer.writerow(
         ['#', 'Dotazník', 'Datum responze', 'ID Responze', 'ID Klienta', 'Státní příslušnost', 'Pohlaví',
          'Věk', *questions, 'Skóre', 'Max Skóre'])
@@ -596,7 +598,7 @@ def export_survey_responses_to_csv(request, survey_id):
             "created").values_list("body", flat=True)
         answers = response.answers.filter(question_id__in=survey.categorized_questions()).order_by(
             "created").values_list("score", flat=True)
-        response_created = datetime.fromisoformat(response.created.__str__()).strftime("%Y-%m-%d %H:%M:%S")
+        response_created = response.created.astimezone(tz=tz.tzlocal()).strftime("%Y-%m-%d %H:%M")
         writer.writerow(
             [f'{counter}', f'{survey.short_name}', f'{response_created}',
              f'{response.interview_uuid}', f'{client.user_id}', f'{client.nationality}', f'{client.sex}',

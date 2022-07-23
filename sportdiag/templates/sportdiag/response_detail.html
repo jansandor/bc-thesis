@@ -1,5 +1,7 @@
 {% extends 'sportdiag/common/base.html' %}
 
+{% load accounts_filters %}
+
 {% block title %}Detail responze{% endblock %}
 
 {% block content %}
@@ -31,7 +33,7 @@
                         {% else %}
                             <span>{{ client }}</span>
                         {% endif %}
-                        <span>, {{ client.age }} let, {{ client.sex }}</span>
+                        <span>, {{ client.age }} let, {{ client.sex|sex_value }}</span>
                     </div>
                 </div>
                 <div class="d-flex flex-wrap mb-1">

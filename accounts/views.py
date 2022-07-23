@@ -5,7 +5,7 @@ from django.contrib.auth import get_user_model
 from django.urls import reverse_lazy
 from .forms import ClientUserCreationForm, PsychologistUserCreationForm, ResearcherUserCreationForm
 from .models import ClientProfile, PsychologistProfile, User
-from sportdiag.models import Response, Survey
+from sportdiag.models import Response, Survey, SurveyResponseRequest
 from django.shortcuts import redirect
 from django.contrib.sites.shortcuts import get_current_site
 from django.utils.encoding import force_bytes, force_text
@@ -120,10 +120,9 @@ def activate(request, uidb64, token):
                 pass  # todo ?
             message = render_to_string(new_client_email_html_template,
                                        {
+                                           'user_id': user.id,
                                            'user_fullname': user.__str__(),
-                                           # 'domain': get_current_site(request).domain,
-                                           # 'uid': urlsafe_base64_encode(force_bytes(user.pk)),
-                                           # 'token': self.account_activation_token_generator.make_token(user)
+                                           'domain': get_current_site(request).domain,
                                        })
             email = EmailMessage(mail_subject, message, to=[psychologist.email])
             email.content_subtype = 'html'
@@ -140,8 +139,6 @@ def activate(request, uidb64, token):
             message = render_to_string(new_psychologist_registration_email_html_template,
                                        {'psychologist_fullname': psychologist.__str__(),
                                         'domain': get_current_site(request).domain,
-                                        # 'uid': urlsafe_base64_encode(force_bytes(user.pk)),
-                                        # 'token': account_activation_token_generator.make_token(user)
                                         })
             admins = User.objects.filter(is_staff=True, is_researcher=True)
             for admin in admins:
@@ -220,13 +217,18 @@ class ClientDetailView(LoginRequiredMixin, PsychologistRequiredMixin, TemplateVi
             client = ClientProfile.objects.get(user_id=user_id)
             context['client'] = client
             responses_qs = Response.objects.filter(user_id=user_id).order_by("-created")
+            # if responses_qs:
+            # todo show survey response requests to psychologist
             responses = []
             for response in responses_qs:
                 responses.append({
-                    "survey_name": Survey.objects.get(id=response.survey_id).short_name,
+                    "survey_name": response.survey.name,
                     "interview_uuid": response.interview_uuid,
                     "created": response.created,
                     "id": response.id,
                 })
             context["responses"] = responses
+            # else:
+            #    survey_response_request = SurveyResponseRequest.objects.filter(client_id=user_id)
+            #    context["response_requests"] = survey_response_request
         return context

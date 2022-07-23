@@ -40,7 +40,7 @@
                            href="{% url 'sportdiag:surveys_manuals' %}">
                             <i class="bi bi-book"></i> Dotazníky a manuály</a>
                     </li>
-                    {% if request.user.is_staff %}
+                    {% if request.user.is_authenticated and request.user.is_staff %}
                         <li class="nav-item">
                             <a class="nav-link {% active_nav_link request 'sportdiag:approve_psychologists' %}"
                                href="{% url 'sportdiag:approve_psychologists' page=1 %}">
@@ -80,16 +80,10 @@
 
             <ul class="navbar-nav ms-auto">
                 {% if request.user.is_authenticated %}
-                    {% if request.user.is_psychologist %}
-                        <li class="nav-item my-2 mx-lg-2">
-                            <a class="btn btn-primary" href="{% url 'sportdiag:invite_client' %}">
-                                <i class="bi bi-plus-circle"></i> Pozvat klienta</a>
-                        </li>
-                    {% endif %}
-                    {#                    <li class="nav-item my-2 mx-lg-2">#}
-                    {#                        <a class="btn btn-outline-secondary" href="">#}
-                    {#                            <i class="bi bi-gear-fill"></i> Nastavení</a>#}
-                    {#                    </li>#}
+                    {# <li class="nav-item my-2 mx-lg-2"> #}
+                    {# <a class="btn btn-outline-secondary" href=""> #}
+                    {# <i class="bi bi-gear-fill"></i>Nastavení</a> #}
+                    {# </li> #}
                     <li class="nav-item my-2 mx-lg-2">
                         <a class="btn btn-outline-secondary" href="{% url 'logout' %}">
                             <i class="bi bi-box-arrow-left"></i> Odhlásit se</a>
