@@ -17,11 +17,6 @@ img {
     gap: 0.5em
 }
 
-.goals-list__item img {
-    width: 24px;
-    height: 24px;
-}
-
 .surveys-list {
     list-style: none;
     padding: 0 0 0 0.5em;
@@ -35,11 +30,6 @@ img {
     flex-flow: row nowrap;
     align-items: center;
     gap: 0.5em
-}
-
-.surveys-list__item img {
-    width: 24px;
-    height: 24px;
 }
 
 .beneficiaries-list {
