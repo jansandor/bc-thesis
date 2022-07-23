@@ -1,50 +1,92 @@
-:root {
-    --color-bs-dark: #212529;
-}
-
-.beneficiaries-list {
-    display: flex;
-    list-style: none;
-    align-items: center;
-    flex-flow: row wrap;
-    /*background-color: #bcbebd;*/
-    padding: 1em;
-    background: linear-gradient(90deg, rgba(83, 83, 83, 0.43599446614583337) 0%, rgba(255, 255, 255, 0) 65%, rgba(255, 255, 255, 0) 100%);
-}
-
-.beneficiaries-list__item {
-    display: flex;
-    justify-content: center;
-    flex: 1;
-}
-
-.beneficiaries-list__item a {
-    display: flex;
-    flex-flow: column wrap;
-    align-items: center;
-    justify-content: center;
-}
-
-.beneficiaries-list__item img {
+img {
     display: block;
-    width: 100%;
-    height: auto;
-    /*background-color: rgba(83, 83, 83, 0.43599446614583337);
-    padding: 1em;*/
+}
+
+.goals-list {
+    list-style: none;
+    padding: 0 0 0 0.5em;
+    display: flex;
+    flex-flow: column nowrap;
+    gap: 1em;
+}
+
+.goals-list__item {
+    display: flex;
+    flex-flow: row nowrap;
+    align-items: center;
+    gap: 0.5em
+}
+
+.goals-list__item img {
+    width: 24px;
+    height: 24px;
 }
 
 .surveys-list {
-    list-style: url("../img/file-text.svg");
+    list-style: none;
+    padding: 0 0 0 0.5em;
+    display: flex;
+    flex-flow: column nowrap;
+    gap: 1em;
+}
+
+.surveys-list__item {
+    display: flex;
+    flex-flow: row nowrap;
+    align-items: center;
+    gap: 0.5em
+}
+
+.surveys-list__item img {
+    width: 24px;
+    height: 24px;
+}
+
+.beneficiaries-list {
+    list-style: none;
+    padding: 0;
+    display: flex;
+    flex-flow: row wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 1.5em;
+}
+
+.beneficiaries-list__item {
+    display: block;
+}
+
+.beneficiaries-list__item a {
+    display: block;
+}
+
+.aps-img-link {
+    padding: 1em;
+    background-color: rgba(0, 0, 0, 0.3);
+    border-radius: 0.3em;
 }
 
 .contact-list {
     list-style: none;
     padding: 0;
+    display: flex;
+    flex-flow: column nowrap;
+    gap: 0.5em;
 }
 
-.footer {
-    /*
-    background-color: var(--color-bs-dark);
-    color: white;
-    */
+.contact-list__item {
+    display: flex;
+    flex-flow: row nowrap;
+    align-items: center;
+    gap: 0.5em;
+}
+
+.contact-list__item i {
+    font-size: 1.25em;
+}
+
+@media only screen and (min-width: 576px) {
+    .beneficiaries-list {
+        justify-content: space-evenly;
+    }
 }
