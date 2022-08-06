@@ -52,6 +52,17 @@
         </div>
         <div class="row">
             <div class="col">
+                <h2>Subškály</h2>
+                <ul>
+                    {% for category in categories_data %}
+                        <li><a href="#category-{{ category.id }}">{{ category.name }}</a></li>
+                    {% endfor %}
+                    <li><a href="#summary">Shrnutí</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
                 <h2>Otázky a odpovědi</h2>
             </div>
             <hr>
@@ -79,7 +90,7 @@
             </div>
         </div>
         {% for category in categories_data %}
-            <div class="pb-3">
+            <div class="pb-3" id="category-{{ category.id }}">
                 <div class="table-responsive">
                     <table class="table caption-top bg-white">
                         <caption id="{{ category.id }}"><h3>Subškála: <span class="text-body">{{ category.name }}</span>
@@ -115,5 +126,30 @@
                 </div>
             </div>
         {% endfor %}
+        <div class="pb-3" id="summary">
+            <div class="table-responsive">
+                <table class="table caption-top bg-white">
+                    <caption id="{{ category.id }}"><h3>Shrnutí</h3></caption>
+                    <thead>
+                    <tr>
+                        <th scope="col">Subškála</th>
+                        <th scope="col">Skóre</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for category in categories_data %}
+                        <tr>
+                            <td>{{ category.name }}</td>
+                            <td>{{ category.score|floatformat:2 }}b</td>
+                        </tr>
+                    {% endfor %}
+                    <tr>
+                        <th scope="row" class="text-wrap">Celkové skóre</th>
+                        <td>{{ response.total_score }}</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
 {% endblock %}

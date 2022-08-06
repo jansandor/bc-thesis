@@ -673,7 +673,7 @@ class ResponseDetailView(LoginRequiredMixin, PsychologistOrResearcherRequiredMix
                 }
                 questions_data.append(question_data)
             categories_data.append({
-                "id": category.id,  # todo response detail - links to categories
+                "id": category.id,
                 "name": category.name,
                 "questions_data": questions_data,
                 "score": response.compute_category_score(category)
