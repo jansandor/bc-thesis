@@ -8,8 +8,9 @@
     <script src="https://unpkg.com/vue@3"></script>
     <script type='text/javascript'>
         const responseRequestsJson = {{ client_response_requests_json|safe }};
-        const clientsJson = {{ clients_json|safe }};
+        const clientsJson = {{ clients_paginated|safe }};
         const surveysJson = {{ surveys_json|safe }};
+        const psychologistHomeUrl = '{% url "sportdiag:home_psychologist" %}';
     </script>
     <div class="container-xl bg-light p-4">
         <div class="row">
@@ -38,8 +39,8 @@
                         </div>
                     </div>
                 </div>
-                <ul class="list-group">
-                    <li v-for="client in clients" class="list-group-item py-3">
+                <ul class="list-group mb-3">
+                    <li v-for="client in clients.items" class="list-group-item py-3">
                         <div class="row align-items-center g-3">
                             <div class="col-xs-12 col-md-3 col-xl-4">
                                 <a :href="clientDetailUrl + client.pk">[[getClientFullname(client)]]</a>
@@ -64,14 +65,37 @@
                                     <button v-else type="button" class="btn btn-primary btn-sm align-middle"
                                             :ref="`requestResponseBtn-${client.pk}`"
                                             @click="requestSurveyResponse(client.pk, '{% url "sportdiag:request_survey_response" %}')">
-                            <span :ref="`spinner-${client.pk}`" class="spinner-border spinner-border-sm me-1 d-none"
-                                  role="status"
-                                  aria-hidden="true"></span>
+                                        <span :ref="`spinner-${client.pk}`"
+                                              class="spinner-border spinner-border-sm me-1 d-none"
+                                              role="status"
+                                              aria-hidden="true"></span>
                                         <span>Požádat o responzi</span>
                                     </button>
                                 </div>
                             </div>
                         </div>
+                    </li>
+                </ul>
+                <ul class="pagination justify-content-end">
+                    <li v-if="clients.has_previous_page" class="page-item">
+                        <a class="page-link"
+                           :href=`${purl}?page=${currentPage-1}`>Předchozí</a>
+                    </li>
+                    <li v-else class="page-item disabled">
+                        <span class="page-link">Předchozí</span>
+                    </li>
+                    <li v-for="pageNum in clients.pages_total"
+                        :class="pageNum === currentPage ? 'page-item active' : 'page-item'"
+                        :ref="`paginationItem-${pageNum}`">
+                        <a class="page-link"
+                           :href=`${purl}?page=${pageNum}`>[[pageNum]]</a>
+                    </li>
+                    <li v-if="clients.has_next_page" class="page-item">
+                        <a class="page-link"
+                           :href=`${purl}?page=${currentPage+1}`>Další</a>
+                    </li>
+                    <li v-else class="page-item disabled">
+                        <span class="page-link">Další</span>
                     </li>
                 </ul>
             </div>
@@ -86,11 +110,13 @@
             data() {
                 return {
                     responseRequests: responseRequestsJson,
-                    clients: clientsJson,
                     surveys: surveysJson,
                     selectionState: {},
                     clientDetailUrl: "/ucty/detail_klienta/", // todo not very good - hardcoded url
                     isClientsEmpty: false,
+                    clients: clientsJson,
+                    purl: psychologistHomeUrl,
+                    currentPage: parseInt(clientsJson.page_number),
                 }
             },
             beforeMount() {
@@ -105,7 +131,7 @@
             },
             methods: {
                 getClientFullname(client) {
-                    return client.fields.first_name + ' ' + client.fields.last_name;
+                    return client.first_name + ' ' + client.last_name;
                 },
                 surveyChanged(event, clientId) {
                     this.selectionState[clientId] = parseInt(event.target.value);
@@ -145,7 +171,7 @@
                         },
                     });
                 },
-            }
+            },
         });
         app.mount('#app');
     </script>

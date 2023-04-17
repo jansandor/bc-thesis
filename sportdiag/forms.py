@@ -180,9 +180,6 @@ class ResponseForm(models.ModelForm):
         # todo css_class="d-flex justify-content-end" ??? tlacitka vpravo dole misto vlevo
 
     def add_question(self, question):
-        """Add a question to the form.
-        :param Question question: The question to add.
-        :param dict data: The pre-existing values from a post request."""
         kwargs = {
             "label": f'{question.order}) {question.text}',
             "required": question.required}

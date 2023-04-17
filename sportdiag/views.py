@@ -96,8 +96,8 @@ def request_survey_response(request):
 
 
 class PsychologistHomeView(LoginRequiredMixin, PsychologistRequiredMixin, TemplateView):
-    # todo paginace?
     template_name = 'sportdiag/home/psychologist_home_vue.html'
+    paginate_by = 5
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -111,18 +111,37 @@ class PsychologistHomeView(LoginRequiredMixin, PsychologistRequiredMixin, Templa
                 SurveyResponseRequest.objects
                 .filter(client_id=client.user.id, is_pending=True)
                 .values_list("survey_id", flat=True))
+        filtered_clients = User.objects.filter(id__in=client_user_ids).order_by(
+            'last_name', 'first_name')
         context['surveys_json'] = serializers.serialize("json", surveys, fields=("name"))
-        context['clients_json'] = serializers.serialize("json", User.objects.filter(id__in=client_user_ids).order_by(
-            'last_name', 'first_name'), fields=("first_name", "last_name"))
+        context['clients_json'] = serializers.serialize("json", filtered_clients, fields=("first_name", "last_name"))
 
         context['client_response_requests_json'] = json.dumps(client_response_requests)
+        paginator = Paginator(list(filtered_clients.values("pk", "first_name", "last_name")), self.paginate_by)
+        requested_page_number = kwargs.get("page", 1)
+        page = paginator.page(requested_page_number)
+        context['clients_paginated'] = json.dumps({
+            "items": page.object_list,
+            "items_total": paginator.count,
+            "page_number": page.number,
+            "pages_total": paginator.num_pages,
+            "has_next_page": page.has_next(),
+            "has_previous_page": page.has_previous(),
+            # next page number
+            # prev page number from page object
+        })
         return context
+
+    def get(self, request, *args, **kwargs):
+        kwargs.update({"page": request.GET.get("page", 1)})
+        context = self.get_context_data(**kwargs)
+        return render(request, self.template_name, context)
 
 
 class ResearcherHomeView(LoginRequiredMixin, ResearcherRequiredMixin, TemplateView):
     template_name = 'sportdiag/home/researcher_home_vue.html'
     filter_form = ResponsesFilterForm
-    paginated_by = 2  # todo 10
+    paginate_by = 30
 
     # todo filter form no longer used - remove from forms.py?
 
@@ -160,7 +179,7 @@ class ResearcherHomeView(LoginRequiredMixin, ResearcherRequiredMixin, TemplateVi
         context['questions'] = list(
             survey.questions.order_by("order").values("number", "text", "pk", "required"))
         context['surveys'] = list(Survey.objects.filter(is_deleted=False).values('pk', 'name'))
-        paginator = Paginator(table_data, self.paginated_by)
+        paginator = Paginator(table_data, self.paginate_by)
         requested_page_number = kwargs.get("page", 1)
         page = paginator.page(requested_page_number)
         context['responses'] = {
@@ -223,7 +242,7 @@ class ClientHomeView(LoginRequiredMixin, ClientRequiredMixin, TemplateView):
         user = self.request.user
         survey_response_requests_ids = SurveyResponseRequest.objects.filter(client_id=user.id,
                                                                             is_pending=True).order_by(
-            "-requested_on_date").values_list("survey_id", flat=True)
+            "requested_on_date").values_list("survey_id", flat=True)
         # todo should be only 1 active request for client per survey
         surveys = Survey.objects.filter(id__in=survey_response_requests_ids)
         context['surveys'] = surveys
@@ -456,19 +475,27 @@ def reactivate_researcher_account(request, pk):
         return redirect(request.META.get('HTTP_REFERER'))
 
 
-class SurveysAndManualsView(LoginRequiredMixin, PsychologistOrResearcherRequiredMixin, TemplateView):
+class SurveysAndManualsView(LoginRequiredMixin, PsychologistOrResearcherRequiredMixin, ListView):
     template_name = "sportdiag/surveys_and_manuals.html"
     upload_survey_attachments_form = UploadFilesForm
+    paginate_by = 5
+    model = Survey
+    ordering = ['id']
+
+    def get_queryset(self, user):
+        queryset = super().get_queryset()
+        queryset = queryset.filter(is_deleted=False)
+        if user and user.is_psychologist:
+            queryset = queryset.filter(is_published=True)
+        return queryset
 
     def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['upload_attachments_form'] = self.upload_survey_attachments_form()
-        surveys = Survey.objects.filter(is_deleted=False).order_by('id')
         user = kwargs.get("user")
-        if user and user.is_psychologist:
-            surveys = surveys.filter(is_published=True)
-        context['surveys'] = surveys
+        queryset = self.get_queryset(user=user)
+        context = super().get_context_data(object_list=queryset, **kwargs)
+        context['upload_attachments_form'] = self.upload_survey_attachments_form()
         surveys_attachments = {}
+        surveys = context['object_list']
         for survey in surveys:
             attachments_dir_path = get_survey_attachments_upload_dir_path(survey)
             attachments_names = os.listdir(attachments_dir_path)

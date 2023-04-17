@@ -3,3 +3,4 @@
 *.dot
 /*.png
 db.sqlite3
+.idea
