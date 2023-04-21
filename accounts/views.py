@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from django.views.generic.base import TemplateView
 from django.views.generic.edit import CreateView
+from django.views.generic import ListView
 from django.contrib.auth import get_user_model
 from django.urls import reverse_lazy
 from .forms import ClientUserCreationForm, PsychologistUserCreationForm, ResearcherUserCreationForm
@@ -18,6 +19,7 @@ from django.contrib.auth.views import PasswordResetView as DjangoPasswordResetVi
     PasswordResetDoneView as DjangoPasswordResetDoneView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from bp.mixins import PsychologistRequiredMixin, StaffResearcherRequiredMixin
+from django.core.paginator import Paginator
 
 
 class SignUpView(TemplateView):
@@ -206,29 +208,27 @@ class ResearcherCreateView(LoginRequiredMixin, StaffResearcherRequiredMixin, Cre
 # todo pro psychologa hazet warning/info/alert message, pokud jeho ucet jeste nebyl schvalen adminem
 # todo pro kazdeho usera hazet message, pokud nema aktivovany ucet
 
-class ClientDetailView(LoginRequiredMixin, PsychologistRequiredMixin, TemplateView):
-    model = ClientProfile
+class ClientDetailView(LoginRequiredMixin, PsychologistRequiredMixin, ListView):
     template_name = "accounts/client_detail.html"
+    model = Response
+    ordering = ['-created']
+    paginate_by = 2
+
+    def get_queryset(self, user_id):
+        queryset = super().get_queryset()
+        queryset = queryset.filter(user_id=user_id)
+        return queryset
 
     def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
         user_id = kwargs.get('user_id')
-        if user_id:
-            client = ClientProfile.objects.get(user_id=user_id)
-            context['client'] = client
-            responses_qs = Response.objects.filter(user_id=user_id).order_by("-created")
-            # if responses_qs:
-            # todo show survey response requests to psychologist
-            responses = []
-            for response in responses_qs:
-                responses.append({
-                    "survey_name": response.survey.name,
-                    "interview_uuid": response.interview_uuid,
-                    "created": response.created,
-                    "id": response.id,
-                })
-            context["responses"] = responses
-            # else:
-            #    survey_response_request = SurveyResponseRequest.objects.filter(client_id=user_id)
-            #    context["response_requests"] = survey_response_request
+        responses_qs = self.get_queryset(user_id=user_id)
+        context = super().get_context_data(object_list=responses_qs, **kwargs)
+        client = ClientProfile.objects.get(user_id=user_id)
+        context['client'] = client
+        # todo show survey response requests to psychologist
         return context
+
+    def get(self, request, *args, **kwargs):
+        kwargs.update({"page": request.GET.get("page", 1)})
+        context = self.get_context_data(**kwargs)
+        return render(request, self.template_name, context)

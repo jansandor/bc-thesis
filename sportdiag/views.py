@@ -114,10 +114,12 @@ class PsychologistHomeView(LoginRequiredMixin, PsychologistRequiredMixin, Templa
         filtered_clients = User.objects.filter(id__in=client_user_ids).order_by(
             'last_name', 'first_name')
         context['surveys_json'] = serializers.serialize("json", surveys, fields=("name"))
-        context['clients_json'] = serializers.serialize("json", filtered_clients, fields=("first_name", "last_name"))
-
         context['client_response_requests_json'] = json.dumps(client_response_requests)
-        paginator = Paginator(list(filtered_clients.values("pk", "first_name", "last_name")), self.paginate_by)
+        filtered_clients = list(filtered_clients.values("pk", "first_name", "last_name"))
+        for i in range(filtered_clients.__len__()):
+            filtered_clients[i]["detail_url"] = reverse('client_detail',
+                                                        kwargs={'user_id': filtered_clients[i]["pk"], "page": 1})
+        paginator = Paginator(filtered_clients, self.paginate_by)
         requested_page_number = kwargs.get("page", 1)
         page = paginator.page(requested_page_number)
         context['clients_paginated'] = json.dumps({

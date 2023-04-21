@@ -1,4 +1,4 @@
-from django.urls import path, include
+from django.urls import path, include, re_path
 from django.conf.urls import url
 from .views import SignUpView, ClientSignUpView, PsychologistSignUpView, activate, PasswordResetView, \
     PasswordResetDoneView, ResearcherCreateView, ClientDetailView
@@ -20,7 +20,9 @@ urlpatterns = [
         template_name='accounts/registration/password_reset_complete.html'), name='password_reset_complete'),
     path('aktivovat_ucet/<uidb64>/<token>/', activate, name='activate'),
     path('registrace/vyzkumnik/', ResearcherCreateView.as_view(), name='create_researcher_account'),
-    path('detail_klienta/<int:user_id>/', ClientDetailView.as_view(), name='client_detail')
+    re_path(r'detail_klienta/(?P<user_id>\d+)/$', ClientDetailView.as_view(), name='client_detail'),
+    re_path(r'detail_klienta/(?P<user_id>\d+)/\?(?:page=(?P<page>\d+))?$', ClientDetailView.as_view(),
+            name='client_detail'),
     # url(r'^activate/(?P<uidb64>[0-9A-Za-z_\-]+)/(?P<token>[0-9A-Za-z]{1,13}-[0-9A-Za-z]{1,32})/$', activate,
     #    name='activate'),
 ]
