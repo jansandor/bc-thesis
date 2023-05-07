@@ -5,8 +5,6 @@ from sportdiag.models import Survey, QuestionGroup
 
 class LikertScale(models.Model):
     name = models.CharField(_('název'), max_length=400)
-    # description = models.CharField(_('popis'), max_length=2000, blank=True, null=True)
-    # order = models.PositiveIntegerField(_('pořadí zobrazení'), default=1)
     survey = models.ForeignKey(Survey, on_delete=models.CASCADE, verbose_name=_('dotazník'),
                                related_name='likert_scales')
     choices = models.TextField(_('odpovědi'),

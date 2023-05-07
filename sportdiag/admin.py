@@ -6,9 +6,8 @@ from .models import Survey, Category, Question, LikertScale, QuestionGroup, Answ
 
 class QuestionAdmin(admin.ModelAdmin):
     list_display = (
-    'survey', 'text', 'number', 'order', 'required', 'type', 'choices', 'scores', 'category', 'group', 'likert_scale')
-    # search_fields = ["name"]
-    # ordering = ["name"]
+        'survey', 'text', 'number', 'order', 'required', 'type', 'choices', 'scores', 'category', 'group',
+        'likert_scale')
 
 
 admin.site.register(Survey)

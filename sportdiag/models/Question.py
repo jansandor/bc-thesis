@@ -29,7 +29,6 @@ class Question(models.Model):
                                blank=True)
     scores = models.TextField(_('skóre odpovědí'), default=0,
                               help_text='Zadejte bodové hodnocení každé odpovědi na otázku oddělené čárkou. V případě, že otázka není bodově hodnocena, zadejte "0" (bez uvozovek).')
-    # todo choices_scores, choices_texts, len scores == len choices
     type = models.CharField(_("typ otázky"), max_length=100, choices=QUESTION_TYPES, default=SHORT_TEXT)
     category = models.ForeignKey(Category, on_delete=models.CASCADE, verbose_name=_('kategorie'),
                                  related_name="questions", blank=True, null=True)
@@ -42,10 +41,8 @@ class Question(models.Model):
     class Meta:
         verbose_name = _('otázka')
         verbose_name_plural = _('otázky')
-        # ordering = ("survey", "order")
 
     def get_clean_choices(self):
-        """Return split and stripped list of choices with no null values."""
         if self.choices is None:
             return []
         choices_list = []
@@ -56,10 +53,6 @@ class Question(models.Model):
         return choices_list
 
     def get_choices(self):
-        """
-        Parse the choices field and return a tuple formatted appropriately
-        for the 'choices' argument of a form widget.
-        """
         choices_list = []
         for choice in self.get_clean_choices():
             choices_list.append((slugify(choice, allow_unicode=True), choice))
@@ -67,7 +60,6 @@ class Question(models.Model):
         return choices_tuple
 
     def get_clean_scores(self):
-        """Return split and stripped list of choices with no null values."""
         if self.scores is None:
             return []
         score_list = []
@@ -78,7 +70,6 @@ class Question(models.Model):
         return score_list
 
     def get_answer_score(self, answer):
-        """Returns question choice score for given answer."""
         scores = self.get_clean_scores()
         choices = self.get_clean_choices()
         if answer.body in choices:
@@ -92,5 +83,3 @@ class Question(models.Model):
 
     def __str__(self):
         return f'{self.survey.short_name}: O{self.number}P{self.order}{"*" if self.required else ""}: {self.category if self.category is not None else "<Nenastavená kategorie>"}'
-
-    # todo validate choices like in django survey?

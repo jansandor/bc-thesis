@@ -164,13 +164,6 @@
                     },
                     get_formatted_datetime(datetime) {
                         return datetime;
-                        /*
-                        solved on BE for now
-                        const dt = new Date(datetime);
-                        return new Intl.DateTimeFormat('cs-CZ', {
-                            dateStyle: 'short',
-                            timeStyle: 'short'
-                        }).format(dt);*/
                     },
                     surveyChanged(event) {
                         this.selectedSurveyId = event.target.value;

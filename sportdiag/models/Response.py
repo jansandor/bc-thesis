@@ -3,11 +3,10 @@ import uuid
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth import get_user_model
-from django.db.models import Avg, Count, Min, Sum
-from django.urls import reverse_lazy, reverse
+from django.db.models import Sum
+from django.urls import reverse
 
 from sportdiag.models import Survey
-from accounts.models import User
 
 
 class Response(models.Model):
@@ -23,10 +22,7 @@ class Response(models.Model):
         verbose_name_plural = _('Sets of answers to surveys')
 
     def compute_category_score(self, category):
-        # cat_questions = Question.objects.filter(category_id=category.id).order_by("number")
-        # todo if category doesnt belong to survey throw error - try except
-        # but only for developer/debug
-        self.survey.categories.get(id=category.id)  # todo check if category belongs to survey?
+        self.survey.categories.get(id=category.id)
         cat_score = 0
         if self.survey.type == Survey.ACSI28_ATHLETE:
             questions_ids = category.questions.order_by("number").values_list("id", flat=True)
@@ -37,12 +33,10 @@ class Response(models.Model):
             questions_ids = category.questions.order_by("number").values_list("id", flat=True)
             cat_score = self.answers.filter(question_id__in=questions_ids).aggregate(
                 Sum("score"))
-            # todo !! category Schopnost akceptovat konstruktivní kritiku (Coachability)
             if category.name.lower() == "Schopnost akceptovat konstruktivní kritiku (Coachability)".lower():
-                return cat_score.get("score__sum") / 3  # for this category sum is divided by 3
+                return cat_score.get("score__sum") / 3
             return cat_score.get("score__sum") / 4
         elif self.survey.type == Survey.PCDEQ:
-            # self.survey.categories.get(id=category.id).questions.count()
             questions_count = category.questions.count()
             cat_score = self.answers.filter(question__in=category.questions.order_by("number")).aggregate(Sum("score"))
             return cat_score.get("score__sum") / questions_count

@@ -55,7 +55,6 @@
                                 </select>
                             </div>
                             <div class="col-xs-12 col-md-3 col-xl-2">
-                                <!-- todo button zrusit zadost o responzi -->
                                 <div v-if="surveys.length > 0">
                                     <button v-if="resolveButton(client.pk)" type="button"
                                             class="btn btn-primary btn-sm disabled">
@@ -162,7 +161,6 @@
                         },
                         success: (response) => {
                             this.responseRequests[clientId].push(selectedSurveyId);
-                            // todo logging console.log("REQUEST_SURVEY_RESPONSE_SUCCESS");
                         },
                         error: (response) => {
                             // todo logging console.log("REQUEST_SURVEY_RESPONSE_ERROR", response);

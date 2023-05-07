@@ -23,7 +23,6 @@ class Survey(models.Model):
     description = models.TextField(_('popis'))
     instructions = models.TextField(_('instrukce'), blank=True, null=True)
     is_published = models.BooleanField(_("zvěřejněný"), default=False)
-    # todo last_published_date
     is_deleted = models.BooleanField(_("smazaný"), default=False)
     deleted_date = models.DateTimeField(_('datum smazání'), blank=True, null=True)
 
@@ -72,5 +71,3 @@ class Survey(models.Model):
             if q:
                 max_score -= max(q.get_clean_scores())
         return max_score
-
-    # todo override delete with setting delete date

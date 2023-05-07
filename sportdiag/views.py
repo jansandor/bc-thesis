@@ -71,7 +71,6 @@ def request_survey_response(request):
             message = render_to_string(request_survey_response_email_html_template,
                                        {
                                            'psychologist_fullname': psychologist.__str__(),
-                                           # todo delete nejspis 'survey_id': survey_id,
                                            'domain': get_current_site(request).domain,
                                        })
             email = EmailMessage(mail_subject, message, to=[client_email])
@@ -79,19 +78,10 @@ def request_survey_response(request):
             try:
                 email.send()
             except Exception:
-                # todo logging, DRY
-                # todo nefunguje jak by melo - pro zobrazeni msg je nutne udelat new request... messages.error(request, "Něco se pokazilo. E-mail nebyl odeslán.")
                 return HttpResponse(status=HTTPStatus.INTERNAL_SERVER_ERROR)
             else:
                 SurveyResponseRequest.objects.create(client_id=client_id, survey_id=survey_id)
-                # todo return refreshed client_response_requests ? currently updated in JS
-                # messages.success(request, "Responze vyžádána.")
                 return HttpResponse(status=HTTPStatus.OK)
-            # todo misto response vyzadana disabled buttonu dat button zrusit pozadavek
-            # -> smaze zaznam z tabulky survey response requests (klient dotaznik nebude moci vyplnit
-            # pokud zaznam v tabulce pozadavku neexistuje
-
-    # messages.error(request, "Něco se pokazilo. E-mail nebyl odeslán.")
     return HttpResponse(status=HTTPStatus.INTERNAL_SERVER_ERROR)
 
 
@@ -129,8 +119,6 @@ class PsychologistHomeView(LoginRequiredMixin, PsychologistRequiredMixin, Templa
             "pages_total": paginator.num_pages,
             "has_next_page": page.has_next(),
             "has_previous_page": page.has_previous(),
-            # next page number
-            # prev page number from page object
         })
         return context
 
@@ -145,8 +133,6 @@ class ResearcherHomeView(LoginRequiredMixin, ResearcherRequiredMixin, TemplateVi
     filter_form = ResponsesFilterForm
     paginate_by = 30
 
-    # todo filter form no longer used - remove from forms.py?
-
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         survey_id = kwargs.get('survey_id')
@@ -154,8 +140,6 @@ class ResearcherHomeView(LoginRequiredMixin, ResearcherRequiredMixin, TemplateVi
         responses = Response.objects.filter(survey_id=survey_id).order_by("-created").select_related()
         table_data = []
         counter = 1
-        # todo questions are ordered by order number, answers are ordered by 'created'
-        # todo will always answer body/score match right Q column in table? It seems so
         for response in responses:
             client = ClientProfile.objects.get(user_id=response.user_id)
             answers = response.answers.order_by("created").select_related('question').values('question_id',
@@ -167,7 +151,7 @@ class ResearcherHomeView(LoginRequiredMixin, ResearcherRequiredMixin, TemplateVi
                 "response_id": response.id,
                 "interview_uuid": str(response.interview_uuid),
                 "response_detail_url": response.get_absolute_url(),
-                "client_uuid": client.user_id,  # todo uuid?
+                "client_uuid": client.user_id,
                 "nationality": client.nationality,
                 "sex": client.sex,
                 "age": client.age,
@@ -197,7 +181,6 @@ class ResearcherHomeView(LoginRequiredMixin, ResearcherRequiredMixin, TemplateVi
         filter_form = self.filter_form(request.POST)
         if filter_form.is_valid():
             selected_survey = filter_form.cleaned_data['survey']
-            # todo improve code below?
             if selected_survey is None:
                 context = self.get_context_data(survey_id=selected_survey)
             else:
@@ -221,7 +204,6 @@ class ResearcherHomeView(LoginRequiredMixin, ResearcherRequiredMixin, TemplateVi
         kwargs.update({"page": request.GET.get("page", 1)})
         context = self.get_context_data(**kwargs)
         if self.is_ajax(request):
-            # return only necessary data for table change
             data = {
                 "export_survey_responses_csv_request_path": context.get("export_survey_responses_csv_request_path",
                                                                         None),
@@ -245,7 +227,6 @@ class ClientHomeView(LoginRequiredMixin, ClientRequiredMixin, TemplateView):
         survey_response_requests_ids = SurveyResponseRequest.objects.filter(client_id=user.id,
                                                                             is_pending=True).order_by(
             "requested_on_date").values_list("survey_id", flat=True)
-        # todo should be only 1 active request for client per survey
         surveys = Survey.objects.filter(id__in=survey_response_requests_ids)
         context['surveys'] = surveys
         return context
@@ -266,9 +247,6 @@ class NewResponseFormView(LoginRequiredMixin, ClientRequiredMixin, TemplateView)
     new_response_email_html_template = "sportdiag/emails/new_response_email_html_template.html"
 
     def get(self, request, *args, **kwargs):
-        # todo check jestli je zaznam v tabulce survey response requests pro client id & survey id
-        # pokud ano, klient ma na home tlacitko "vyplnit"
-        # pokud ne, klient je presmerovan na home a prida se message pozadavek je neplatny/byl zrusen?
         user = request.user
         survey_id = kwargs.get('survey_id')
         context = self.get_context_data(**kwargs)
@@ -277,14 +255,11 @@ class NewResponseFormView(LoginRequiredMixin, ClientRequiredMixin, TemplateView)
                 response_request = SurveyResponseRequest.objects.get(client_id=user.id, survey_id=survey_id,
                                                                      is_pending=True)
             except SurveyResponseRequest.DoesNotExist:
-                # todo handle - responze uz byla vytvorena nebo byl pozadavek zrusen psychologem
-                # todo pokud nastane, vratit na home a message?
                 print("SurveyResponseRequest.DoesNotExist")
                 pass
             except SurveyResponseRequest.MultipleObjectsReturned:
-                # todo handle, nemelo by nikdy nastat!
                 pass
-            survey = Survey.objects.get(id=survey_id)  # todo select related
+            survey = Survey.objects.get(id=survey_id)
             form = ResponseForm(survey=survey, user=request.user)
             context = {'response_form': form, 'survey_id': survey_id}
         else:
@@ -297,17 +272,15 @@ class NewResponseFormView(LoginRequiredMixin, ClientRequiredMixin, TemplateView)
         survey = Survey.objects.get(id=survey_id)
         client = ClientProfile.objects.get(user_id=request.user.id)
         form = ResponseForm(request.POST, survey=survey, user=request.user)
-        context = {"response_form": form}  # , "categories": categories
+        context = {"response_form": form}
         if form.is_valid():
             response = form.save()
-            # todo melo by vzdy vratit 1 request, handle try except
             survey_response_request = SurveyResponseRequest.objects.get(client_id=client.user_id, survey_id=survey.id,
                                                                         is_pending=True)
             survey_response_request.responded_on_date = datetime.now(timezone.utc)
             survey_response_request.is_pending = False
             survey_response_request.save()
             if response is None:
-                # todo message? stane se mi to vubec nekdy?
                 return redirect(reverse("sportdiag:home"))
             psychologist = User.objects.get(id=client.psychologist_id)
             mail_subject = f'Sportdiag | Nová responze'
@@ -329,7 +302,6 @@ class ApprovePsychologistsView(LoginRequiredMixin, StaffResearcherRequiredMixin,
     model = User
     paginate_by = 10
     template_name = 'sportdiag/approve_psychologists.html'
-    # query jen is_active false a is_psychologist true?
     queryset = User.objects.filter(is_psychologist=True, email_verified=True, confirmed_by_staff=False, is_active=False)
     ordering = ['-date_joined']
 
@@ -362,7 +334,7 @@ class InviteClient(LoginRequiredMixin, PsychologistRequiredMixin, FormView):
             email = EmailMessage(mail_subject, message, to=[client_email])
             email.content_subtype = 'html'
             email.send()
-            # todo message, ze email byl odeslan
+            messages.success(request, "E-mail odeslán.")
             return redirect('sportdiag:home')
         else:
             return render(request, self.template_name, {'form': form, 'psychologist': profile})
@@ -372,8 +344,6 @@ class InviteClient(LoginRequiredMixin, PsychologistRequiredMixin, FormView):
 def reject_psychologist(request, pk):
     if request.method == "POST":
         registration_rejected_email_html_template = "sportdiag/emails/psychologist_registration_rejected_email.html"
-        # success_url = reverse_lazy('sportdiag:approve_psychologists')
-        # todo bylo by pekne, kdyby success vracel na stranku+page, z ktere byla akce provedena
         user = User.objects.get(id=pk)
         if user:
             mail_subject = f'Sportdiag | Vaše registrace byla zamítnuta správcem'
@@ -386,7 +356,7 @@ def reject_psychologist(request, pk):
             email.send()
             user_uploaded_files_dir_path = settings.MEDIA_ROOT / user_specific_upload_dir(user=user)
             if os.path.exists(user_uploaded_files_dir_path):
-                shutil.rmtree(user_uploaded_files_dir_path)  # todo onerror logging
+                shutil.rmtree(user_uploaded_files_dir_path)
             user.delete()
             return redirect(request.META.get('HTTP_REFERER'))  # redirect('sportdiag:approve_psychologists')
 
@@ -394,18 +364,12 @@ def reject_psychologist(request, pk):
 @user_passes_test(user_is_staff_researcher)
 def approve_psychologist(request, pk):
     if request.method == "POST":
-        # uzivatel urcite existuje, proklik je z listu useru, co existuji
-        # a neni verejna url, ktera by sla zmenit
-        # presto, pokud o url patternu vim, muzu pk zmenit
-        # todo ochrana checkem, jestli user existuje? 5/3/22 neni nutna? jinak by P nebyl v tabulce
-        # todo --> url/view ma pristupnou pouze staff researcher
         registration_approved_email_html_template = 'sportdiag/emails/psychologist_registration_approved_email.html'
 
         user = User.objects.get(id=pk)
         user.confirmed_by_staff = True
         user.is_active = True
         user.save()
-        # todo message uspesne schvaleno
         mail_subject = f'Sportdiag | Vaše registrace byla schválena správcem'
         message = render_to_string(registration_approved_email_html_template,
                                    {
@@ -414,7 +378,8 @@ def approve_psychologist(request, pk):
         email = EmailMessage(mail_subject, message, to=[user.email])
         email.content_subtype = 'html'
         email.send()
-        return redirect(request.META.get('HTTP_REFERER'))  # redirect('sportdiag:approve_psychologists')
+        messages.success(request, f"Schváleno.")
+        return redirect(request.META.get('HTTP_REFERER'))
 
 
 @user_passes_test(user_is_staff_researcher)
@@ -438,7 +403,7 @@ class ResearchersOverviewView(LoginRequiredMixin, StaffResearcherRequiredMixin, 
     def get_queryset(self):
         """ returns all researchers excluding logged in (staff) researcher """
         queryset = super().get_queryset()
-        current_user = self.request.user  # current user is staff researcher
+        current_user = self.request.user
         queryset = queryset.filter(is_researcher=True).difference(User.objects.filter(id=current_user.id)).order_by(
             '-date_joined')
         return queryset
@@ -525,7 +490,7 @@ def get_survey_attachments_upload_dir_path(survey):
 
 
 def handle_uploaded_file(file, attachments_dir_path):
-    file_dest_path = attachments_dir_path / file.name  # todo ? .replace(" ", "_")
+    file_dest_path = attachments_dir_path / file.name
     # todo handle filename collisions, now file is overwritten
     with open(file_dest_path, 'wb+') as destination:
         for chunk in file.chunks():
@@ -599,15 +564,11 @@ def compute_score(answers):  # todo extract method and reuse in client detail
 
 @user_passes_test(user_is_researcher)
 def export_survey_responses_to_csv(request, survey_id):
-    # todo POST? melo by byt chraneno, at na tu URL nevleze kdekdo a nemeni cisla
     survey = Survey.objects.get(id=survey_id)
     responses = Response.objects.filter(survey_id=survey.id).order_by("-created")
     if not responses:
-        # todo NOW EXPORT BUTTON IS NOT RENDERED IF NO SURVEYS RESULTS IN TEMPLATE
-        # messages doesnt work with redirect ...
         messages.error(request, "Žádné responze k exportování.")
         return redirect('sportdiag:home_researcher')
-        # return render(request, self.template_name, context)
     filename = f"odpovedi_{datetime.now(timezone.utc).date()}_{survey.short_name}.csv".replace(" ", "_").replace("-",
                                                                                                                  "_")
     questions = []
@@ -616,7 +577,7 @@ def export_survey_responses_to_csv(request, survey_id):
     http_response = HttpResponse(content_type='text/csv',
                                  headers={'Content-Disposition': f'attachment; filename="{filename}"'},
                                  charset='utf-8-sig')
-    writer = csv.writer(http_response)  # todo bad diacritics on win excel
+    writer = csv.writer(http_response)
     writer.writerow(
         ['#', 'Dotazník', 'Datum responze', 'ID Responze', 'ID Klienta', 'Státní příslušnost', 'Pohlaví',
          'Věk', *questions, 'Skóre', 'Max Skóre'])
@@ -633,7 +594,7 @@ def export_survey_responses_to_csv(request, survey_id):
              f'{response.interview_uuid}', f'{client.user_id}', f'{client.nationality}', f'{client.sex}',
              f'{client.age}',
              *no_cat_questions_answers, *answers, f'{response.total_score}', f'{response.max_score}'])
-        counter += 1  # todo round total score..
+        counter += 1
     return http_response
 
 
@@ -656,10 +617,9 @@ def delete_survey(request, survey_id):
         survey.is_deleted = True
         survey.deleted_date = datetime.now(timezone.utc)
         survey.save()
-        # todo remove attachments - TEST
         survey_media_dir_path = get_survey_media_dir_path(survey)
         if os.path.exists(survey_media_dir_path):
-            shutil.rmtree(survey_media_dir_path)  # todo on error logging
+            shutil.rmtree(survey_media_dir_path)
     else:
         messages.error(request, "Dotazník nenalezen.")
     return redirect("sportdiag:surveys_manuals")

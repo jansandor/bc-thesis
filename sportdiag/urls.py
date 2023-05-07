@@ -1,4 +1,3 @@
-from django.contrib.auth.decorators import login_required
 from django.urls import path, re_path
 
 from .views import IndexView, PsychologistHomeView, InviteClient, \
@@ -7,8 +6,6 @@ from .views import IndexView, PsychologistHomeView, InviteClient, \
     deactivate_researcher_account, reactivate_researcher_account, NewResponseFormView, SurveyConfirmView, \
     request_survey_response, SurveysAndManualsView, upload_survey_attachments, download_survey_attachment, \
     delete_survey_attachment, export_survey_responses_to_csv, toggle_is_published, delete_survey, ResponseDetailView
-
-# todo views, co jsou nyni ve sportdiagu, ale tykaji se accounts models importovat z accounts.views a nemit je ve sportdiagu
 
 app_name = 'sportdiag'
 

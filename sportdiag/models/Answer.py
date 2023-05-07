@@ -1,9 +1,3 @@
-"""
-    These type-specific answer models use a text field to allow for flexible
-    field sizes depending on the actual question this answer corresponds to any
-    "required" attribute will be enforced by the form.
-"""
-
 import logging
 
 from django.core.exceptions import ValidationError
@@ -32,16 +26,12 @@ class Answer(models.Model):
             self.check_answer_body(question, body)
         super().__init__(*args, **kwargs)
 
-    # todo projit jak bude treba, kod resi zobrazeni odpovedi??
     @property
     def values(self):
         if self.body is None:
             return [None]
         if len(self.body) < 3 or self.body[0:3] != "[u'":
             return [self.body]
-        # We do not use eval for security reason but it could work with :
-        # eval(self.body)
-        # It would permit to inject code into answer though.
         values = []
         raw_values = self.body.split("', u'")
         nb_values = len(raw_values)
