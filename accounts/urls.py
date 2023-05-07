@@ -1,7 +1,7 @@
 from django.urls import path, include, re_path
 from django.conf.urls import url
 from .views import SignUpView, ClientSignUpView, PsychologistSignUpView, activate, PasswordResetView, \
-    PasswordResetDoneView, ResearcherCreateView, ClientDetailView
+    PasswordResetDoneView, ResearcherCreateView, ClientDetailView, AccountSettingsView
 from django.contrib.auth import views as auth_views
 
 urlpatterns = [
@@ -23,6 +23,7 @@ urlpatterns = [
     re_path(r'detail_klienta/(?P<user_id>\d+)/$', ClientDetailView.as_view(), name='client_detail'),
     re_path(r'detail_klienta/(?P<user_id>\d+)/\?(?:page=(?P<page>\d+))?$', ClientDetailView.as_view(),
             name='client_detail'),
+    path('nastaveni_uctu/<int:pk>', AccountSettingsView.as_view(), name='account_settings')
     # url(r'^activate/(?P<uidb64>[0-9A-Za-z_\-]+)/(?P<token>[0-9A-Za-z]{1,13}-[0-9A-Za-z]{1,32})/$', activate,
     #    name='activate'),
 ]

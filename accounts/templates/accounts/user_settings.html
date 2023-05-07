@@ -1,0 +1,30 @@
+{% extends 'sportdiag/common/base.html' %}
+
+{% load static %}
+{% load crispy_forms_tags %}
+{# TODO filtery? #}
+{% load accounts_filters %}
+
+{% block styles %}
+    <link rel="stylesheet" type="text/css" href="{% static 'accounts/css/user_settings.css' %}">
+{% endblock %}
+
+{% block title %}Sportdiag | Nastavení účtu{% endblock %}
+
+{% block content %}
+    <div class="container-xl bg-light p-4">
+        <div class="row">
+            <div class="col">
+                <h1>Nastavení účtu</h1>
+            </div>
+            <hr>
+        </div>
+        <div>
+            <div class="row">
+                <div class="col col-lg-4">
+                    {% crispy form %}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

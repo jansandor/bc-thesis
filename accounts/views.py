@@ -1,12 +1,11 @@
 from django.shortcuts import render
-from django.views.generic.base import TemplateView
-from django.views.generic.edit import CreateView
-from django.views.generic import ListView
+from django.views.generic import ListView, TemplateView, CreateView, FormView
 from django.contrib.auth import get_user_model
 from django.urls import reverse_lazy
-from .forms import ClientUserCreationForm, PsychologistUserCreationForm, ResearcherUserCreationForm
+from .forms import ClientUserCreationForm, PsychologistUserCreationForm, ResearcherUserCreationForm, ClientChangeForm, \
+    PsychologistChangeForm, ResearcherChangeForm
 from .models import ClientProfile, PsychologistProfile, User
-from sportdiag.models import Response, Survey, SurveyResponseRequest
+from sportdiag.models import Response
 from django.shortcuts import redirect
 from django.contrib.sites.shortcuts import get_current_site
 from django.utils.encoding import force_bytes, force_text
@@ -19,7 +18,7 @@ from django.contrib.auth.views import PasswordResetView as DjangoPasswordResetVi
     PasswordResetDoneView as DjangoPasswordResetDoneView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from bp.mixins import PsychologistRequiredMixin, StaffResearcherRequiredMixin
-from django.core.paginator import Paginator
+from django.contrib import messages
 
 
 class SignUpView(TemplateView):
@@ -232,3 +231,59 @@ class ClientDetailView(LoginRequiredMixin, PsychologistRequiredMixin, ListView):
         kwargs.update({"page": request.GET.get("page", 1)})
         context = self.get_context_data(**kwargs)
         return render(request, self.template_name, context)
+
+
+class AccountSettingsView(LoginRequiredMixin, FormView):
+    template_name = 'accounts/user_settings.html'
+    success_url = 'account_settings'
+
+    def get_initial(self):
+        initial = super().get_initial()
+        user = self.request.user
+        initial.update({
+            "first_name": user.first_name,
+            "last_name": user.last_name,
+            "email": user.email,
+        })
+        if user.is_client:
+            user_profile = ClientProfile.objects.get(user_id=user.id)
+            initial.update({
+                "birthdate": user_profile.birthdate.__str__(),
+                "sex": user_profile.sex,
+                "nationality": user_profile.nationality,
+            })
+        elif user.is_psychologist:
+            user_profile = PsychologistProfile.objects.get(user_id=user.id)
+            initial.update({
+                "academic_degree_before_name": user_profile.academic_degree_before_name,
+                "academic_degree_after_name": user_profile.academic_degree_after_name,
+            })
+        elif user.is_researcher:
+            pass
+        return initial
+
+    def get_form_class(self):
+        user = self.request.user
+        if user.is_client:
+            self.form_class = ClientChangeForm
+        elif user.is_psychologist:
+            self.form_class = PsychologistChangeForm
+        elif user.is_researcher:
+            self.form_class = ResearcherChangeForm
+        return self.form_class
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        user = self.request.user
+        kwargs.update({"user": user})
+        return kwargs
+
+    def form_valid(self, form):
+        form.save(user=self.request.user)
+        messages.success(self.request, f"Uloženo.")
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        url = super().get_success_url()
+        kwargs = {"pk": self.request.user.pk}
+        return reverse_lazy(url, kwargs=kwargs)

@@ -10,7 +10,7 @@ from datetime import datetime as dt
 from django.core.exceptions import ObjectDoesNotExist
 
 from crispy_forms.helper import FormHelper
-from crispy_forms.bootstrap import InlineRadios
+from crispy_forms.bootstrap import InlineRadios, FormActions
 from crispy_forms.layout import Layout, Submit, Field, Div, HTML
 
 from accounts.utils.forms import DateInput
@@ -174,3 +174,79 @@ class ResearcherUserCreationForm(UserCreationForm):
         user.save()
         # profile tabulka je v DB, ale zatim neni duvod ji vyuzit
         return user, raw_password
+
+
+class UserChangeBaseForm(forms.Form):
+    first_name = forms.CharField(label="Jméno", max_length=150)
+    last_name = forms.CharField(label="Příjmení", max_length=150)
+    email = forms.EmailField(label="E-mail")
+    fields = ['first_name', 'last_name', 'email']
+
+    def get_layout_fields(self):
+        return self.fields
+
+    def __init__(self, user, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.helper = FormHelper()
+        self.helper.label_class = 'fw-light'
+        layout_fields = self.get_layout_fields()
+        self.helper.layout = Layout(
+            *layout_fields,
+            FormActions(Submit('submit', 'Uložit'),
+                        css_class='d-flex flex-column justify-content-center')
+        )
+
+    def save(self, user):
+        data = self.cleaned_data
+        user.first_name = data.get("first_name")
+        user.last_name = data.get("last_name")
+        user.email = data.get("email")
+        user.save()
+        return user
+
+
+class ClientChangeForm(UserChangeBaseForm):
+    # TODO share somehow ClientUserCreationForm
+    birthdate = forms.DateField(widget=DateInput(attrs={'min': datetime.date(dt.today().year - 100, 1, 1).__str__(),
+                                                        'max': dt.today().date().__str__()}),
+                                label=_('Datum narození'))
+    sex = forms.ChoiceField(widget=forms.RadioSelect(), choices=sex_choices.SEX_CHOICES, initial=sex_choices.NOTSET,
+                            label=_('Pohlaví'))
+    nationality = forms.ChoiceField(choices=nationality.CHOICES, initial=nationality.CZE, label=_('Státní příslušnost'))
+    fields = ['birthdate', 'sex', 'nationality']
+
+    @transaction.atomic
+    def save(self, user):
+        super().save(user=user)
+        data = self.cleaned_data
+        profile = ClientProfile.objects.get(user_id=user.id)
+        profile.birthdate = data.get("birthdate")
+        profile.sex = data.get("sex")
+        profile.nationality = data.get("nationality")
+        profile.save()
+
+
+class PsychologistChangeForm(UserChangeBaseForm):
+    # TODO share somehow PsychologistUserCreationForm
+    academic_degree_before_name = forms.ChoiceField(choices=academic_degrees.ACADEMIC_DEGREES_BEFORE_NAME,
+                                                    initial=academic_degrees.NO_DEGREE,
+                                                    label=_('Titul před jménem'),
+                                                    required=False)
+    academic_degree_after_name = forms.ChoiceField(choices=academic_degrees.ACADEMIC_DEGREES_AFTER_NAME,
+                                                   initial=academic_degrees.NO_DEGREE,
+                                                   label=_('Titul za jménem'),
+                                                   required=False)
+    fields = ['academic_degree_before_name', 'academic_degree_after_name']
+
+    @transaction.atomic
+    def save(self, user):
+        super().save(user=user)
+        data = self.cleaned_data
+        profile = PsychologistProfile.objects.get(user_id=user.id)
+        profile.academic_degree_before_name = data.get("academic_degree_before_name")
+        profile.academic_degree_after_name = data.get("academic_degree_after_name")
+        profile.save()
+
+
+class ResearcherChangeForm(UserChangeBaseForm):
+    pass
