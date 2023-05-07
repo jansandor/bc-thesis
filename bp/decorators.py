@@ -1,5 +1,4 @@
 from django.core.exceptions import PermissionDenied
-from django.contrib import messages
 
 
 def user_is_client(user):
