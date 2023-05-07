@@ -7,7 +7,7 @@ register = template.Library()
 @register.filter('sex_value')
 def bool_cz(value):
     if value == MAN:
-        return SEX_CHOICES[1][1]  # todo do it better?
+        return SEX_CHOICES[1][1]
     elif value == WOMAN:
         return SEX_CHOICES[2][1]
     return 'pohlaví neuvedeno'

@@ -42,8 +42,6 @@ class ClientSignUpView(CreateView):
         form = self.form_class(request.POST)
         if form.is_valid():
             user = form.save()
-            # client registration confirm mail
-            # todo dat nejak rozumne do funkce? treba send_account_confirm_email
             mail_subject = 'Sportdiag | Dokončete registraci'
             message = render_to_string(self.account_activation_email_html,
                                        {
@@ -55,10 +53,8 @@ class ClientSignUpView(CreateView):
             email = EmailMessage(mail_subject, message, to=[user.email])
             email.content_subtype = 'html'
             email.send()
-            # todo add message succes/info
             return redirect(self.success_url)
         else:
-            # context = self.get_context_data(**kwargs)
             return render(request, self.template_name, {'form': form})
 
 
@@ -74,9 +70,6 @@ class PsychologistSignUpView(CreateView):
         form = self.form_class(request.POST, request.FILES)
         if form.is_valid():
             user = form.save()
-            # psychologist registration confirm mail
-            # in activate function is sent next mail to the staff,
-            # when psych. has email confirmed
             psychologist = PsychologistProfile.objects.get(user=user)
             mail_subject = 'Sportdiag | Dokončete registraci'
             message = render_to_string(self.account_activation_email_html,
@@ -89,14 +82,12 @@ class PsychologistSignUpView(CreateView):
             email = EmailMessage(mail_subject, message, to=[user.email])
             email.content_subtype = 'html'
             email.send()
-            # todo add message succes/info
             return redirect(self.success_url)
         else:
             return render(request, self.template_name, {'form': form})
 
 
 def activate(request, uidb64, token):
-    # todo mozna casem rozdelit na activate-client a activate-psych atd
     activation_confirm_template_name = 'accounts/registration/account_activation_confirm.html'
     activation_link_used_template_name = 'accounts/registration/account_activation_invalid_link.html'
     new_psychologist_registration_email_html_template = 'accounts/registration/emails/new_psychologist_registration_email.html'
@@ -112,13 +103,12 @@ def activate(request, uidb64, token):
             user.email_verified = True
             user.is_active = True
             user.save()
-            # mail to psychologist - new client
             mail_subject = 'Sportdiag | Nový klient'
             try:
                 client = ClientProfile.objects.get(user=user)
                 psychologist = User.objects.get(pk=client.psychologist_id)
             except:
-                pass  # todo ?
+                pass
             message = render_to_string(new_client_email_html_template,
                                        {
                                            'user_id': user.id,
@@ -128,10 +118,6 @@ def activate(request, uidb64, token):
             email = EmailMessage(mail_subject, message, to=[psychologist.email])
             email.content_subtype = 'html'
             email.send()
-            # todo add message succes/info
-            # user = authenticate(email=user.email, password=user.password)
-            # if user is not None:
-            #    login(request, user)  # login po prekliknuti stranky nedrzi
         elif user.is_psychologist:
             user.email_verified = True
             user.save()
@@ -143,7 +129,6 @@ def activate(request, uidb64, token):
                                         })
             admins = User.objects.filter(is_staff=True, is_researcher=True)
             for admin in admins:
-                # mail to staff researchers - new psychologist to approval
                 email = EmailMessage(mail_subject, message, to=[admin.email])
                 email.content_subtype = 'html'
                 email.send()
@@ -181,8 +166,6 @@ class ResearcherCreateView(LoginRequiredMixin, StaffResearcherRequiredMixin, Cre
         form = self.form_class(request.POST)
         if form.is_valid():
             (user, password) = form.save()
-            # researcher account creation confirm mail
-            # todo dat nejak rozumne do funkce? treba send_account_confirm_email
             staff_researcher_user = request.user
             mail_subject = 'Sportdiag | Správce aplikace Vám vytvořil účet'
             message = render_to_string(self.account_activation_email_html,
@@ -197,15 +180,10 @@ class ResearcherCreateView(LoginRequiredMixin, StaffResearcherRequiredMixin, Cre
             email = EmailMessage(mail_subject, message, to=[user.email])
             email.content_subtype = 'html'
             email.send()
-            # todo add message succes/info
             return redirect(self.success_url)
         else:
             return render(request, self.template_name, {'form': form})
 
-
-# todo prepsat login view.. pridat checkbox remember me
-# todo pro psychologa hazet warning/info/alert message, pokud jeho ucet jeste nebyl schvalen adminem
-# todo pro kazdeho usera hazet message, pokud nema aktivovany ucet
 
 class ClientDetailView(LoginRequiredMixin, PsychologistRequiredMixin, ListView):
     template_name = "accounts/client_detail.html"
@@ -224,7 +202,6 @@ class ClientDetailView(LoginRequiredMixin, PsychologistRequiredMixin, ListView):
         context = super().get_context_data(object_list=responses_qs, **kwargs)
         client = ClientProfile.objects.get(user_id=user_id)
         context['client'] = client
-        # todo show survey response requests to psychologist
         return context
 
     def get(self, request, *args, **kwargs):

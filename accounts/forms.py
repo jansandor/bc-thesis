@@ -1,7 +1,6 @@
 from django.contrib.auth import get_user_model, password_validation
 from django.contrib.auth.forms import UserCreationForm as DjangoUserCreationForm
 from django.db import transaction
-from django.forms import ModelForm
 from django import forms
 from accounts.models import ClientProfile, PsychologistProfile
 from django.utils.translation import gettext_lazy as _
@@ -39,7 +38,7 @@ class ClientUserCreationForm(UserCreationForm):
     nationality = forms.ChoiceField(choices=nationality.CHOICES, initial=nationality.CZE, label=_('Státní příslušnost'))
     psychologist_key = forms.UUIDField(label=_('Klíč psychologa'),
                                        error_messages={'invalid': 'Zadejte validní klíč.',
-                                                       'required': '!'})  # TODO prepsat error podle docs
+                                                       'required': '!'})
     terms_accepted = forms.BooleanField(label=_('Souhlasím s účastí ve výzkumu a se zpracováním osobních údajů'),
                                         required=True)
 
@@ -54,7 +53,7 @@ class ClientUserCreationForm(UserCreationForm):
             'password1',
             'password2',
             'birthdate',
-            InlineRadios('sex'),  # not working for |crispy, use tag
+            InlineRadios('sex'),
             'nationality',
             'psychologist_key',
             'terms_accepted',
@@ -157,7 +156,6 @@ class ResearcherUserCreationForm(UserCreationForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # self.initial = {'password1': '', 'password2': ''}
         self.helper = FormHelper()
         self.helper.disable_csrf = True
         self.helper.form_tag = False
@@ -172,7 +170,6 @@ class ResearcherUserCreationForm(UserCreationForm):
         raw_password = self.Meta.model.objects.make_random_password()
         user.set_password(raw_password)
         user.save()
-        # profile tabulka je v DB, ale zatim neni duvod ji vyuzit
         return user, raw_password
 
 
@@ -206,7 +203,6 @@ class UserChangeBaseForm(forms.Form):
 
 
 class ClientChangeForm(UserChangeBaseForm):
-    # TODO share somehow ClientUserCreationForm
     birthdate = forms.DateField(widget=DateInput(attrs={'min': datetime.date(dt.today().year - 100, 1, 1).__str__(),
                                                         'max': dt.today().date().__str__()}),
                                 label=_('Datum narození'))
@@ -227,7 +223,6 @@ class ClientChangeForm(UserChangeBaseForm):
 
 
 class PsychologistChangeForm(UserChangeBaseForm):
-    # TODO share somehow PsychologistUserCreationForm
     academic_degree_before_name = forms.ChoiceField(choices=academic_degrees.ACADEMIC_DEGREES_BEFORE_NAME,
                                                     initial=academic_degrees.NO_DEGREE,
                                                     label=_('Titul před jménem'),
