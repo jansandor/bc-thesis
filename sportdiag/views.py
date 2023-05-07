@@ -545,7 +545,6 @@ def upload_survey_attachments(request, **kwargs):
                 handle_uploaded_file(f, attachments_dir_path)
             messages.success(request, f"Přílohy nahrány.")
             return redirect('sportdiag:surveys_manuals')
-        # todo message error?
         messages.error(request, "Příloha nebyla nahrána.")
         return redirect('sportdiag:surveys_manuals')
 
@@ -615,7 +614,8 @@ def export_survey_responses_to_csv(request, survey_id):
     questions += [question.text for question in survey.no_category_questions()]
     questions += [question.short_name for question in survey.categorized_questions()]
     http_response = HttpResponse(content_type='text/csv',
-                                 headers={'Content-Disposition': f'attachment; filename="{filename}"'})
+                                 headers={'Content-Disposition': f'attachment; filename="{filename}"'},
+                                 charset='utf-8-sig')
     writer = csv.writer(http_response)  # todo bad diacritics on win excel
     writer.writerow(
         ['#', 'Dotazník', 'Datum responze', 'ID Responze', 'ID Klienta', 'Státní příslušnost', 'Pohlaví',
