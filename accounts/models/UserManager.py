@@ -10,7 +10,7 @@ class UserManager(BaseUserManager):
             raise ValueError('The given email must be set')
         email = self.normalize_email(email)
         user = self.model(email=self.normalize_email(email), **extra_fields)
-        # todo set_password doesnt exist during add super user migration?
+        # set_password doesnt exist during add super user migration?
         user._password = password
         user.password = make_password(password)
         user.save(using=self._db)

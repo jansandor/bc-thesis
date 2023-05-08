@@ -1,4 +1,4 @@
-# todo use -alpine and install deps manually?
+# use -alpine and install deps manually?
 FROM python:3.8.10 as base
 # The enviroment variable ensures that the python output is set straight
 # to the terminal without buffering it first

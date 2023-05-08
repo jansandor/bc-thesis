@@ -13,7 +13,7 @@ class ClientProfile(BaseUserProfile):
                                      verbose_name=_('psycholog'), related_name='psychologist')
     birthdate = models.DateField(_('datum narození'))
     sex = models.CharField(_('pohlaví'), max_length=1, choices=sex_choices.SEX_CHOICES,
-                           default=sex_choices.NOTSET)  # todo delete nechi uvest/not_set
+                           default=sex_choices.NOTSET)
     nationality = models.CharField(_('státní příslušnost'), max_length=3, choices=nationality.CHOICES,
                                    default=nationality.CZE)
     terms_accepted = models.BooleanField(_('souhlas s účastí ve výzkumu a zpracováním osobních údajů'), default=False)

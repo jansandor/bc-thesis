@@ -88,7 +88,7 @@ def add_vmiq_survey(apps, schema_editor):
             survey=survey,
         ),
     ]
-    # QuestionGroup.objects.bulk_create(question_groups) todo bulk create does not invoke save()
+    # QuestionGroup.objects.bulk_create(question_groups) # bulk create does not invoke save()
     for group in question_groups:
         group.save()
     # add survey questions

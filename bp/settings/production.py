@@ -57,5 +57,5 @@ DATABASES = {
 # X-FORWARDED-PROTOCOL = 'ssl'
 # X-FORWARDED-PROTO = 'https'
 # X-FORWARDED-SSL = 'on'
-# CSRF_COOKIE_SECURE = True todo set after https
-# SESSION_COOKIE_SECURE = True todo set after https
+# CSRF_COOKIE_SECURE = True
+# SESSION_COOKIE_SECURE = True

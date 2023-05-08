@@ -110,7 +110,7 @@
                     responseRequests: responseRequestsJson,
                     surveys: surveysJson,
                     selectionState: {},
-                    clientDetailUrl: "/ucty/detail_klienta/", // todo not very good - hardcoded url
+                    clientDetailUrl: "/ucty/detail_klienta/", // not very good - hardcoded url
                     isClientsEmpty: false,
                     clients: clientsJson,
                     psychologistHomeBaseUrl: '{% url "sportdiag:home_psychologist" %}',
@@ -163,7 +163,7 @@
                             this.responseRequests[clientId].push(selectedSurveyId);
                         },
                         error: (response) => {
-                            // todo logging console.log("REQUEST_SURVEY_RESPONSE_ERROR", response);
+                            // logging console.log("REQUEST_SURVEY_RESPONSE_ERROR", response);
                         },
                         complete: () => {
                             button[0].classList.remove("disabled");

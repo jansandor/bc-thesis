@@ -20,7 +20,7 @@ class PsychologistProfile(BaseUserProfile):
 
     class Meta:
         verbose_name = _('psycholog')
-        verbose_name_plural = _('psychologové')  # TODO tady to bude chtit gettext pro plural
+        verbose_name_plural = _('psychologové')
 
     def __str__(self):
         return f'{self.academic_degree_before_name} {self.user.__str__()} {self.academic_degree_after_name}'.strip()

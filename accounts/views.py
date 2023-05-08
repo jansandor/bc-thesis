@@ -144,7 +144,7 @@ def activate(request, uidb64, token):
 class PasswordResetView(DjangoPasswordResetView):
     html_email_template_name = 'accounts/registration/emails/password_reset_email.html'
     email_template_name = 'accounts/registration/emails/password_reset_email.html'
-    # TODO sablona, vyresit jak nastavit site_name.. pak bych nemusel sablonu menit
+    # sablona, vyresit jak nastavit site_name.. pak bych nemusel sablonu menit
     # https://github.com/django/django/blob/8d9827c06ce1592cca111e7eafb9ebe0153104ef/django/contrib/auth/templates/registration/password_reset_subject.txt
     subject_template_name = 'accounts/registration/emails/password_reset_subject.txt'
     template_name = 'accounts/registration/password_reset.html'

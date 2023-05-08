@@ -80,7 +80,7 @@ def add_acsi28_referee_survey(apps, schema_editor):
     ]
     for category in categories:
         category.save()
-    # todo not working Category.objects.bulk_create(categories)
+    # not working Category.objects.bulk_create(categories)
     # add acsi28 referee survey questions
     Question = apps.get_model(app_name, 'Question')
     scores_asc = "0,1,2,3"

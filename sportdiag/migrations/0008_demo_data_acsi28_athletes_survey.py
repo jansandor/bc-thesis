@@ -77,7 +77,7 @@ def add_acsi28_athletes_survey(apps, schema_editor):
     ]
     for category in categories:
         category.save()
-    # todo not working Category.objects.bulk_create(categories)
+    # not working Category.objects.bulk_create(categories)
     # add acsi28 athletes survey questions
     Question = apps.get_model(app_name, 'Question')
     scores_asc = "0,1,2,3"

@@ -84,7 +84,7 @@ MEDIA_ROOT = BASE_DIR / 'media'
 MEDIA_URL = '/media/'
 
 CRISPY_ALLOWED_TEMPLATE_PACKS = ("bootstrap5", "custom_crispy")
-CRISPY_TEMPLATE_PACK = "custom_crispy"  # "bootstrap5" todo set both?
+CRISPY_TEMPLATE_PACK = "custom_crispy"  # "bootstrap5"
 
 MANAGERS = [('dev', config('MANAGERS'))]
 ADMINS = [('admin', config('ADMINS'))]

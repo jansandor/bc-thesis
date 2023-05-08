@@ -1,4 +1,6 @@
 # todo check "recommended .gitignore" for python/django apps on the web
+# https://github.com/github/gitignore/blob/main/Python.gitignore
+# https://djangowaves.com/tips-tricks/gitignore-for-a-django-project/
 .env
 *.dot
 /*.png

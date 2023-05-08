@@ -64,7 +64,7 @@ def request_survey_response(request):
         client_id = request.POST.get("client_id")
         survey_id = request.POST.get("survey_id")
         if client_id and survey_id:
-            client = User.objects.get(id=client_id)  # todo try except
+            client = User.objects.get(id=client_id)  # try except
             client_email = client.email
             psychologist = request.user
             mail_subject = f'Sportdiag | {psychologist.__str__()} Vás žádá o vyplnění dotazníku'
@@ -263,7 +263,6 @@ class NewResponseFormView(LoginRequiredMixin, ClientRequiredMixin, TemplateView)
             form = ResponseForm(survey=survey, user=request.user)
             context = {'response_form': form, 'survey_id': survey_id}
         else:
-            # todo handle, nejaky error
             pass
         return render(request, self.template_name, context)
 
@@ -491,7 +490,7 @@ def get_survey_attachments_upload_dir_path(survey):
 
 def handle_uploaded_file(file, attachments_dir_path):
     file_dest_path = attachments_dir_path / file.name
-    # todo handle filename collisions, now file is overwritten
+    # handle filename collisions, now file is overwritten
     with open(file_dest_path, 'wb+') as destination:
         for chunk in file.chunks():
             destination.write(chunk)
@@ -545,8 +544,8 @@ def delete_survey_attachment(request, survey_id, filename):
         return redirect('sportdiag:surveys_manuals')
 
 
-# todo 3rd time used same code block
-def compute_score(answers):  # todo extract method and reuse in client detail
+# 3rd time used same code block
+def compute_score(answers):  # extract method and reuse in client detail
     total_score = 0
     for i, answer in enumerate(answers):
         try:
