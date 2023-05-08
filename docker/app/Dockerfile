@@ -18,7 +18,7 @@ RUN apt-get update && apt-get install -y -q --no-install-recommends \
 
 WORKDIR /home/sportdiag/src/
 ENV PATH /home/sportdiag/.local/bin:$PATH
-RUN chown sportdiag: /home/sportdiag/src/
+RUN chown sportdiag:sportdiag /home/sportdiag/src/
 RUN chmod -R u+rw /home/sportdiag/src/
 USER sportdiag
 # Copy file describing base image/common dependencies for dev and prod image
@@ -33,6 +33,7 @@ COPY ./docker/app/entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN ls -la
 USER root
 RUN chmod +x /usr/local/bin/entrypoint.sh
+RUN chown -R sportdiag:sportdiag .
 USER sportdiag
 # XXX
 RUN ls -la
@@ -62,7 +63,7 @@ RUN pip install --no-cache-dir -r requirements/dev.txt
 RUN ls -la
 
 USER root
-RUN chown -R sportdiag .
+RUN chown -R sportdiag:sportdiag .
 RUN ls -la
 USER sportdiag
 # The development server starts by default when the container starts
@@ -113,7 +114,7 @@ COPY . ./
 RUN ls -la
 
 USER root
-RUN chown -R sportdiag .
+RUN chown -R sportdiag:sportdiag .
 RUN ls -la
 USER sportdiag
 # The production server starts by default when the container starts
