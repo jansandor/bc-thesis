@@ -46,7 +46,7 @@ EMAIL_SUBJECT_PREFIX = config('EMAIL_SUBJECT_PREFIX_PROD', cast=lambda v: v + " 
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': config('DB_NAME_PROD'),
+        'NAME': config('DB_NAME'),
         'USER': config('DB_USER'),
         'PASSWORD': config('DB_PASSWORD'),
         'HOST': config('DB_HOST'),
