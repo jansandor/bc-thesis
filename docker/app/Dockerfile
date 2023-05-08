@@ -19,7 +19,7 @@ USER sportdiag
 WORKDIR /home/sportdiag/src/
 # Copy file describing base image/common dependencies for dev and prod image
 COPY --chown=sportdiag:sportdiag ./requirements/base.txt requirements/base.txt
-USER root
+# USER root TODO TESt WITHOUT/as sportdiag user
 RUN python -m pip install --upgrade pip
 # Install common dependencies
 RUN pip install --no-cache-dir -r requirements/base.txt
@@ -39,7 +39,7 @@ COPY --chown=sportdiag:sportdiag ./requirements/dev.txt requirements/dev.txt
 # Copy the script that starts the development application server (runserver)
 COPY --chown=sportdiag:sportdiag ./docker/app/start-dev-server.sh /usr/local/bin/start-dev-server.sh
 RUN chmod +x /usr/local/bin/start-dev-server.sh
-USER root
+# USER root TODO TESt WITHOUT/as sportdiag user
 # Install development dependencies
 RUN pip install --no-cache-dir -r requirements/dev.txt
 USER sportdiag
@@ -54,7 +54,7 @@ COPY --chown=sportdiag:sportdiag ./requirements/prod.txt requirements/prod.txt
 # Copy the script that starts the production application server (gunicorn)
 COPY --chown=sportdiag:sportdiag ./docker/app/start-prod-server.sh /usr/local/bin/start-prod-server.sh
 RUN chmod +x /usr/local/bin/start-prod-server.sh
-USER root
+# USER root TODO TESt WITHOUT/as sportdiag user
 # Create directory for collecting static files
 RUN mkdir /home/sportdiag/src/collected_static
 RUN chown sportdiag /home/sportdiag/src/collected_static
