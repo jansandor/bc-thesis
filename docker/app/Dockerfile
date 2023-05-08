@@ -6,6 +6,7 @@ ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 # Create a user to avoid running containers as root
 RUN addgroup --system sportdiag && adduser --system --ingroup sportdiag sportdiag
+
 RUN apt-get update && apt-get install -y -q --no-install-recommends \
   # dependencies for building Python packages
   build-essential \
@@ -15,15 +16,23 @@ RUN apt-get update && apt-get install -y -q --no-install-recommends \
   && apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false \
   && rm -rf /var/lib/apt/lists/*
 
-USER sportdiag
 WORKDIR /home/sportdiag/src/
+RUN whoami
+ENV PATH /home/sportdiag/.local/bin:$PATH
+RUN ls -la
+RUN chown sportdiag: /home/sportdiag/src/
+RUN echo $USER
+RUN ls -la
+RUN chmod -R u+rw /home/sportdiag/src/
+RUN ls -la
+USER sportdiag
+RUN whoami
 # Copy file describing base image/common dependencies for dev and prod image
 COPY --chown=sportdiag:sportdiag ./requirements/base.txt requirements/base.txt
-# USER root TODO TESt WITHOUT/as sportdiag user
 RUN python -m pip install --upgrade pip
 # Install common dependencies
 RUN pip install --no-cache-dir -r requirements/base.txt
-# Copy entrypoint script which waits for the db to be ready
+# Copy entrypoint script which waits for the DB to be ready
 COPY --chown=sportdiag:sportdiag ./docker/app/entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
 USER sportdiag
@@ -33,7 +42,7 @@ ENTRYPOINT ["entrypoint.sh"]
 # Define an image for local development. Inherits common packages from the base stage.
 FROM base as dev
 RUN echo "\n***\n***\nDEV IMAGE BUILD STARTED\n***\n***\n"
-CMD ['whoami']
+RUN whoami
 # Copy file describing development dependencies
 COPY --chown=sportdiag:sportdiag ./requirements/dev.txt requirements/dev.txt
 # Copy the script that starts the development application server (runserver)
@@ -49,15 +58,17 @@ CMD ["start-dev-server.sh"]
 # Define an image for production. Inherits common packages from the base stage.
 FROM base as prod
 RUN echo "\n***\n***\nPROD IMAGE BUILD STARTED\n***\n***\n"
+RUN whoami
 # Copy file describing production dependencies
 COPY --chown=sportdiag:sportdiag ./requirements/prod.txt requirements/prod.txt
 # Copy the script that starts the production application server (gunicorn)
 COPY --chown=sportdiag:sportdiag ./docker/app/start-prod-server.sh /usr/local/bin/start-prod-server.sh
 RUN chmod +x /usr/local/bin/start-prod-server.sh
-# USER root TODO TESt WITHOUT/as sportdiag user
+USER sportdiag
 # Create directory for collecting static files
 RUN mkdir /home/sportdiag/src/collected_static
 RUN chown sportdiag /home/sportdiag/src/collected_static
+RUN ls -la
 # Create files for storing users access data.. this is just for testing and should be deleted later
 RUN touch approved_fake_psychologists_raw_passwords.txt
 RUN touch demo_clients_raw_passwords.txt
