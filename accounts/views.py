@@ -189,7 +189,7 @@ class ClientDetailView(LoginRequiredMixin, PsychologistRequiredMixin, ListView):
     template_name = "accounts/client_detail.html"
     model = Response
     ordering = ['-created']
-    paginate_by = 2
+    paginate_by = 10
 
     def get_queryset(self, user_id):
         queryset = super().get_queryset()

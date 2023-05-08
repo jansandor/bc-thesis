@@ -87,7 +87,7 @@ def request_survey_response(request):
 
 class PsychologistHomeView(LoginRequiredMixin, PsychologistRequiredMixin, TemplateView):
     template_name = 'sportdiag/home/psychologist_home_vue.html'
-    paginate_by = 5
+    paginate_by = 10
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -444,7 +444,7 @@ def reactivate_researcher_account(request, pk):
 class SurveysAndManualsView(LoginRequiredMixin, PsychologistOrResearcherRequiredMixin, ListView):
     template_name = "sportdiag/surveys_and_manuals.html"
     upload_survey_attachments_form = UploadFilesForm
-    paginate_by = 5
+    paginate_by = 10
     model = Survey
     ordering = ['id']
 
