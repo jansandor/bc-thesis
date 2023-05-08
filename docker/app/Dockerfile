@@ -61,6 +61,9 @@ RUN pip install --no-cache-dir -r requirements/dev.txt
 # XXX
 RUN ls -la
 
+USER root
+RUN chown -R sportdiag .
+RUN ls -la
 USER sportdiag
 # The development server starts by default when the container starts
 CMD ["start-dev-server.sh"]
@@ -109,6 +112,9 @@ COPY . ./
 # XXX
 RUN ls -la
 
+USER root
+RUN chown -R sportdiag .
+RUN ls -la
 USER sportdiag
 # The production server starts by default when the container starts
 CMD ["start-prod-server.sh"]
