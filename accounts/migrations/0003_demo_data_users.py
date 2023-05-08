@@ -208,18 +208,6 @@ def add_researchers(apps, schema_editor):
 def add_staff_researcher(apps, schema_editor):
     User = apps.get_model(app_name, 'User')
     User.objects.create(
-        email='littlemaugli001@gmail.com',
-        first_name='Staff',
-        last_name='Researcher',
-        email_verified=True,
-        confirmed_by_staff=True,
-        is_active=True,
-        is_staff=True,
-        is_researcher=True,
-        date_joined=fake.date_time(tzinfo=timezone.utc),
-        password=make_password('little'),
-    )
-    User.objects.create(
         email='vyzkumnik-admin@example.com',
         first_name='Demo',
         last_name='Výzkumník Admin',
