@@ -30,8 +30,10 @@ RUN pip install --no-cache-dir -r requirements/base.txt
 # Copy entrypoint script which waits for the DB to be ready
 # XXX COPY --chown=sportdiag:sportdiag ./docker/app/entrypoint.sh /usr/local/bin/entrypoint.sh
 COPY ./docker/app/entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN ls -la
+USER root
 RUN chmod +x /usr/local/bin/entrypoint.sh
-# XXX USER sportdiag
+USER sportdiag
 # XXX
 RUN ls -la
 # This script will run before every command executed in the container
@@ -48,8 +50,11 @@ COPY ./requirements/dev.txt requirements/dev.txt
 # Copy the script that starts the development application server (runserver)
 # XXX COPY --chown=sportdiag:sportdiag ./docker/app/start-dev-server.sh /usr/local/bin/start-dev-server.sh
 COPY ./docker/app/start-dev-server.sh /usr/local/bin/start-dev-server.sh
+RUN ls -la
+USER root
 RUN chmod +x /usr/local/bin/start-dev-server.sh
-# XXX USER root TODO TESt WITHOUT/as sportdiag user
+RUN ls -la
+USER sportdiag
 # Install development dependencies
 RUN pip install --no-cache-dir -r requirements/dev.txt
 
@@ -70,8 +75,11 @@ COPY ./requirements/prod.txt requirements/prod.txt
 # Copy the script that starts the production application server (gunicorn)
 # XXX COPY --chown=sportdiag:sportdiag ./docker/app/start-prod-server.sh /usr/local/bin/start-prod-server.sh
 COPY ./docker/app/start-prod-server.sh /usr/local/bin/start-prod-server.sh
+RUN ls -la
+USER root
 RUN chmod +x /usr/local/bin/start-prod-server.sh
-# XXX USER sportdiag
+RUN ls -la
+USER sportdiag
 # Create directory for collecting static files
 RUN mkdir /home/sportdiag/src/collected_static
 # XXX RUN chown sportdiag /home/sportdiag/src/collected_static
