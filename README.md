@@ -1,5 +1,7 @@
 # Sportdiag
 
+https://theses.cz/id/6nrcu2/
+
 ## Lokální spuštění aplikace
 
 Tato sekce popisuje lokální spuštění aplikace na OS Ubuntu 20.04 LTS (Desktop). Předpokládá se, že je na systému
