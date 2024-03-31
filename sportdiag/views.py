@@ -578,7 +578,7 @@ def export_survey_responses_to_csv(request, survey_id):
                                  charset='utf-8-sig')
     writer = csv.writer(http_response)
     writer.writerow(
-        ['#', 'Dotazník', 'Datum responze', 'ID Responze', 'ID Klienta', 'Státní příslušnost', 'Pohlaví',
+        ['#', 'Dotazník', 'Datum responze', 'ID Responze', 'ID Respondenta', 'Státní příslušnost', 'Pohlaví',
          'Věk', *questions, 'Skóre', 'Max Skóre'])
     counter = 1
     for response in responses:

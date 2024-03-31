@@ -17,7 +17,7 @@ class InviteClientForm(forms.Form):
     class Meta:
         fields = ['client_email']
 
-    client_email = forms.EmailField(label=_('E-mail klienta'))
+    client_email = forms.EmailField(label=_('E-mail respondenta'))
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -53,7 +53,7 @@ class ResponseForm(models.ModelForm):
         Question.SHORT_TEXT: forms.TextInput,
         Question.RADIO: forms.RadioSelect,
         Question.SELECT: forms.Select,
-        Question.INTEGER: forms.IntegerField,
+        Question.INTEGER: forms.NumberInput,
         Question.LIKERT_SCALE: LikertRadio
     }
 
@@ -200,7 +200,9 @@ class ResponseForm(models.ModelForm):
             return forms.ChoiceField(**kwargs)
 
     def get_answer_body(self, question, field_value):
+        print("get_answer_body field_value", field_value)
         choices = [choice.replace("(", "").replace(")", "") for choice in question.get_clean_choices()]
+        print("get_answer_body choices", choices)
         if field_value in choices:
             index = choices.index(field_value)
             return question.get_clean_choices()[index]
@@ -218,8 +220,10 @@ class ResponseForm(models.ModelForm):
                 q_id = int(field_name.split("_")[1])
                 question = Question.objects.get(id=q_id)
                 answer = Answer(question=question)
+                print("field_name", field_name)
+                print("field_value", field_value)
                 answer.body = self.get_answer_body(question, field_value.replace("-", " ")) if question.type in [
-                    Question.SELECT, Question.RADIO, Question.LIKERT_SCALE] else field_value.replace("-", " ")
+                    Question.SELECT, Question.RADIO, Question.LIKERT_SCALE] else field_value # TODO INTEGER does not have field_value.replace("-", " ")
                 answer.score = question.get_answer_score(answer)
                 data["responses"].append((answer.question.id, answer.body))
                 LOGGER.debug("Creating answer for question %d of type %s : %s", q_id, answer.question.type, field_value)

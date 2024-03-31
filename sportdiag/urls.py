@@ -15,7 +15,7 @@ urlpatterns = [
     path('sportdiag/c/', ClientHomeView.as_view(), name='home_client'),
     re_path(r'sportdiag/p/(?:\?page=(?P<page>\d+))?$', PsychologistHomeView.as_view(), name='home_psychologist'),
     path('sportdiag/r/', ResearcherHomeView.as_view(), name='home_researcher'),
-    path('sportdiag/pozvat_klienta/', InviteClient.as_view(), name='invite_client'),
+    path('sportdiag/pozvat_respondenta/', InviteClient.as_view(), name='invite_client'),
     re_path(r'sportdiag/schvalovani_psychologu/(?:\?page=(?P<page>\d+))?$', ApprovePsychologistsView.as_view(),
             name='approve_psychologists'),
     path('sportdiag/schvalovani_psychologu/zamitnout/<int:pk>/', reject_psychologist,

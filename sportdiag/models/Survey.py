@@ -9,13 +9,15 @@ class Survey(models.Model):
     PCDEQ = "PCDEQ"
     VMIQ2 = "VMIQ-2"
     OMSAT3_MODIFIED = "OMSAT-3*"
+    GEQCZV1 = "GEQ-CZ-V1"
 
     SURVEY_TYPES = (
         (ACSI28_REFEREE, _("ASCI-28 pro rozhodčí")),
         (ACSI28_ATHLETE, _("ASCI-28 pro sportovce")),
         (PCDEQ, _("PCDEQ")),
         (VMIQ2, _("VIMQ-2")),
-        (OMSAT3_MODIFIED, _("OMSAT-3* modifikovaná verze"))
+        (OMSAT3_MODIFIED, _("OMSAT-3* modifikovaná verze")),
+        (GEQCZV1, _("GEQ-CZ V1")),
     )
 
     name = models.CharField(_('název'), max_length=400)
