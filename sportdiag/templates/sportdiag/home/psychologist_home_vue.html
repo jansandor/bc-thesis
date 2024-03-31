@@ -14,7 +14,7 @@
     <div class="container-xl bg-light p-4">
         <div class="row">
             <div class="col">
-                <h1>Přehled klientů</h1>
+                <h1>Přehled respondentů</h1>
             </div>
             <hr>
         </div>
@@ -22,10 +22,10 @@
             <div v-if="!isClientsEmpty">
                 <div class="row">
                     <div class="col fw-light">
-                        <p>Pokud klienta požádáte o responzi zvoleného dotazníku, bude mu zaslán informativní
+                        <p>Pokud respondenta požádáte o responzi zvoleného dotazníku, bude mu zaslán informativní
                             e-mail s pozvánkou k vyplnění dotazníku.</p>
                         <p>Jakmile dotazník vyplní a odešle, budete informován(a) e-mailem o nové responzi a budete
-                            klienta
+                            respondenta
                             moci
                             znovu požádat o další responzi.</p>
                     </div>
@@ -34,7 +34,7 @@
                     <div class="col">
                         <div class="d-flex justify-content-end">
                             <a class="btn btn-primary" href="{% url 'sportdiag:invite_client' %}">
-                                <i class="bi bi-plus-circle"></i> Pozvat klienta</a>
+                                <i class="bi bi-plus-circle"></i> Pozvat respondenta</a>
                         </div>
                     </div>
                 </div>
@@ -98,7 +98,7 @@
                 </ul>
             </div>
             <ul v-else class="list-group">
-                <li class="list-group-item">Nemáte žádné klienty.</li>
+                <li class="list-group-item">Nemáte žádné respondenty.</li>
             </ul>
         </div>
     </div>
@@ -110,7 +110,7 @@
                     responseRequests: responseRequestsJson,
                     surveys: surveysJson,
                     selectionState: {},
-                    clientDetailUrl: "/ucty/detail_klienta/", // not very good - hardcoded url
+                    clientDetailUrl: "/ucty/detail_respondenta/", // not very good - hardcoded url
                     isClientsEmpty: false,
                     clients: clientsJson,
                     psychologistHomeBaseUrl: '{% url "sportdiag:home_psychologist" %}',

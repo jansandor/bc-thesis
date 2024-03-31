@@ -5,8 +5,8 @@ from django.contrib.auth import views as auth_views
 
 urlpatterns = [
     path('registrace/', SignUpView.as_view(), name='signup'),
-    path('registrace/klient/', ClientSignUpView.as_view(), name='signup_client'),
-    path('registrace/klient/<uuid4>/', ClientSignUpView.as_view(), name='signup_client'),
+    path('registrace/respondent/', ClientSignUpView.as_view(), name='signup_client'),
+    path('registrace/respondent/<uuid4>/', ClientSignUpView.as_view(), name='signup_client'),
     path('registrace/psycholog/', PsychologistSignUpView.as_view(), name='signup_psychologist'),
     path('prihlaseni/', auth_views.LoginView.as_view(template_name='accounts/registration/login.html'), name='login'),
     path('odhlasit/', auth_views.LogoutView.as_view(), name='logout'),
@@ -19,8 +19,8 @@ urlpatterns = [
         template_name='accounts/registration/password_reset_complete.html'), name='password_reset_complete'),
     path('aktivovat_ucet/<uidb64>/<token>/', activate, name='activate'),
     path('registrace/vyzkumnik/', ResearcherCreateView.as_view(), name='create_researcher_account'),
-    re_path(r'detail_klienta/(?P<user_id>\d+)/$', ClientDetailView.as_view(), name='client_detail'),
-    re_path(r'detail_klienta/(?P<user_id>\d+)/\?(?:page=(?P<page>\d+))?$', ClientDetailView.as_view(),
+    re_path(r'detail_respondenta/(?P<user_id>\d+)/$', ClientDetailView.as_view(), name='client_detail'),
+    re_path(r'detail_respondenta/(?P<user_id>\d+)/\?(?:page=(?P<page>\d+))?$', ClientDetailView.as_view(),
             name='client_detail'),
     path('nastaveni_uctu/<int:pk>', AccountSettingsView.as_view(), name='account_settings')
 ]
