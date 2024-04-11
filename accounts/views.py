@@ -103,7 +103,7 @@ def activate(request, uidb64, token):
             user.email_verified = True
             user.is_active = True
             user.save()
-            mail_subject = 'Sportdiag | Nový klient'
+            mail_subject = 'Sportdiag | Nový respondent'
             try:
                 client = ClientProfile.objects.get(user=user)
                 psychologist = User.objects.get(pk=client.psychologist_id)

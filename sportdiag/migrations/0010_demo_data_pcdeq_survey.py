@@ -6,13 +6,13 @@ from sportdiag.models import Survey as _Survey
 from sportdiag.models import Question as _Question
 from bp.utils.migrations import integer_sequence
 
-app_name = 'sportdiag'
+app_name = "sportdiag"
 survey_name = "Dotazník psychických vlastností nutných k rozvoji vyjímečnosti - PCDEQ"
 
 
 @transaction.atomic
 def add_pcdeq_survey(apps, schema_editor):
-    Survey = apps.get_model(app_name, 'Survey')
+    Survey = apps.get_model(app_name, "Survey")
     survey = Survey.objects.create(
         name=survey_name,
         description="""Dotazník PCDEQ (Psychological Characteristics of Developing Excellence 
@@ -32,89 +32,103 @@ def add_pcdeq_survey(apps, schema_editor):
         type=_Survey.PCDEQ,
     )
     # add survey categories
-    Category = apps.get_model(app_name, 'Category')
+    Category = apps.get_model(app_name, "Category")
     categories = [
-        Category(name="Podpora k dlouhodobému úspěchu",
-                 survey=survey,
-                 description="""Je zaměřena na to, do jaké míry patřičné osoby (např. trenéři) 
+        Category(
+            name="Podpora k dlouhodobému úspěchu",
+            survey=survey,
+            description="""Je zaměřena na to, do jaké míry patřičné osoby (např. trenéři) 
                  podporují své svěřence k používání Psychických vlastností k rozvoji 
                  výjimečnosti v praxi na cestě k dlouhodobé úspěšnosti. Hodnotí, do jaké míry
                   jsou mladí sportovci ve svém prostředí k rozvoji těchto vlastností vedeni. 
-                  Nehodnotí jejich vlastní zapojení."""
-                 ),
-        Category(name="Používání imaginace během tréninku a soutěže",
-                 survey=survey,
-                 description="""Tento faktor hodnotí míru schopnosti imaginace jedince. 
-                 Cílí jak na schopnosti jejího použití při tréninku, tak před samotným výkonem."""
-                 ),
-        Category(name="Zvládání stresu spojeného s výkonem a rozvojem",
-                 survey=survey,
-                 description="""Faktor zjišťuje schopnost respondenta vyrovnávat se s tlakem 
+                  Nehodnotí jejich vlastní zapojení.""",
+        ),
+        Category(
+            name="Používání imaginace během tréninku a soutěže",
+            survey=survey,
+            description="""Tento faktor hodnotí míru schopnosti imaginace jedince. 
+                 Cílí jak na schopnosti jejího použití při tréninku, tak před samotným výkonem.""",
+        ),
+        Category(
+            name="Zvládání stresu spojeného s výkonem a rozvojem",
+            survey=survey,
+            description="""Faktor zjišťuje schopnost respondenta vyrovnávat se s tlakem 
                  rozvoje i soutěže. Zvládání soutěžního prostředí je silně spojeno s úrovní 
-                 podaného výkonu."""
-                 ),
-        Category(name="Schopnost organizovat kvalitní trénink a zapojit se do něj",
-                 survey=survey,
-                 description="""Položky tohoto faktoru se vtahují k přístupu sportovce k jeho 
+                 podaného výkonu.""",
+        ),
+        Category(
+            name="Schopnost organizovat kvalitní trénink a zapojit se do něj",
+            survey=survey,
+            description="""Položky tohoto faktoru se vtahují k přístupu sportovce k jeho 
                  tréninku. Zkoumají jeho chování při tréninku a schopnost sám rozvíjet svoji 
-                 výkonovou úroveň."""
-                 ),
-        Category(name="Vyhodnocování výkonů a práce na slabých stránkách",
-                 survey=survey,
-                 description="""Tento faktor zdůrazňuje důležitost schopnosti dívat se realisticky 
+                 výkonovou úroveň.""",
+        ),
+        Category(
+            name="Vyhodnocování výkonů a práce na slabých stránkách",
+            survey=survey,
+            description="""Tento faktor zdůrazňuje důležitost schopnosti dívat se realisticky 
                  na vlastní výkony, ať už se jedná o výhry, nebo prohry. Zjišťuje úroveň této 
-                 schopnosti a schopnost na ni navazující práce na slabých stránkách."""
-                 ),
-        Category(name="Podpora od ostatních k podávání výkonů odpovídajících mému potenciálu",
-                 survey=survey,
-                 description="""Tento faktor cílí na úroveň podpory k podávání odpovídajících 
+                 schopnosti a schopnost na ni navazující práce na slabých stránkách.""",
+        ),
+        Category(
+            name="Podpora od ostatních k podávání výkonů odpovídajících mému potenciálu",
+            survey=survey,
+            description="""Tento faktor cílí na úroveň podpory k podávání odpovídajících 
                  výkonů, které se respondentovi dostává od ostatních (trenér, rodina apod.). 
                  V tomto kontextu by se trenéři neměli zaměřovat pouze na rozvoj 
                  dovedností u svých svěřenců, ale měli by u nich také prosazovat a rozvíjet 
-                 psychické vlastnosti k rozvoji výjimečnosti."""
-                 ),
+                 psychické vlastnosti k rozvoji výjimečnosti.""",
+        ),
     ]
     for category in categories:
         category.save()
     # add survey questions
-    Question = apps.get_model(app_name, 'Question')
+    Question = apps.get_model(app_name, "Question")
     choices = "zcela nesouhlasím, nesouhlasím, spíše nesouhlasím, spíše souhlasím, souhlasím, zcela souhlasím"
     scores = "1,2,3,4,5,6"
     number = integer_sequence(100)
     order_number = integer_sequence(100)
     questions = [
         # no category questions
-        Question(text="Sport",
-                 number=0,
-                 order=next(order_number),
-                 required=True,
-                 type=_Question.SHORT_TEXT,
-                 survey=survey,
-                 scores="0"),
-        Question(text="Současná úroveň, na které provozujete svůj sport",
-                 number=0,
-                 order=next(order_number),
-                 required=True,
-                 type=_Question.RADIO,
-                 survey=survey,
-                 choices="Regionální úroveň, Celonárodní úroveň, Mezinárodní reprezentace, Svůj sport aktivně neprovozuji",
-                 scores="0,0,0,0"),
-        Question(text="Nejvyšší úroveň, na které jste provozoval/a svůj sport",
-                 number=0,
-                 order=next(order_number),
-                 required=True,
-                 type=_Question.RADIO,
-                 survey=survey,
-                 choices="Regionální úroveň, Celonárodní úroveň, Mezinárodní reprezentace",
-                 scores="0,0,0"),
-        Question(text="Nejvyšší stupeň dokončeného vzdělání",
-                 number=0,
-                 order=next(order_number),
-                 required=True,
-                 type=_Question.SELECT,
-                 survey=survey,
-                 choices="Základní, Střední, Vyšší odborné, Vysokoškolské",
-                 scores="0,0,0,0"),
+        Question(
+            text="Sport",
+            number=0,
+            order=next(order_number),
+            required=True,
+            type=_Question.SHORT_TEXT,
+            survey=survey,
+            scores="0",
+        ),
+        Question(
+            text="Současná úroveň, na které provozujete svůj sport",
+            number=0,
+            order=next(order_number),
+            required=True,
+            type=_Question.RADIO,
+            survey=survey,
+            choices="Regionální úroveň, Celonárodní úroveň, Mezinárodní reprezentace, Svůj sport aktivně neprovozuji",
+            scores="0,0,0,0",
+        ),
+        Question(
+            text="Nejvyšší úroveň, na které jste provozoval/a svůj sport",
+            number=0,
+            order=next(order_number),
+            required=True,
+            type=_Question.RADIO,
+            survey=survey,
+            choices="Regionální úroveň, Celonárodní úroveň, Mezinárodní reprezentace",
+            scores="0,0,0",
+        ),
+        Question(
+            text="Nejvyšší stupeň dokončeného vzdělání",
+            number=0,
+            order=next(order_number),
+            required=True,
+            type=_Question.SELECT,
+            survey=survey,
+            choices="Základní, Střední, Vyšší odborné, Vysokoškolské",
+            scores="0,0,0,0",
+        ),
     ]
     # categorized questions
     category_separator = "next category"
@@ -189,22 +203,25 @@ def add_pcdeq_survey(apps, schema_editor):
         if text == category_separator:
             i += 1
             continue
-        questions.append(Question(text=text,
-                                  number=next(number),
-                                  order=next(order_number),
-                                  required=True,
-                                  type=_Question.RADIO,
-                                  survey=survey,
-                                  choices=choices,
-                                  scores=scores,
-                                  category=categories[i]
-                                  ))
+        questions.append(
+            Question(
+                text=text,
+                number=next(number),
+                order=next(order_number),
+                required=True,
+                type=_Question.RADIO,
+                survey=survey,
+                choices=choices,
+                scores=scores,
+                category=categories[i],
+            )
+        )
     Question.objects.bulk_create(questions)
 
 
 @transaction.atomic
 def revert_pcdeq_survey(apps, schema_editor):
-    Survey = apps.get_model(app_name, 'Survey')
+    Survey = apps.get_model(app_name, "Survey")
     survey = Survey.objects.get(name=survey_name)
     if survey:
         survey.delete()
@@ -212,7 +229,7 @@ def revert_pcdeq_survey(apps, schema_editor):
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('sportdiag', '0009_demo_data_acsi28_referee_survey'),
+        ("sportdiag", "0009_demo_data_acsi28_referee_survey"),
     ]
 
     operations = [

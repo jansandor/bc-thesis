@@ -19,9 +19,9 @@ s pomocí nástroje [virtualenv](https://virtualenv.pypa.io/en/latest/index.html
        klíčem DJANGO_SUPERUSER_PASSWORD. Pod tímto účtem lze přistupovat na adresu *localhost:8000/admin*.
     2. Při migraci jsou v databázi vytvořeni demo uživatelé a v aktuálním adresáři by se měly objevit soubory
        *approved_fake_psychologists_raw_passwords.txt*, *fake_researchers_raw_passwords.txt* a
-       *demo_clients_raw_passwords.txt*. V těch naleznete přístupové údaje k jednotlivým účtům. Klientů i psychologů je
+       *demo_clients_raw_passwords.txt*. V těch naleznete přístupové údaje k jednotlivým účtům. Respondentů i psychologů je
        vytvořeno
-       více, ale všichni klienti s přístupy v souboru *demo_clients_raw_passwords.txt* jsou spárováni s testovacím účtem
+       více, ale všichni respondenti s přístupy v souboru *demo_clients_raw_passwords.txt* jsou spárováni s testovacím účtem
        psychologa *psycholog@example.com*. V souboru *approved_fake_psychologists_raw_passwords.txt* jsou přístupy pouze
        k účtům schválených výzkumníkem-administrátorem (jsou aktivní a lze se k nim přihlásit).
 6. Spusťte lokální server příkazem `python manage.py runserver --settings=bp.settings.local`.

@@ -7,13 +7,13 @@
     <link rel="stylesheet" type="text/css" href="{% static 'accounts/css/client_detail.css' %}">
 {% endblock %}
 
-{% block title %}Sportdiag | Detail Klienta{% endblock %}
+{% block title %}Sportdiag | Detail Respondenta{% endblock %}
 
 {% block content %}
     <div class="container-xl bg-light p-4">
         <div class="row justify-content-between">
             <div class="col-auto">
-                <h1>Detail klienta</h1>
+                <h1>Detail respondenta</h1>
             </div>
             <div class="col-auto">
                 <a href="{% url 'sportdiag:home_psychologist' %}" class="btn btn-secondary">Zpět</a>
@@ -70,7 +70,7 @@
                             </div>
                         </div>
                         {% empty %}
-                    <li class="list-group-item text-center">Klient dosud nebyl testován.</li>
+                    <li class="list-group-item text-center">Respondent dosud nebyl testován.</li>
                 {% endfor %}
             </ul>
             <ul class="pagination justify-content-end mt-3">
