@@ -9,7 +9,7 @@ SECRET_KEY = config('SECRET_KEY')
 DEBUG = True
 TEMPLATE_DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['sportdiag-6994.rostiapp.cz']
 
 INSTALLED_APPS += [
     'django_extensions',

@@ -88,3 +88,5 @@ CRISPY_TEMPLATE_PACK = "custom_crispy"  # "bootstrap5"
 
 MANAGERS = [('dev', config('MANAGERS'))]
 ADMINS = [('admin', config('ADMINS'))]
+
+ROOT_URLCONF = 'bp.urls'
