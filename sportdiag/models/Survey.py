@@ -10,6 +10,9 @@ class Survey(models.Model):
     VMIQ2 = "VMIQ-2"
     OMSAT3_MODIFIED = "OMSAT-3*"
     GEQCZV1 = "GEQ-CZ-V1"
+    SFSS = "S-FSS"
+    SDFS = "S-DFS"
+    CSAI2 = "CSAI-2"
 
     SURVEY_TYPES = (
         (ACSI28_REFEREE, _("ASCI-28 pro rozhodčí")),
@@ -18,6 +21,9 @@ class Survey(models.Model):
         (VMIQ2, _("VIMQ-2")),
         (OMSAT3_MODIFIED, _("OMSAT-3* modifikovaná verze")),
         (GEQCZV1, _("GEQ-CZ V1")),
+        (SFSS, _("S FSS")),
+        (SDFS, _("S DFS")),
+        (CSAI2, _("CSAI-2")),
     )
 
     name = models.CharField(_('název'), max_length=400)

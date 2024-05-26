@@ -15,7 +15,7 @@ def add_geq_survey(apps, schema_editor):
     Survey = apps.get_model(app_name, "Survey")
     survey = Survey.objects.create(
         name=survey_name,
-        description="""DOPLNIT""",
+        description="""Dotazník týmové atmosféry (Group Environment Questionnaire - GEQ, Carron, Widmeyer, & Brawley, 1985) patří k mezinárodně uznávaným nástrojům pro sledování týmové koheze a byl původně validizován pro populaci sportovců v Severní Americe. Dotazník hodnotí týmovou kohezi pomocí čtyř hlavních dimenzí.""",
         instructions="""Následující výroky zjišťují Vaši zkušenost s týmem, do kterého patříte. Odpovězte prosím zaškrtnutím čísla na škále 1-9 (vůbec nesouhlasím - naprosto souhlasím).""",
         is_published=True,
         type=_Survey.GEQCZV1,
@@ -48,7 +48,7 @@ def add_geq_survey(apps, schema_editor):
         category.save()
     # add survey questions
     Question = apps.get_model(app_name, "Question")
-    # choices = "1 = vůbec nesouhlasím, 2, 3, 4, 5, 6, 7, 8, 9 = naprosto souhlasím"
+    # TODO choices = "1 = vůbec nesouhlasím, 2, 3, 4, 5, 6, 7, 8, 9 = naprosto souhlasím"
     choices = "vůbec nesouhlasím, 2, 3, 4, 5, 6, 7, 8, naprosto souhlasím"
     scores_asc = "1,2,3,4,5,6,7,8,9"
     scores_desc = "9,8,7,6,5,4,3,2,1"
