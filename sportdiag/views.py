@@ -43,6 +43,14 @@ class IndexView(TemplateView):
         return render(request, self.template_name, context)
 
 
+class GDPRView(TemplateView):
+    template_name = "sportdiag/gdpr.html"
+
+    def get(self, request, *args, **kwargs):
+        context = self.get_context_data()
+        return render(request, self.template_name, context)
+
+
 @login_required
 def redirect_to_user_type_home(request):
     if request.method == "GET":

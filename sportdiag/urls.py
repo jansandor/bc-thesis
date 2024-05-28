@@ -5,12 +5,13 @@ from .views import IndexView, PsychologistHomeView, InviteClient, \
     redirect_to_user_type_home, ResearcherHomeView, ClientHomeView, ResearchersOverviewView, \
     deactivate_researcher_account, reactivate_researcher_account, NewResponseFormView, SurveyConfirmView, \
     request_survey_response, SurveysAndManualsView, upload_survey_attachments, download_survey_attachment, \
-    delete_survey_attachment, export_survey_responses_to_csv, toggle_is_published, delete_survey, ResponseDetailView
+    delete_survey_attachment, export_survey_responses_to_csv, toggle_is_published, delete_survey, ResponseDetailView, GDPRView
 
 app_name = 'sportdiag'
 
 urlpatterns = [
     path('', IndexView.as_view(), name='index'),
+    path('zasady-ochrany-osobnich-udaju/', GDPRView.as_view(), name='gdpr'),
     path('sportdiag/', redirect_to_user_type_home, name='home'),
     path('sportdiag/c/', ClientHomeView.as_view(), name='home_client'),
     re_path(r'sportdiag/p/(?:\?page=(?P<page>\d+))?$', PsychologistHomeView.as_view(), name='home_psychologist'),
