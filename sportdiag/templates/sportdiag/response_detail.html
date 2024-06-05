@@ -46,7 +46,7 @@
                 </div>
                 <div class="d-flex flex-wrap mb-1">
                     <div class="text-secondary me-2">Celkové skóre:</div>
-                    <div>{{ response.total_score|floatformat }}/{{ survey.max_score }}b</div>
+                    <div>{{ response.total_score|floatformat:2 }}/{{ survey.max_score }}b</div>
                 </div>
             </div>
         </div>
@@ -145,7 +145,7 @@
                     {% endfor %}
                     <tr>
                         <th scope="row" class="text-wrap">Celkové skóre</th>
-                        <td>{{ response.total_score }}</td>
+                        <td>{{ response.total_score|floatformat:2 }}b</td>
                     </tr>
                     </tbody>
                 </table>

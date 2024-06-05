@@ -68,6 +68,12 @@ class Survey(models.Model):
     @property
     def max_score(self):
         max_score = 0
+        if self.type == self.SFSS or self.type == self.SDFS:
+            # 9 categories, 1 question per category, max score is avg of all questions max score
+            # (q1max + q2max + q3max + q4max + q5max + q6max + q7max + q8max + q9max) / 9
+            # (5 + 5 + 5 + 5 + 5 + 5 + 5 + 5 + 5) / 9
+            # (9 * 5) / 9 = 5
+            return 5
         if self.type == self.PCDEQ:
             max_category_score = 6
             return self.categories.count() * max_category_score

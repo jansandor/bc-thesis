@@ -45,6 +45,22 @@ class Response(models.Model):
             cat_score = self.answers.filter(question_id__in=questions_ids).aggregate(
                 Sum("score"))
             return cat_score.get("score__sum")
+        elif self.survey.type == Survey.SFSS or self.survey.type == Survey.SDFS:
+            questions_ids = category.questions.order_by("number").values_list(
+                "id", flat=True
+            )
+            cat_score = self.answers.filter(question_id__in=questions_ids).aggregate(
+                Sum("score")
+            )
+            return cat_score.get("score__sum")
+        elif self.survey.type == Survey.CSAI2:
+            questions_ids = category.questions.order_by("number").values_list(
+                "id", flat=True
+            )
+            cat_score = self.answers.filter(question_id__in=questions_ids).aggregate(
+                Sum("score")
+            )
+            return cat_score.get("score__sum")
         return cat_score
 
     @property
@@ -62,6 +78,15 @@ class Response(models.Model):
         elif self.survey.type == Survey.PCDEQ:
             for cat in self.survey.non_empty_categories():
                 total_score += self.compute_category_score(cat)
+        elif self.survey.type == Survey.SFSS or self.survey.type == Survey.SDFS:
+            categories = self.survey.non_empty_categories()
+            for cat in categories:
+                total_score += self.compute_category_score(cat)
+            total_score = total_score / categories.__len__()
+        elif self.survey.type == Survey.CSAI2:
+            total_score = self.answers.filter(question_id__in=self.survey.categorized_questions()).aggregate(
+                Sum("score"))
+            return total_score.get("score__sum")
         return total_score
 
     @property
