@@ -668,12 +668,25 @@ class ResponseDetailView(LoginRequiredMixin, PsychologistOrResearcherRequiredMix
                     "answer_score": answer.score
                 }
                 questions_data.append(question_data)
-            categories_data.append({
-                "id": category.id,
-                "name": category.name,
-                "questions_data": questions_data,
-                "score": response.compute_category_score(category)
-            })
+            if survey.type == Survey.GEQCZV1 or survey.type == Survey.OMSAT3_MODIFIED:
+                categories_data.append(
+                    {
+                        "id": category.id,
+                        "name": category.name,
+                        "questions_data": questions_data,
+                        "score": response.compute_category_score(category),
+                        "score_avg": response.compute_category_score_avg(category),
+                    }
+                )
+            else:
+                categories_data.append(
+                    {
+                        "id": category.id,
+                        "name": category.name,
+                        "questions_data": questions_data,
+                        "score": response.compute_category_score(category),
+                    }
+                )
         context["categories_data"] = categories_data
         no_cat_questions_data = []
         for question in survey.no_category_questions():

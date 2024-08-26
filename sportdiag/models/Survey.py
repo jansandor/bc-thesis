@@ -85,3 +85,7 @@ class Survey(models.Model):
             if q:
                 max_score -= max(q.get_clean_scores())
         return max_score
+    
+    @property
+    def max_score_avg(self):
+        return self.max_score / self.categorized_questions().count()

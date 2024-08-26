@@ -22,7 +22,6 @@ class Response(models.Model):
         verbose_name_plural = _('Sets of answers to surveys')
 
     def compute_category_score(self, category):
-        self.survey.categories.get(id=category.id)
         cat_score = 0
         if self.survey.type == Survey.ACSI28_ATHLETE:
             questions_ids = category.questions.order_by("number").values_list("id", flat=True)
@@ -61,7 +60,16 @@ class Response(models.Model):
                 Sum("score")
             )
             return cat_score.get("score__sum")
+        elif self.survey.type == Survey.GEQCZV1 or self.survey.type == Survey.OMSAT3_MODIFIED:
+            questions_ids = category.questions.order_by("number").values_list("id", flat=True)
+            cat_score = self.answers.filter(question_id__in=questions_ids).aggregate(
+                Sum("score"))
+            return cat_score.get("score__sum")
         return cat_score
+    
+    def compute_category_score_avg(self, category):
+        cat_score_avg = self.compute_category_score(category=category) / category.questions.count()
+        return cat_score_avg
 
     @property
     def total_score(self):
@@ -87,11 +95,24 @@ class Response(models.Model):
             total_score = self.answers.filter(question_id__in=self.survey.categorized_questions()).aggregate(
                 Sum("score"))
             return total_score.get("score__sum")
+        elif self.survey.type == Survey.GEQCZV1 or self.survey.type == Survey.OMSAT3_MODIFIED:
+            for cat in self.survey.non_empty_categories():
+                total_score += self.compute_category_score(cat)
         return total_score
+    
+    @property
+    def total_score_avg(self):
+        # omsat, geq
+        return self.total_score / self.survey.categorized_questions().count()
 
     @property
     def max_score(self):
         return self.survey.max_score
+    
+    @property
+    def max_score_avg(self):
+        # omsat, geq
+        return self.survey.max_score_avg
 
     def get_absolute_url(self):
         return reverse('sportdiag:response_detail', kwargs={'response_id': self.id})

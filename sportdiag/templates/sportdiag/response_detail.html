@@ -48,6 +48,12 @@
                     <div class="text-secondary me-2">Celkové skóre:</div>
                     <div>{{ response.total_score|floatformat:2 }}/{{ survey.max_score }}b</div>
                 </div>
+                {% if survey.type == "GEQ-CZ-V1" or survey.type == "OMSAT-3*" %}
+                <div class="d-flex flex-wrap mb-1">
+                    <div class="text-secondary me-2">Celkové skóre (průměr):</div>
+                    <div>{{ response.total_score_avg|floatformat:2 }}/{{ survey.max_score_avg|floatformat:2 }}b</div>
+                </div>
+                {% endif %}
             </div>
         </div>
         <div class="row">
@@ -121,6 +127,14 @@
                             <td></td>
                             <td>{{ category.score|floatformat:2 }}b</td>
                         </tr>
+                        {% if category.score_avg %}
+                        <tr>
+                            <th scope="row" class="text-wrap">Skóre (průměr)</th>
+                            <td></td>
+                            <td></td>
+                            <td>{{ category.score_avg|floatformat:2 }}b</td>
+                        </tr>
+                        {% endif %}
                         </tbody>
                     </table>
                 </div>
@@ -145,8 +159,14 @@
                     {% endfor %}
                     <tr>
                         <th scope="row" class="text-wrap">Celkové skóre</th>
-                        <td>{{ response.total_score|floatformat:2 }}b</td>
+                        <td>{{ response.total_score|floatformat:2 }}/{{ survey.max_score }}b</td>
                     </tr>
+                    {% if survey.type == "GEQ-CZ-V1" or survey.type == "OMSAT-3*" %}
+                    <tr>
+                        <th scope="row" class="text-wrap">Celkové skóre (průměr)</th>
+                        <td>{{ response.total_score_avg|floatformat:2 }}/{{ survey.max_score_avg|floatformat:2 }}b</td>
+                    </tr>
+                    {% endif %}
                     </tbody>
                 </table>
             </div>
