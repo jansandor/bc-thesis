@@ -49,7 +49,7 @@ class Question(models.Model):
         for choice in self.choices.split(','):
             choice = choice.strip()
             if choice:
-                choices_list.append(choice.lower())
+                choices_list.append(choice.replace("_", " ").lower())
         return choices_list
 
     def get_choices(self):
