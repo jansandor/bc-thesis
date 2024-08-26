@@ -92,7 +92,7 @@ def add_geq_survey(apps, schema_editor):
             scores="0",
         ),
         Question(
-            text="Kolikrát týdně společně tŕenujete",
+            text="Kolikrát týdně společně trénujete",
             number=0,
             order=next(order_number),
             required=True,

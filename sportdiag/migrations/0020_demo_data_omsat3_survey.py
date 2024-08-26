@@ -148,7 +148,7 @@ def add_omsat3_survey(apps, schema_editor):
     # add omsat3 questions
     Question = apps.get_model(app_name, "Question")
     order_number = integer_sequence(100)
-    choices = "rozhodně nesouhlasím, nesouhlasím, spíše nesouhlasím, ani nesouhlasím/ani souhlasím, spíše souhlasím, souhlasím, rozhodně souhlasím"
+    choices = "rozhodně nesouhlasím, nesouhlasím, spíše nesouhlasím, ani nesouhlasím_ani souhlasím, spíše souhlasím, souhlasím, rozhodně souhlasím"
     scores_asc = "1,2,3,4,5,6,7"
     scores_desc = "7,6,5,4,3,2,1"
     questions = [
