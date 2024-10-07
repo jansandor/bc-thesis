@@ -90,7 +90,6 @@ class ResponseForm(models.ModelForm):
                 "table_header_added": False,
                 "questions": [q.id for q in ls_questions]
             }
-        print(self.processed_likert_scales)
         self.processed_question_groups = {}
         for group in self.groups:
             group_questions = group.questions.all()
@@ -200,9 +199,7 @@ class ResponseForm(models.ModelForm):
             return forms.ChoiceField(**kwargs)
 
     def get_answer_body(self, question, field_value):
-        print("get_answer_body field_value", field_value)
         choices = [choice.replace("(", "").replace(")", "") for choice in question.get_clean_choices()]
-        print("get_answer_body choices", choices)
         if field_value in choices:
             index = choices.index(field_value)
             return question.get_clean_choices()[index]
@@ -220,8 +217,6 @@ class ResponseForm(models.ModelForm):
                 q_id = int(field_name.split("_")[1])
                 question = Question.objects.get(id=q_id)
                 answer = Answer(question=question)
-                print("field_name", field_name)
-                print("field_value", field_value)
                 answer.body = self.get_answer_body(question, field_value.replace("-", " ")) if question.type in [
                     Question.SELECT, Question.RADIO, Question.LIKERT_SCALE] else field_value # TODO INTEGER does not have field_value.replace("-", " ")
                 answer.score = question.get_answer_score(answer)
