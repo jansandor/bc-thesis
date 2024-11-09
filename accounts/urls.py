@@ -1,28 +1,93 @@
 from django.urls import path, re_path
-from .views import SignUpView, ClientSignUpView, PsychologistSignUpView, activate, PasswordResetView, \
-    PasswordResetDoneView, ResearcherCreateView, ClientDetailView, AccountSettingsView
+from .views import (
+    SignUpView,
+    ClientSignUpView,
+    PsychologistSignUpView,
+    activate,
+    PasswordResetView,
+    PasswordResetDoneView,
+    ResearcherCreateView,
+    ClientDetailView,
+    AccountSettingsView,
+    ClientSignUpConfirmView,
+    PsychologistSignUpConfirmView,
+)
 from django.contrib.auth import views as auth_views
 
 urlpatterns = [
-    path('registrace/', SignUpView.as_view(), name='signup'),
-    path('registrace/respondent/', ClientSignUpView.as_view(), name='signup_client'),
-    path('registrace/respondent/<uuid4>/', ClientSignUpView.as_view(), name='signup_client'),
-    path('registrace/psycholog/', PsychologistSignUpView.as_view(), name='signup_psychologist'),
-    path('prihlaseni/', auth_views.LoginView.as_view(template_name='accounts/registration/login.html'), name='login'),
-    path('odhlasit/', auth_views.LogoutView.as_view(), name='logout'),
-    path('obnoveni_hesla/', PasswordResetView.as_view(), name='password_reset'),
-    path('obnoveni_hesla_vyzadano/', PasswordResetDoneView.as_view(), name='password_reset_done'),
-    path('obnoveni_hesla_dokonceni/<uidb64>/<token>/',
-         auth_views.PasswordResetConfirmView.as_view(template_name='accounts/registration/password_reset_confirm.html'),
-         name='password_reset_confirm'),
-    path('obnoveni_hesla/dokonceno/', auth_views.PasswordResetCompleteView.as_view(
-        template_name='accounts/registration/password_reset_complete.html'), name='password_reset_complete'),
-    path('aktivovat_ucet/<uidb64>/<token>/', activate, name='activate'),
-    path('registrace/vyzkumnik/', ResearcherCreateView.as_view(), name='create_researcher_account'),
-    re_path(r'detail_respondenta/(?P<user_id>\d+)/$', ClientDetailView.as_view(), name='client_detail'),
-    re_path(r'detail_respondenta/(?P<user_id>\d+)/\?(?:page=(?P<page>\d+))?$', ClientDetailView.as_view(),
-            name='client_detail'),
-    path('nastaveni_uctu/<int:pk>', AccountSettingsView.as_view(), name='account_settings')
+    path("registrace/", SignUpView.as_view(), name="signup"),
+    path("registrace/respondent/", ClientSignUpView.as_view(), name="signup_client"),
+    path(
+        "registrace/respondent/uspesna",
+        ClientSignUpConfirmView.as_view(
+            template_name="accounts/registration/client_signup_confirm.html"
+        ),
+        name="client_signup_confirm",
+    ),
+    path(
+        "registrace/respondent/<uuid4>/",
+        ClientSignUpView.as_view(),
+        name="signup_client",
+    ),
+    path(
+        "registrace/psycholog/",
+        PsychologistSignUpView.as_view(),
+        name="signup_psychologist",
+    ),
+    path(
+        "registrace/psycholog/uspesna",
+        PsychologistSignUpConfirmView.as_view(
+            template_name="accounts/registration/psychologist_signup_confirm.html"
+        ),
+        name="psychologist_signup_confirm",
+    ),
+    path(
+        "prihlaseni/",
+        auth_views.LoginView.as_view(template_name="accounts/registration/login.html"),
+        name="login",
+    ),
+    path("odhlasit/", auth_views.LogoutView.as_view(), name="logout"),
+    path("obnoveni_hesla/", PasswordResetView.as_view(), name="password_reset"),
+    path(
+        "obnoveni_hesla_vyzadano/",
+        PasswordResetDoneView.as_view(),
+        name="password_reset_done",
+    ),
+    path(
+        "obnoveni_hesla_dokonceni/<uidb64>/<token>/",
+        auth_views.PasswordResetConfirmView.as_view(
+            template_name="accounts/registration/password_reset_confirm.html"
+        ),
+        name="password_reset_confirm",
+    ),
+    path(
+        "obnoveni_hesla/dokonceno/",
+        auth_views.PasswordResetCompleteView.as_view(
+            template_name="accounts/registration/password_reset_complete.html"
+        ),
+        name="password_reset_complete",
+    ),
+    path("aktivovat_ucet/<uidb64>/<token>/", activate, name="activate"),
+    path(
+        "registrace/vyzkumnik/",
+        ResearcherCreateView.as_view(),
+        name="create_researcher_account",
+    ),
+    re_path(
+        r"detail_respondenta/(?P<user_id>\d+)/$",
+        ClientDetailView.as_view(),
+        name="client_detail",
+    ),
+    re_path(
+        r"detail_respondenta/(?P<user_id>\d+)/\?(?:page=(?P<page>\d+))?$",
+        ClientDetailView.as_view(),
+        name="client_detail",
+    ),
+    path(
+        "nastaveni_uctu/<int:pk>",
+        AccountSettingsView.as_view(),
+        name="account_settings",
+    ),
 ]
 
 # urlpatterns = [
