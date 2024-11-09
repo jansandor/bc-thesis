@@ -278,6 +278,7 @@ class AccountSettingsView(LoginRequiredMixin, FormView):
                     "birthdate": user_profile.birthdate.__str__(),
                     "sex": user_profile.sex,
                     "nationality": user_profile.nationality,
+                    # "psychologist_key": "",
                 }
             )
         elif user.is_psychologist:
